@@ -20,14 +20,14 @@ public final class ModelGenerator {
                 .flatMap(List::stream)
                 .map(typeDefinitionsByName::get)
                 .collect(Collectors.toMap(typeDefinition -> typeDefinition.name(), InterfaceGenerator::generate));
-        List<GeneratedObject> generatedObjects = typeDefinitions.stream()
+        List<GeneratedFile<?>> generatedFiles = typeDefinitions.stream()
                 .map(typeDefinition -> typeDefinition.shape()
                         .accept(new TypeDefinitionGenerator(typeDefinition, generatedInterfaces)))
                 .collect(Collectors.toList());
-        return Collections.emptyList();
+        return generatedFiles.stream().map(GeneratedFile::file).collect(Collectors.toList());
     }
 
-    private final static class TypeDefinitionGenerator implements Type.Visitor<GeneratedObject> {
+    private final static class TypeDefinitionGenerator implements Type.Visitor<GeneratedFile<?>> {
 
         private final TypeDefinition typeDefinition;
         private final Map<NamedTypeReference, GeneratedInterface> generatedInterfaces;
@@ -40,7 +40,7 @@ public final class ModelGenerator {
         }
 
         @Override
-        public GeneratedObject visitObject(ObjectTypeDefinition objectTypeDefinition) {
+        public GeneratedFile<?> visitObject(ObjectTypeDefinition objectTypeDefinition) {
             List<GeneratedInterface> superInterfaces = typeDefinition._extends().stream()
                     .map(generatedInterfaces::get)
                     .collect(Collectors.toList());
@@ -57,23 +57,23 @@ public final class ModelGenerator {
         }
 
         @Override
-        public GeneratedObject visitUnion(UnionTypeDefinition unionTypeDefinition) {
+        public GeneratedFile<?> visitUnion(UnionTypeDefinition unionTypeDefinition) {
             return null;
         }
 
         @Override
-        public GeneratedObject visitAlias(AliasTypeDefinition aliasTypeDefinition) {
+        public GeneratedFile<?> visitAlias(AliasTypeDefinition aliasTypeDefinition) {
             return null;
         }
 
         @Override
-        public GeneratedObject visitEnum(EnumTypeDefinition enumTypeDefinition) {
-            return null;
+        public GeneratedFile<?> visitEnum(EnumTypeDefinition enumTypeDefinition) {
+            return EnumGenerator.generate(typeDefinition.name(), enumTypeDefinition);
         }
 
         @Override
-        public GeneratedObject visitUnknown(String s) {
-            return null;
+        public GeneratedFile<?> visitUnknown(String s) {
+            throw new RuntimeException("Encountered unknown Type: " + s);
         }
     }
 }

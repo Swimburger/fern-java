@@ -50,7 +50,7 @@ public final class ObjectGenerator {
                 .build();
         return GeneratedObject.builder()
                 .file(objectFile)
-                .objectTypeDefinition(objectTypeDefinition)
+                .definition(objectTypeDefinition)
                 .build();
     }
 
@@ -78,7 +78,7 @@ public final class ObjectGenerator {
             List<GeneratedInterface> superInterfaces, List<ObjectField> fields) {
         // Required field from super interfaces take priority
         for (GeneratedInterface superInterface : superInterfaces) {
-            Optional<String> firstMandatoryFieldName = superInterface.typeDefinition().shape().getObject()
+            Optional<String> firstMandatoryFieldName = superInterface.definition().shape().getObject()
                     .flatMap(objectTypeDefinition -> getFirstRequiredFieldName(objectTypeDefinition.fields()));
             if (firstMandatoryFieldName.isPresent()) {
                 return firstMandatoryFieldName;

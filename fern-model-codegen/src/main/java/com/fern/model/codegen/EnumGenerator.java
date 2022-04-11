@@ -187,7 +187,7 @@ public class EnumGenerator {
                 .build();
         return GeneratedEnum.builder()
                 .file(enumFile)
-                .enumTypeDefinition(enumTypeDefinition)
+                .definition(enumTypeDefinition)
                 .build();
     }
 }

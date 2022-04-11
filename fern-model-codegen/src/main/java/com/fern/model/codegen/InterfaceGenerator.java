@@ -24,7 +24,7 @@ public class InterfaceGenerator {
                 .build();
         return GeneratedInterface.builder()
                 .file(interfaceFile)
-                .typeDefinition(typeDefinition)
+                .definition(typeDefinition)
                 .build();
     }
 
