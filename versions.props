@@ -1,7 +1,11 @@
-# misc
-org.immutables:* = 2.8.8
-com.google.code.findbugs:annotations = 3.0.1
+# java poet
 com.squareup:javapoet = 1.13.0
+
+# immutables
+org.immutables:* = 2.8.8
+
+# apache commons
+org.apache.commons:commons-lang3 = 3.12.0
 
 # logging
 org.slf4j:slf4j-api = 1.7.36
@@ -17,3 +21,6 @@ org.mockito:* = 3.11.2
 
 # jackson
 com.fasterxml.jackson.*:jackson-* = 2.12.3
+
+# misc
+com.google.code.findbugs:annotations = 3.0.1

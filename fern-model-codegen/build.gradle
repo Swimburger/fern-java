@@ -10,6 +10,8 @@ dependencies {
     implementation 'org.slf4j:slf4j-log4j12'
     implementation 'org.slf4j:slf4j-log4j12'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.apache.commons:commons-lang3'
+    implementation 'com.google.code.findbugs:annotations'
 
     annotationProcessor 'org.immutables:value'
     compileOnly 'org.immutables:value::annotations'
