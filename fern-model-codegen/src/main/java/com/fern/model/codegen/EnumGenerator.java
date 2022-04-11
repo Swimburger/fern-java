@@ -64,8 +64,8 @@ public class EnumGenerator {
         enumBuilder.addMethod(MethodSpec.constructorBuilder()
                 .addParameter(valueFieldClassName, VALUE_FIELD_NAME)
                 .addParameter(STRING_TYPE_NAME, STRING_FIELD_NAME)
-                .addCode("this.value = value;")
-                .addCode("this.string = string;")
+                .addStatement("this.value = value")
+                .addStatement("this.string = string")
                 .build());
 
         // Generate nested enum with UNKNOWN constant
@@ -113,6 +113,7 @@ public class EnumGenerator {
         TypeVariableName visitorReturnType = TypeVariableName.get("T");
         TypeSpec visitorInterface = TypeSpec.interfaceBuilder(VISITOR_TYPE_NAME)
                 .addModifiers(Modifier.PUBLIC)
+                .addTypeVariable(visitorReturnType)
                 .addMethods(enumTypeDefinition.values().stream()
                         .map(enumValue ->
                                 MethodSpec.methodBuilder("visit"
@@ -148,7 +149,7 @@ public class EnumGenerator {
                 .endControlFlow()
                 .build();
         MethodSpec accept = MethodSpec.methodBuilder(ACCEPT_METHOD_NAME)
-                .addParameter(nestedVisitor, "visitor")
+                .addParameter(ParameterizedTypeName.get(nestedVisitor, acceptReturnType), "visitor")
                 .addCode(acceptCodeBlock)
                 .returns(acceptReturnType)
                 .build();
@@ -174,7 +175,7 @@ public class EnumGenerator {
         MethodSpec.Builder valueOfBuilder = MethodSpec.methodBuilder(VALUE_OF_METHOD_NAME)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addAnnotation(AnnotationSpec.builder(JsonCreator.class)
-                        .addMember("mode", "$T", ClassName.get(JsonCreator.Mode.DELEGATING.getClass()))
+                        .addMember("mode", "$T.$L", ClassName.get(JsonCreator.Mode.class), JsonCreator.Mode.DELEGATING.name())
                         .build())
                 .addParameter(ParameterSpec.builder(ClassName.get(String.class), "value")
                         .addAnnotation(Nonnull.class)

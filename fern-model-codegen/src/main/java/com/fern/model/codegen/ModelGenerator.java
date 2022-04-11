@@ -58,7 +58,7 @@ public final class ModelGenerator {
 
         @Override
         public GeneratedFile<?> visitUnion(UnionTypeDefinition unionTypeDefinition) {
-            return null;
+            return UnionGenerator.generate(typeDefinition.name(), unionTypeDefinition);
         }
 
         @Override

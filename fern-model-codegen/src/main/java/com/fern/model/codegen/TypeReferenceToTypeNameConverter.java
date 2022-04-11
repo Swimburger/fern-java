@@ -13,8 +13,7 @@ import java.util.Set;
 public final class TypeReferenceToTypeNameConverter implements TypeReference.Visitor<TypeName> {
 
     public static final TypeReferenceToTypeNameConverter INSTANCE = new TypeReferenceToTypeNameConverter(false);
-
-    private static final TypeReferenceToTypeNameConverter NESTED_INSTANCE = new TypeReferenceToTypeNameConverter(true);
+    public static final TypeReferenceToTypeNameConverter NESTED_INSTANCE = new TypeReferenceToTypeNameConverter(true);
 
     private final boolean isNested;
 
