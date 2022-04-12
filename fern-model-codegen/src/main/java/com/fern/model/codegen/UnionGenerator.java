@@ -1,22 +1,36 @@
 package com.fern.model.codegen;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fern.*;
-import com.fern.immutables.StagedBuilderStyle;
+import com.fern.NamedTypeReference;
+import com.fern.SingleUnionType;
+import com.fern.TypeDefinition;
+import com.fern.UnionTypeDefinition;
 import com.fern.model.codegen.utils.ClassNameUtils;
 import com.fern.model.codegen.utils.KeyWordUtils;
 import com.palantir.common.streams.KeyedStream;
-import com.squareup.javapoet.*;
-import org.apache.commons.lang3.StringUtils;
-import org.immutables.value.Value;
-
-import javax.lang.model.element.Modifier;
-import java.util.List;
+import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeName;
+import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.TypeVariableName;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.lang.model.element.Modifier;
+import org.apache.commons.lang3.StringUtils;
+import org.immutables.value.Value;
 
 public final class UnionGenerator {
 

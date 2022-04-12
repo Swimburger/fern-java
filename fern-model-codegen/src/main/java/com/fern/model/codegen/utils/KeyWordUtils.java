@@ -4,9 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
-
-import javax.lang.model.element.Modifier;
 import java.util.Set;
+import javax.lang.model.element.Modifier;
 
 public final class KeyWordUtils {
 

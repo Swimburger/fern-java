@@ -1,11 +1,14 @@
 package com.fern.model.codegen;
 
-import com.fern.*;
+import com.fern.ContainerType;
+import com.fern.MapType;
+import com.fern.NamedTypeReference;
+import com.fern.PrimitiveType;
+import com.fern.TypeReference;
 import com.fern.model.codegen.utils.ClassNameUtils;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

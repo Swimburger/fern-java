@@ -1,7 +1,5 @@
 package com.fern.model.codegen.utils;
 
-import com.fern.WithFilepath;
-
 public final class FilepathUtils {
 
     private FilepathUtils() {

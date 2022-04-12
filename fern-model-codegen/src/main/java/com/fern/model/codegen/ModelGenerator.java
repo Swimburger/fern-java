@@ -2,9 +2,7 @@ package com.fern.model.codegen;
 
 import com.fern.*;
 import com.squareup.javapoet.JavaFile;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;

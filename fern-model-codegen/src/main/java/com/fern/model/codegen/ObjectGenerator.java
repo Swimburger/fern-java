@@ -8,13 +8,17 @@ import com.fern.ObjectTypeDefinition;
 import com.fern.immutables.StagedBuilderStyle;
 import com.fern.model.codegen.utils.ClassNameUtils;
 import com.fern.model.codegen.utils.KeyWordUtils;
-import com.squareup.javapoet.*;
-import org.immutables.value.Value;
-
-import javax.lang.model.element.Modifier;
+import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
+import com.squareup.javapoet.TypeSpec;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.lang.model.element.Modifier;
+import org.immutables.value.Value;
 
 public final class ObjectGenerator {
 
