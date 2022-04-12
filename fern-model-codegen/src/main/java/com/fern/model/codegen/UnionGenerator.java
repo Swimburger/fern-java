@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fern.*;
 import com.fern.immutables.StagedBuilderStyle;
 import com.fern.model.codegen.utils.ClassNameUtils;
+import com.fern.model.codegen.utils.KeyWordUtils;
 import com.palantir.common.streams.KeyedStream;
 import com.squareup.javapoet.*;
 import org.apache.commons.lang3.StringUtils;
@@ -117,7 +118,8 @@ public final class UnionGenerator {
                 .build());
 
         unionTypeDefinition.types().forEach(singleUnionType -> {
-            MethodSpec staticBuilder = MethodSpec.methodBuilder(singleUnionType.discriminantValue())
+            String keyWordCompatibleName = KeyWordUtils.getKeyWordCompatibleName(singleUnionType.discriminantValue());
+            MethodSpec staticBuilder = MethodSpec.methodBuilder(keyWordCompatibleName)
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                     .addParameter(singleUnionType.valueType().accept(TypeReferenceToTypeNameConverter.INSTANCE), "value")
                     .returns(generatedUnionClass)

@@ -7,6 +7,7 @@ import com.fern.ObjectField;
 import com.fern.ObjectTypeDefinition;
 import com.fern.immutables.StagedBuilderStyle;
 import com.fern.model.codegen.utils.ClassNameUtils;
+import com.fern.model.codegen.utils.KeyWordUtils;
 import com.squareup.javapoet.*;
 import org.immutables.value.Value;
 
@@ -17,7 +18,6 @@ import java.util.stream.Collectors;
 
 public final class ObjectGenerator {
 
-    private static final String IMMUTABLE_PREFIX = "Immutable";
     private static final String STATIC_BUILDER_METHOD_NAME = "builder";
     private static final String BUILD_STAGE_SUFFIX = "BuildStage";
 
@@ -34,10 +34,10 @@ public final class ObjectGenerator {
                         superInterface -> ClassName.get(superInterface.packageName(), superInterface.className()))
                         .collect(Collectors.toList()));
         if (!ignoreOwnFields) {
-            objectTypeBuilder.addMethods(objectTypeDefinition.fields().stream().map(objectField -> MethodSpec.methodBuilder(objectField.key())
-                    .returns(objectField.valueType().accept(TypeReferenceToTypeNameConverter.INSTANCE))
-                    .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT).build())
-                    .collect(Collectors.toList()));
+            objectTypeBuilder.addMethods(objectTypeDefinition.fields().stream().map(objectField -> {
+                TypeName returnType = objectField.valueType().accept(TypeReferenceToTypeNameConverter.INSTANCE);
+                return KeyWordUtils.getKeyWordCompatibleImmutablesPropertyName(objectField.key(), returnType);
+            }).collect(Collectors.toList()));
         }
         TypeSpec objectType = objectTypeBuilder
                 .addMethod(generateStaticBuilder(superInterfaces, name, objectTypeDefinition))
