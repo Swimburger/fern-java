@@ -1,5 +1,6 @@
 package com.fern.model.codegen;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fern.NamedTypeReference;
 import com.fern.ObjectField;
@@ -46,6 +47,9 @@ public final class ObjectGenerator {
                         .builder(JsonDeserialize.class)
                         .addMember("as", "$T.class",
                                 ClassNameUtils.getImmutablesClassName(name))
+                        .build())
+                .addAnnotation(AnnotationSpec.builder(JsonIgnoreProperties.class)
+                        .addMember("value", "{$S}", "type")
                         .build())
                 .build();
         JavaFile objectFile = JavaFile.builder(generatedClassName.packageName(), objectType)
