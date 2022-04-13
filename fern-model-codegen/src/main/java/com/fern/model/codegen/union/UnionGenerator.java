@@ -1,4 +1,4 @@
-package com.fern.model.codegen;
+package com.fern.model.codegen.union;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -199,7 +199,7 @@ public final class UnionGenerator {
                     && typeDefinitionsByName
                             .get(singleUnionType.valueType().getNamed().get())
                             .shape()
-                            .isObject();
+                            .isObject(); // TODO alias
             MethodSpec.Builder discriminantMethod = MethodSpec.methodBuilder(singleUnionType.discriminantValue())
                     .returns(singleUnionType.valueType().accept(TypeReferenceToTypeNameConverter.INSTANCE))
                     .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC);

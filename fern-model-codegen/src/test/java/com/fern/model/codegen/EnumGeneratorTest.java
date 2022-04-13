@@ -1,6 +1,8 @@
 package com.fern.model.codegen;
 
 import com.fern.*;
+import com.fern.model.codegen._enum.EnumGenerator;
+import com.fern.model.codegen._enum.GeneratedEnum;
 import org.junit.jupiter.api.Test;
 
 public class EnumGeneratorTest {

@@ -1,7 +1,8 @@
 package com.fern.model.codegen;
 
 import com.fern.*;
-import com.squareup.javapoet.JavaFile;
+import com.fern.model.codegen._interface.GeneratedInterface;
+import com.fern.model.codegen._interface.InterfaceGenerator;
 import org.junit.jupiter.api.Test;
 
 public class InterfaceGeneratorTest {

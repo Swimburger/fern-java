@@ -1,6 +1,10 @@
 package com.fern.model.codegen;
 
 import com.fern.*;
+import com.fern.model.codegen._interface.GeneratedInterface;
+import com.fern.model.codegen._interface.InterfaceGenerator;
+import com.fern.model.codegen.object.GeneratedObject;
+import com.fern.model.codegen.object.ObjectGenerator;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;

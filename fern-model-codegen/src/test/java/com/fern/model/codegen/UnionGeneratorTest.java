@@ -1,6 +1,8 @@
 package com.fern.model.codegen;
 
 import com.fern.*;
+import com.fern.model.codegen.union.GeneratedUnion;
+import com.fern.model.codegen.union.UnionGenerator;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
