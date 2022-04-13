@@ -25,6 +25,8 @@ public final class ObjectGenerator {
     private static final String STATIC_BUILDER_METHOD_NAME = "builder";
     private static final String BUILD_STAGE_SUFFIX = "BuildStage";
 
+    private ObjectGenerator() {}
+
     public static GeneratedObject generate(
             List<GeneratedInterface> superInterfaces,
             NamedTypeReference name,
@@ -34,30 +36,30 @@ public final class ObjectGenerator {
         TypeSpec.Builder objectTypeBuilder = TypeSpec.interfaceBuilder(name.name());
         objectTypeBuilder
                 .addModifiers(Modifier.PUBLIC)
-                .addSuperinterfaces(superInterfaces.stream().map(
-                        superInterface -> ClassName.get(superInterface.packageName(), superInterface.className()))
+                .addSuperinterfaces(superInterfaces.stream()
+                        .map(superInterface -> ClassName.get(superInterface.packageName(), superInterface.className()))
                         .collect(Collectors.toList()));
         if (!ignoreOwnFields) {
-            objectTypeBuilder.addMethods(objectTypeDefinition.fields().stream().map(objectField -> {
-                TypeName returnType = objectField.valueType().accept(TypeReferenceToTypeNameConverter.INSTANCE);
-                return KeyWordUtils.getKeyWordCompatibleImmutablesPropertyName(objectField.key(), returnType);
-            }).collect(Collectors.toList()));
+            objectTypeBuilder.addMethods(objectTypeDefinition.fields().stream()
+                    .map(objectField -> {
+                        TypeName returnType = objectField.valueType().accept(TypeReferenceToTypeNameConverter.INSTANCE);
+                        return KeyWordUtils.getKeyWordCompatibleImmutablesPropertyName(objectField.key(), returnType);
+                    })
+                    .collect(Collectors.toList()));
         }
         TypeSpec objectType = objectTypeBuilder
                 .addMethod(generateStaticBuilder(superInterfaces, name, objectTypeDefinition))
                 .addAnnotation(Value.Immutable.class)
                 .addAnnotation(StagedBuilderStyle.class)
-                .addAnnotation(AnnotationSpec
-                        .builder(JsonDeserialize.class)
-                        .addMember("as", "$T.class",
-                                ClassNameUtils.getImmutablesClassName(name))
+                .addAnnotation(AnnotationSpec.builder(JsonDeserialize.class)
+                        .addMember("as", "$T.class", ClassNameUtils.getImmutablesClassName(name))
                         .build())
                 .addAnnotation(AnnotationSpec.builder(JsonIgnoreProperties.class)
                         .addMember("value", "{$S}", "type")
                         .build())
                 .build();
-        JavaFile objectFile = JavaFile.builder(generatedClassName.packageName(), objectType)
-                .build();
+        JavaFile objectFile =
+                JavaFile.builder(generatedClassName.packageName(), objectType).build();
         return GeneratedObject.builder()
                 .file(objectFile)
                 .definition(objectTypeDefinition)
@@ -68,7 +70,8 @@ public final class ObjectGenerator {
             List<GeneratedInterface> superInterfaces,
             NamedTypeReference name,
             ObjectTypeDefinition objectTypeDefinition) {
-        Optional<String> firstMandatoryFieldName = getFirstRequiredFieldName(superInterfaces, objectTypeDefinition.fields());
+        Optional<String> firstMandatoryFieldName =
+                getFirstRequiredFieldName(superInterfaces, objectTypeDefinition.fields());
         ClassName immutableClassName = ClassNameUtils.getImmutablesClassName(name);
         ClassName builderClassName = firstMandatoryFieldName.isEmpty()
                 ? immutableClassName.nestedClass("Builder")
@@ -84,7 +87,10 @@ public final class ObjectGenerator {
             List<GeneratedInterface> superInterfaces, List<ObjectField> fields) {
         // Required field from super interfaces take priority
         for (GeneratedInterface superInterface : superInterfaces) {
-            Optional<String> firstMandatoryFieldName = superInterface.definition().shape().getObject()
+            Optional<String> firstMandatoryFieldName = superInterface
+                    .definition()
+                    .shape()
+                    .getObject()
                     .flatMap(objectTypeDefinition -> getFirstRequiredFieldName(objectTypeDefinition.fields()));
             if (firstMandatoryFieldName.isPresent()) {
                 return firstMandatoryFieldName;

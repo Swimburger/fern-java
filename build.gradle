@@ -1,3 +1,14 @@
+buildscript {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.20.0'
+    }
+}
+
 plugins {
     id "com.palantir.consistent-versions" version "2.9.0"
     id "com.palantir.git-version" version "0.14.0"
@@ -23,6 +34,7 @@ allprojects {
     apply plugin: "net.ltgt.errorprone"
     apply plugin: "checkstyle"
     apply plugin: "com.diffplug.spotless"
+    apply plugin: 'com.palantir.java-format'
 
     repositories {
         gradlePluginPortal()

@@ -17,16 +17,23 @@ import java.util.stream.Collectors;
 
 public class InterfaceGenerator {
 
-//    private static final Logger log = LoggerFactory.getLogger(InterfaceGenerator.class);
+    //    private static final Logger log = LoggerFactory.getLogger(InterfaceGenerator.class);
     private static final String INTERFACE_PREFIX = "I";
 
+    private InterfaceGenerator() {}
+
     public static GeneratedInterface generate(TypeDefinition typeDefinition) {
-        TypeSpec generatedInterface = TypeSpec.interfaceBuilder(INTERFACE_PREFIX + typeDefinition.name().name())
-                .addMethods(typeDefinition.shape().accept(new InterfaceMethodGenerator(typeDefinition.name().name())))
+        TypeSpec generatedInterface = TypeSpec.interfaceBuilder(
+                        INTERFACE_PREFIX + typeDefinition.name().name())
+                .addMethods(typeDefinition
+                        .shape()
+                        .accept(new InterfaceMethodGenerator(
+                                typeDefinition.name().name())))
                 .build();
         JavaFile interfaceFile = JavaFile.builder(
-                    FilepathUtils.convertFilepathToPackage(typeDefinition.name().filepath()),
-                    generatedInterface)
+                        FilepathUtils.convertFilepathToPackage(
+                                typeDefinition.name().filepath()),
+                        generatedInterface)
                 .build();
         return GeneratedInterface.builder()
                 .file(interfaceFile)
@@ -68,8 +75,8 @@ public class InterfaceGenerator {
         }
 
         @Override
-        public List<MethodSpec> visitUnknown(String s) {
-            throw new RuntimeException("Received unknown Type while building interface: " + s);
+        public List<MethodSpec> visitUnknown(String unknownType) {
+            throw new RuntimeException("Received unknown Type while building interface: " + unknownType);
         }
     }
 }
