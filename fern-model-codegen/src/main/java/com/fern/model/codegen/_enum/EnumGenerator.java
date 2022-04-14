@@ -15,9 +15,7 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
-import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
-import com.squareup.javapoet.TypeVariableName;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,9 +32,6 @@ public class EnumGenerator {
     private static final String VALUE_FIELD_NAME = "value";
 
     private static final String STRING_FIELD_NAME = "string";
-
-    private static final String VISITOR_TYPE_NAME = "Visitor";
-    private static final String VISITOR_VISIT_UNKNOWN_METHOD_NAME = "visitUnknown";
 
     private static final String UNKNOWN_ENUM_CONSTANT = "UNKNOWN";
 
@@ -109,7 +104,7 @@ public class EnumGenerator {
         privateMembers.add(valueField);
         // Add private String Field
         FieldSpec stringField = FieldSpec.builder(
-                        ClassNameUtils.STRING_TYPE_NAME, STRING_FIELD_NAME, Modifier.PRIVATE, Modifier.FINAL)
+                        ClassNameUtils.STRING_CLASS_NAME, STRING_FIELD_NAME, Modifier.PRIVATE, Modifier.FINAL)
                 .build();
         privateMembers.add(stringField);
         return privateMembers;
@@ -118,7 +113,7 @@ public class EnumGenerator {
     private static MethodSpec getConstructor(ClassName generatedEnumClassName) {
         return MethodSpec.constructorBuilder()
                 .addParameter(getValueClassName(generatedEnumClassName), VALUE_FIELD_NAME)
-                .addParameter(ClassNameUtils.STRING_TYPE_NAME, STRING_FIELD_NAME)
+                .addParameter(ClassNameUtils.STRING_CLASS_NAME, STRING_FIELD_NAME)
                 .addStatement("this.value = value")
                 .addStatement("this.string = string")
                 .build();
@@ -195,12 +190,10 @@ public class EnumGenerator {
                 .unindent()
                 .endControlFlow()
                 .build();
-        ClassName nestedVisitor = generatedEnumClassName.nestedClass(VISITOR_TYPE_NAME);
-        TypeVariableName acceptReturnType = TypeVariableName.get("T");
         return MethodSpec.methodBuilder(ACCEPT_METHOD_NAME)
-                .addParameter(ParameterizedTypeName.get(nestedVisitor, acceptReturnType), "visitor")
+                .addParameter(VisitorUtils.getVisitorTypeName(generatedEnumClassName), "visitor")
                 .addCode(acceptCodeBlock)
-                .returns(acceptReturnType)
+                .returns(VisitorUtils.VISITOR_RETURN_TYPE)
                 .build();
     }
 
