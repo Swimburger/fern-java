@@ -30,8 +30,9 @@ public class InterfaceGeneratorTest {
                         .build())
                 .shape(Type.object(objectTypeDefinition))
                 .build();
-        GeneratedInterface generatedInterface =
-                InterfaceGenerator.INSTANCE.generate(objectTypeDefinition, withDocsTypeDefinition.name());
+        InterfaceGenerator interfaceGenerator =
+                new InterfaceGenerator(objectTypeDefinition, withDocsTypeDefinition.name());
+        GeneratedInterface generatedInterface = interfaceGenerator.generate();
         System.out.println(generatedInterface.file().toString());
     }
 }

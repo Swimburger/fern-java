@@ -27,7 +27,7 @@ public class ObjectGeneratorTest {
                                 ContainerType.optional(TypeReference.primitive(PrimitiveType.STRING))))
                         .build())
                 .build();
-        GeneratedObject generatedObject = ObjectGenerator.INSTANCE.generate(
+        ObjectGenerator objectGenerator = new ObjectGenerator(
                 NamedTypeReference.builder()
                         .filepath("com/fern")
                         .name("WithDocs")
@@ -35,6 +35,7 @@ public class ObjectGeneratorTest {
                 objectTypeDefinition,
                 Collections.emptyList(),
                 Optional.empty());
+        GeneratedObject generatedObject = objectGenerator.generate();
         System.out.println(generatedObject.file().toString());
     }
 
@@ -54,13 +55,15 @@ public class ObjectGeneratorTest {
                         .build())
                 .shape(Type.object(withDocsObjectTypeDefinition))
                 .build();
-        GeneratedInterface withDocsInterface =
-                InterfaceGenerator.INSTANCE.generate(withDocsObjectTypeDefinition, withDocsTypeDefinition.name());
-        GeneratedObject withDocsObject = ObjectGenerator.INSTANCE.generate(
+        InterfaceGenerator interfaceGenerator =
+                new InterfaceGenerator(withDocsObjectTypeDefinition, withDocsTypeDefinition.name());
+        GeneratedInterface withDocsInterface = interfaceGenerator.generate();
+        ObjectGenerator objectGenerator = new ObjectGenerator(
                 withDocsTypeDefinition.name(),
                 withDocsObjectTypeDefinition,
                 Collections.emptyList(),
                 Optional.of(withDocsInterface));
+        GeneratedObject withDocsObject = objectGenerator.generate();
         System.out.println(withDocsObject.file().toString());
     }
 }

@@ -11,15 +11,18 @@ import com.squareup.javapoet.TypeSpec;
 
 public class InterfaceGenerator {
 
-    public static final InterfaceGenerator INSTANCE = new InterfaceGenerator();
-
     private static final String INTERFACE_PREFIX = "I";
 
-    private InterfaceGenerator() {}
+    private final ObjectTypeDefinition objectTypeDefinition;
+    private final NamedTypeReference namedTypeReference;
 
-    public GeneratedInterface generate(
-            ObjectTypeDefinition objectTypeDefinition, NamedTypeReference namedTypeReference) {
-        ClassName generatedInterfaceClassName = getInterfaceClassName(namedTypeReference);
+    public InterfaceGenerator(ObjectTypeDefinition objectTypeDefinition, NamedTypeReference namedTypeReference) {
+        this.objectTypeDefinition = objectTypeDefinition;
+        this.namedTypeReference = namedTypeReference;
+    }
+
+    public GeneratedInterface generate() {
+        ClassName generatedInterfaceClassName = getInterfaceClassName();
         TypeSpec interfaceTypeSpec = TypeSpec.interfaceBuilder(INTERFACE_PREFIX + namedTypeReference.name())
                 .addMethods(ImmutablesUtils.getImmutablesPropertyMethods(objectTypeDefinition))
                 .build();
@@ -33,7 +36,7 @@ public class InterfaceGenerator {
                 .build();
     }
 
-    private static ClassName getInterfaceClassName(NamedTypeReference namedTypeReference) {
+    private ClassName getInterfaceClassName() {
         NamedTypeReference interfaceNamedTypeReference = NamedTypeReference.builder()
                 .filepath(namedTypeReference.filepath())
                 .name(INTERFACE_PREFIX + namedTypeReference.name())

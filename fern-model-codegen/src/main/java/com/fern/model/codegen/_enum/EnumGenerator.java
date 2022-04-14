@@ -26,8 +26,6 @@ import javax.lang.model.element.Modifier;
 
 public class EnumGenerator {
 
-    public static final EnumGenerator INSTANCE = new EnumGenerator();
-
     private static final String VALUE_TYPE_NAME = "Value";
     private static final String VALUE_FIELD_NAME = "value";
 
@@ -42,24 +40,33 @@ public class EnumGenerator {
     private static final String ACCEPT_METHOD_NAME = "accept";
     private static final String VALUE_OF_METHOD_NAME = "valueOf";
 
-    private EnumGenerator() {}
+    private final NamedTypeReference namedTypeReference;
+    private final EnumTypeDefinition enumTypeDefinition;
+    private final ClassName generatedEnumClassName;
+    private final ClassName valueFieldClassName;
 
-    public GeneratedEnum generate(NamedTypeReference namedTypeReference, EnumTypeDefinition enumTypeDefinition) {
-        ClassName generatedEnumClassName = ClassNameUtils.getClassName(namedTypeReference);
-        Map<EnumValue, FieldSpec> enumConstants = getConstants(enumTypeDefinition, generatedEnumClassName);
-        VisitorUtils.GeneratedVisitor generatedVisitor = getVisitor(enumTypeDefinition);
+    public EnumGenerator(NamedTypeReference namedTypeReference, EnumTypeDefinition enumTypeDefinition) {
+        this.namedTypeReference = namedTypeReference;
+        this.enumTypeDefinition = enumTypeDefinition;
+        this.generatedEnumClassName = ClassNameUtils.getClassName(namedTypeReference);
+        this.valueFieldClassName = generatedEnumClassName.nestedClass(VALUE_TYPE_NAME);
+    }
+
+    public GeneratedEnum generate() {
+        Map<EnumValue, FieldSpec> enumConstants = getConstants();
+        VisitorUtils.GeneratedVisitor generatedVisitor = getVisitor();
         TypeSpec enumTypeSpec = TypeSpec.classBuilder(namedTypeReference.name())
                 .addModifiers(getClassModifiers())
                 .addFields(enumConstants.values())
-                .addFields(getPrivateMembers(generatedEnumClassName))
-                .addMethod(getConstructor(generatedEnumClassName))
-                .addMethod(getEnumValueMethod(generatedEnumClassName))
+                .addFields(getPrivateMembers())
+                .addMethod(getConstructor())
+                .addMethod(getEnumValueMethod())
                 .addMethod(getToStringMethod())
-                .addMethod(getEqualsMethod(generatedEnumClassName))
+                .addMethod(getEqualsMethod())
                 .addMethod(getHashCodeMethod())
-                .addMethod(getAcceptMethod(generatedEnumClassName, generatedVisitor))
-                .addMethod(getValueOfMethod(generatedEnumClassName, enumConstants))
-                .addType(getNestedValueEnum(enumTypeDefinition))
+                .addMethod(getAcceptMethod(generatedVisitor))
+                .addMethod(getValueOfMethod(enumConstants))
+                .addType(getNestedValueEnum())
                 .addType(generatedVisitor.typeSpec())
                 .build();
         JavaFile enumFile = JavaFile.builder(generatedEnumClassName.packageName(), enumTypeSpec)
@@ -71,12 +78,11 @@ public class EnumGenerator {
                 .build();
     }
 
-    private static Modifier[] getClassModifiers() {
+    private Modifier[] getClassModifiers() {
         return new Modifier[] {Modifier.PUBLIC, Modifier.FINAL};
     }
 
-    private static Map<EnumValue, FieldSpec> getConstants(
-            EnumTypeDefinition enumTypeDefinition, ClassName generatedEnumClassName) {
+    private Map<EnumValue, FieldSpec> getConstants() {
         // Generate public static final constant for each enum value
         return enumTypeDefinition.values().stream()
                 .collect(Collectors.toMap(Function.identity(), enumValue -> FieldSpec.builder(
@@ -88,16 +94,15 @@ public class EnumGenerator {
                         .initializer(
                                 "new $T($T.$L, $S)",
                                 generatedEnumClassName,
-                                getValueClassName(generatedEnumClassName),
+                                valueFieldClassName,
                                 enumValue.value(),
                                 enumValue.value())
                         .build()));
     }
 
-    private static List<FieldSpec> getPrivateMembers(ClassName generatedEnumClassName) {
+    private List<FieldSpec> getPrivateMembers() {
         List<FieldSpec> privateMembers = new ArrayList<>();
         // Add private Value Field
-        ClassName valueFieldClassName = getValueClassName(generatedEnumClassName);
         FieldSpec valueField = FieldSpec.builder(
                         valueFieldClassName, VALUE_FIELD_NAME, Modifier.PRIVATE, Modifier.FINAL)
                 .build();
@@ -110,23 +115,23 @@ public class EnumGenerator {
         return privateMembers;
     }
 
-    private static MethodSpec getConstructor(ClassName generatedEnumClassName) {
+    private MethodSpec getConstructor() {
         return MethodSpec.constructorBuilder()
-                .addParameter(getValueClassName(generatedEnumClassName), VALUE_FIELD_NAME)
+                .addParameter(valueFieldClassName, VALUE_FIELD_NAME)
                 .addParameter(ClassNameUtils.STRING_CLASS_NAME, STRING_FIELD_NAME)
                 .addStatement("this.value = value")
                 .addStatement("this.string = string")
                 .build();
     }
 
-    private static MethodSpec getEnumValueMethod(ClassName generatedEnumClassName) {
+    private MethodSpec getEnumValueMethod() {
         return MethodSpec.methodBuilder(GET_ENUM_VALUE_METHOD_NAME)
                 .addCode("return value;")
-                .returns(getValueClassName(generatedEnumClassName))
+                .returns(valueFieldClassName)
                 .build();
     }
 
-    private static MethodSpec getToStringMethod() {
+    private MethodSpec getToStringMethod() {
         return MethodSpec.methodBuilder(TO_STRING_METHOD_NAME)
                 .addAnnotation(Override.class)
                 .addAnnotation(JsonValue.class)
@@ -135,7 +140,7 @@ public class EnumGenerator {
                 .build();
     }
 
-    private static MethodSpec getEqualsMethod(ClassName generatedEnumClassName) {
+    private MethodSpec getEqualsMethod() {
         return MethodSpec.methodBuilder(EQUALS_METHOD_NAME)
                 .addAnnotation(Override.class)
                 .addParameter(ClassName.get(Object.class), "other")
@@ -150,7 +155,7 @@ public class EnumGenerator {
                 .build();
     }
 
-    private static MethodSpec getHashCodeMethod() {
+    private MethodSpec getHashCodeMethod() {
         return MethodSpec.methodBuilder(HASHCODE_METHOD_NAME)
                 .addAnnotation(Override.class)
                 .addCode("return this.string.hashCode();")
@@ -173,7 +178,7 @@ public class EnumGenerator {
      *     }
      * }
      */
-    private static MethodSpec getAcceptMethod(ClassName generatedEnumClassName, GeneratedVisitor generatedVisitor) {
+    private MethodSpec getAcceptMethod(GeneratedVisitor generatedVisitor) {
         CodeBlock.Builder acceptMethodImplementation = CodeBlock.builder().beginControlFlow("switch (value)");
         generatedVisitor.visitMethodsByKeyName().forEach((keyName, visitMethod) -> {
             acceptMethodImplementation
@@ -214,7 +219,7 @@ public class EnumGenerator {
      *     }
      * }
      */
-    private static MethodSpec getValueOfMethod(ClassName generatedEnumClassName, Map<EnumValue, FieldSpec> constants) {
+    private MethodSpec getValueOfMethod(Map<EnumValue, FieldSpec> constants) {
         CodeBlock.Builder valueOfCodeBlockBuilder = CodeBlock.builder()
                 .addStatement("String upperCasedValue = value.toUpperCase(Locale.ROOT)")
                 .beginControlFlow("switch (upperCasedValue)");
@@ -259,7 +264,7 @@ public class EnumGenerator {
      *     UNKNOWN
      * }
      */
-    private static TypeSpec getNestedValueEnum(EnumTypeDefinition enumTypeDefinition) {
+    private TypeSpec getNestedValueEnum() {
         TypeSpec.Builder nestedValueEnumBuilder =
                 TypeSpec.enumBuilder(VALUE_TYPE_NAME).addModifiers(Modifier.PUBLIC);
         enumTypeDefinition.values().forEach(enumValue -> nestedValueEnumBuilder.addEnumConstant(enumValue.value()));
@@ -276,7 +281,7 @@ public class EnumGenerator {
      *     T visitUnknownType(String unknownType);
      * }
      */
-    private static GeneratedVisitor getVisitor(EnumTypeDefinition enumTypeDefinition) {
+    private GeneratedVisitor getVisitor() {
         List<VisitorUtils.VisitMethodArgs> visitMethodArgs = enumTypeDefinition.values().stream()
                 .map(enumValue -> VisitorUtils.VisitMethodArgs.builder()
                         // TODO: Should we handle underscores in enum values by removing them and camelCasing?
@@ -284,9 +289,5 @@ public class EnumGenerator {
                         .build())
                 .collect(Collectors.toList());
         return VisitorUtils.buildVisitorInterface(visitMethodArgs);
-    }
-
-    private static ClassName getValueClassName(ClassName generatedEnumClassName) {
-        return generatedEnumClassName.nestedClass(VALUE_TYPE_NAME);
     }
 }

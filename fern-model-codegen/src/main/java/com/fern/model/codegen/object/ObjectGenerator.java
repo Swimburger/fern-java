@@ -8,6 +8,7 @@ import com.fern.ObjectTypeDefinition;
 import com.fern.immutables.StagedBuilderStyle;
 import com.fern.model.codegen.GeneratedFile;
 import com.fern.model.codegen._interface.GeneratedInterface;
+import com.fern.model.codegen.union.UnionGenerator;
 import com.fern.model.codegen.utils.ClassNameUtils;
 import com.fern.model.codegen.utils.ImmutablesUtils;
 import com.squareup.javapoet.AnnotationSpec;
@@ -26,25 +27,32 @@ import org.immutables.value.Value;
 
 public final class ObjectGenerator {
 
-    public static final ObjectGenerator INSTANCE = new ObjectGenerator();
-
     private static final String STATIC_BUILDER_METHOD_NAME = "builder";
     private static final String BUILD_STAGE_SUFFIX = "BuildStage";
-    private static final String JSON_IGNORABLE_TYPE_PROPERTY = "type";
 
-    private ObjectGenerator() {}
+    private final NamedTypeReference namedTypeReference;
+    private final ObjectTypeDefinition objectTypeDefinition;
+    private final List<GeneratedInterface> extendedInterfaces;
+    private final Optional<GeneratedInterface> selfInterface;
 
-    public GeneratedObject generate(
+    public ObjectGenerator(
             NamedTypeReference namedTypeReference,
             ObjectTypeDefinition objectTypeDefinition,
             List<GeneratedInterface> extendedInterfaces,
             Optional<GeneratedInterface> selfInterface) {
+        this.namedTypeReference = namedTypeReference;
+        this.objectTypeDefinition = objectTypeDefinition;
+        this.extendedInterfaces = extendedInterfaces;
+        this.selfInterface = selfInterface;
+    }
+
+    public GeneratedObject generate() {
         ClassName generatedObjectClassName = ClassNameUtils.getClassName(namedTypeReference);
         TypeSpec objectTypeSpec = TypeSpec.interfaceBuilder(namedTypeReference.name())
                 .addModifiers(getClassModifiers())
-                .addAnnotations(getAnnotations(namedTypeReference))
-                .addSuperinterfaces(getSuperInterfaces(extendedInterfaces, selfInterface))
-                .addMethods(getMethods(extendedInterfaces, namedTypeReference, objectTypeDefinition, selfInterface))
+                .addAnnotations(getAnnotations())
+                .addSuperinterfaces(getSuperInterfaces())
+                .addMethods(getMethods())
                 .build();
         JavaFile objectFile = JavaFile.builder(generatedObjectClassName.packageName(), objectTypeSpec)
                 .build();
@@ -55,11 +63,11 @@ public final class ObjectGenerator {
                 .build();
     }
 
-    private static Modifier[] getClassModifiers() {
+    private Modifier[] getClassModifiers() {
         return Collections.singletonList(Modifier.PUBLIC).toArray(new Modifier[0]);
     }
 
-    private static List<AnnotationSpec> getAnnotations(NamedTypeReference namedTypeReference) {
+    private List<AnnotationSpec> getAnnotations() {
         List<AnnotationSpec> annotationSpecs = new ArrayList<>();
         annotationSpecs.add(AnnotationSpec.builder(Value.Immutable.class).build());
         annotationSpecs.add(AnnotationSpec.builder(StagedBuilderStyle.class).build());
@@ -67,13 +75,12 @@ public final class ObjectGenerator {
                 .addMember("as", "$T.class", ImmutablesUtils.getImmutablesClassName(namedTypeReference))
                 .build());
         annotationSpecs.add(AnnotationSpec.builder(JsonIgnoreProperties.class)
-                .addMember("value", "{$S}", JSON_IGNORABLE_TYPE_PROPERTY)
+                .addMember("value", "{$S}", UnionGenerator.UNION_DISCRIMINATOR_PROPERTY_NAME)
                 .build());
         return annotationSpecs;
     }
 
-    private static List<TypeName> getSuperInterfaces(
-            List<GeneratedInterface> extendedInterfaces, Optional<GeneratedInterface> selfInterface) {
+    private List<TypeName> getSuperInterfaces() {
         List<TypeName> superInterfaces = new ArrayList<>();
         superInterfaces.addAll(
                 extendedInterfaces.stream().map(GeneratedFile::className).collect(Collectors.toList()));
@@ -81,24 +88,17 @@ public final class ObjectGenerator {
         return superInterfaces;
     }
 
-    private static List<MethodSpec> getMethods(
-            List<GeneratedInterface> extendedInterfaces,
-            NamedTypeReference namedTypeReference,
-            ObjectTypeDefinition objectTypeDefinition,
-            Optional<GeneratedInterface> selfInterface) {
+    private List<MethodSpec> getMethods() {
         List<MethodSpec> methods = new ArrayList<>();
         // if no self interface, we want to add all fields as immutables attributes
         if (selfInterface.isEmpty()) {
             methods.addAll(ImmutablesUtils.getImmutablesPropertyMethods(objectTypeDefinition));
         }
-        methods.add(generateStaticBuilder(extendedInterfaces, namedTypeReference, objectTypeDefinition));
+        methods.add(generateStaticBuilder());
         return methods;
     }
 
-    private static MethodSpec generateStaticBuilder(
-            List<GeneratedInterface> extendedInterfaces,
-            NamedTypeReference namedTypeReference,
-            ObjectTypeDefinition objectTypeDefinition) {
+    private MethodSpec generateStaticBuilder() {
         Optional<String> firstMandatoryFieldName =
                 getFirstRequiredFieldName(extendedInterfaces, objectTypeDefinition.fields());
         ClassName immutableClassName = ImmutablesUtils.getImmutablesClassName(namedTypeReference);

@@ -41,6 +41,8 @@ import org.immutables.value.Value;
 
 public final class UnionGenerator {
 
+    public static final String UNION_DISCRIMINATOR_PROPERTY_NAME = "_type";
+
     private static final String INTERNAL_VALUE_INTERFACE_NAME = "InternalValue";
     private static final String UNKNOWN_INTERNAL_VALUE_INTERFACE_NAME = "Unknown";
 
@@ -214,7 +216,7 @@ public final class UnionGenerator {
      * @JsonTypeInfo(
      *         use = JsonTypeInfo.Id.NAME,
      *         include = JsonTypeInfo.As.PROPERTY,
-     *         property = "type",
+     *         property = "_type",
      *         visible = true,
      *         defaultImpl = Unknown.class)
      * @JsonSubTypes({
@@ -244,7 +246,7 @@ public final class UnionGenerator {
                                 "$T.$L",
                                 ClassName.get(JsonTypeInfo.As.class),
                                 JsonTypeInfo.As.EXISTING_PROPERTY.name())
-                        .addMember("property", "type")
+                        .addMember("property", UNION_DISCRIMINATOR_PROPERTY_NAME)
                         .addMember("visible", "true")
                         .addMember("defaultImpl", "$T.class", unknownInternalValueClassName)
                         .build());
