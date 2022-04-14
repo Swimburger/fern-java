@@ -7,7 +7,7 @@ import com.fern.ObjectField;
 import com.fern.ObjectTypeDefinition;
 import com.fern.immutables.StagedBuilderStyle;
 import com.fern.model.codegen.GeneratedFile;
-import com.fern.model.codegen._interface.GeneratedInterface;
+import com.fern.model.codegen.interfaces.GeneratedInterface;
 import com.fern.model.codegen.union.UnionGenerator;
 import com.fern.model.codegen.utils.ClassNameUtils;
 import com.fern.model.codegen.utils.ImmutablesUtils;

@@ -1,4 +1,4 @@
-package com.fern.model.codegen._enum;
+package com.fern.model.codegen.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.lang.model.element.Modifier;
 
-public class EnumGenerator {
+public final class EnumGenerator {
 
     private static final Modifier[] ENUM_CLASS_MODIFIERS = new Modifier[] {Modifier.PUBLIC, Modifier.FINAL};
 
@@ -161,9 +161,8 @@ public class EnumGenerator {
                 .build();
     }
 
-    /**
-     * Generates an accept method that visits the enum.
-     * Example:
+    /*
+     * Generates an accept method that visits the enum as shown below.
      * public <T> T accept(Visitor<T> visitor) {
      *     switch (value) {
      *         case ON:
@@ -201,9 +200,7 @@ public class EnumGenerator {
     }
 
     /**
-     * Generates an accept method that visits the enum.
-     * Example:
-     * @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+     * Generates an accept method that visits the enum as shown below.
      * public static Status valueOf(@Nonnull value) {
      *     String upperCasedValue = value.toUpperCase(Locale.ROOT);
      *     switch (upperCasedValue) {
@@ -270,9 +267,8 @@ public class EnumGenerator {
         return nestedValueEnumBuilder.build();
     }
 
-    /**
-     * Generates a nested interface to visit all types of the enum.
-     * Example:
+    /*
+     * Generates a nested interface to visit all types of the enum as shown below.
      * interface Visitor<T> {
      *     T visitOn();
      *     T visitOff();
@@ -282,7 +278,7 @@ public class EnumGenerator {
     private GeneratedVisitor getVisitor() {
         List<VisitorUtils.VisitMethodArgs> visitMethodArgs = enumTypeDefinition.values().stream()
                 .map(enumValue -> VisitorUtils.VisitMethodArgs.builder()
-                        // TODO: Should we handle underscores in enum values by removing them and camelCasing?
+                        // TODO(dsinghvi): Should we handle underscores in enum values by removing them and camelCasing?
                         .keyName(enumValue.value())
                         .build())
                 .collect(Collectors.toList());

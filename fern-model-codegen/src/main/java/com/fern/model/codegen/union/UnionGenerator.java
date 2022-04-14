@@ -182,7 +182,8 @@ public final class UnionGenerator {
                                     "return $T.of((($T) value).$L())",
                                     ClassNameUtils.OPTIONAL_CLASS_NAME,
                                     internalValueClassNames.get(singleUnionType),
-                                    singleUnionType.discriminantValue()) // TODO: want to get direct methodspec and name
+                                    singleUnionType.discriminantValue())
+                            // TODO(dsinghvi): want to get direct methodspec and name
                             .endControlFlow()
                             .addStatement("return $T.empty()", ClassNameUtils.OPTIONAL_CLASS_NAME)
                             .build();
@@ -209,8 +210,8 @@ public final class UnionGenerator {
         return VisitorUtils.buildVisitorInterface(visitMethodArgs);
     }
 
-    /**
-     * Example of an InternalValue code generation:
+    /*
+     * Example of an InternalValue code generation below.
      * @JsonTypeInfo(
      *         use = JsonTypeInfo.Id.NAME,
      *         include = JsonTypeInfo.As.PROPERTY,
