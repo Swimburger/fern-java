@@ -11,8 +11,6 @@ import com.fern.TypeReference;
 import com.fern.model.codegen.TestConstants;
 import com.fern.model.codegen.interfaces.GeneratedInterface;
 import com.fern.model.codegen.interfaces.InterfaceGenerator;
-import com.fern.model.codegen.object.GeneratedObject;
-import com.fern.model.codegen.object.ObjectGenerator;
 import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -57,8 +55,8 @@ public class ObjectGeneratorTest {
                         .build())
                 .shape(Type.object(withDocsObjectTypeDefinition))
                 .build();
-        InterfaceGenerator interfaceGenerator =
-                new InterfaceGenerator(withDocsObjectTypeDefinition, withDocsTypeDefinition.name(), TestConstants.GENERATOR_CONTEXT);
+        InterfaceGenerator interfaceGenerator = new InterfaceGenerator(
+                withDocsObjectTypeDefinition, withDocsTypeDefinition.name(), TestConstants.GENERATOR_CONTEXT);
         GeneratedInterface withDocsInterface = interfaceGenerator.generate();
         ObjectGenerator objectGenerator = new ObjectGenerator(
                 withDocsTypeDefinition.name(),

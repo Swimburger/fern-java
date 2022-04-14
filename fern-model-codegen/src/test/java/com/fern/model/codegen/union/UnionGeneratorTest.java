@@ -10,8 +10,6 @@ import com.fern.TypeReference;
 import com.fern.UnionTypeDefinition;
 import com.fern.model.codegen.GeneratorContext;
 import com.fern.model.codegen.TestConstants;
-import com.fern.model.codegen.union.GeneratedUnion;
-import com.fern.model.codegen.union.UnionGenerator;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 

@@ -10,7 +10,8 @@ public final class TestConstants {
             .packagePrefix("com")
             .build();
 
-    public static final GeneratorContext GENERATOR_CONTEXT = new GeneratorContext(PLUGIN_CONFIG, Collections.emptyMap());
+    public static final GeneratorContext GENERATOR_CONTEXT =
+            new GeneratorContext(PLUGIN_CONFIG, Collections.emptyMap());
 
     private TestConstants() {
     }

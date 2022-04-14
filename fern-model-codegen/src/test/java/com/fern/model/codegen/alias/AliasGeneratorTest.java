@@ -7,8 +7,6 @@ import com.fern.Type;
 import com.fern.TypeDefinition;
 import com.fern.TypeReference;
 import com.fern.model.codegen.TestConstants;
-import com.fern.model.codegen.alias.AliasGenerator;
-import com.fern.model.codegen.alias.GeneratedAlias;
 import org.junit.jupiter.api.Test;
 
 public final class AliasGeneratorTest {
@@ -26,7 +24,8 @@ public final class AliasGeneratorTest {
                         .build())
                 .shape(Type.alias(aliasTypeDefinition))
                 .build();
-        AliasGenerator aliasGenerator = new AliasGenerator(aliasTypeDefinition, problemIdTypeDefinition.name(), TestConstants.GENERATOR_CONTEXT);
+        AliasGenerator aliasGenerator = new AliasGenerator(
+                aliasTypeDefinition, problemIdTypeDefinition.name(), TestConstants.GENERATOR_CONTEXT);
         GeneratedAlias generatedAlias = aliasGenerator.generate();
         System.out.println(generatedAlias.file().toString());
     }
