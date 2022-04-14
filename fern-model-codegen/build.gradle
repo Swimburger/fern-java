@@ -13,6 +13,9 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3'
     implementation 'com.google.code.findbugs:annotations'
     implementation 'com.palantir.common:streams'
+    implementation 'net.sourceforge.argparse4j:argparse4j'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-guava'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
 
     annotationProcessor 'org.immutables:value'
     compileOnly 'org.immutables:value::annotations'

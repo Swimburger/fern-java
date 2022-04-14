@@ -28,3 +28,4 @@ com.google.errorprone:error_prone_* = 2.12.1
 # misc
 com.google.code.findbugs:annotations = 3.0.1
 com.palantir.common:streams = 2.0.0
+net.sourceforge.argparse4j:argparse4j = 0.9.0

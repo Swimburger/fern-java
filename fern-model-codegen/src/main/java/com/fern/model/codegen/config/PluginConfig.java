@@ -14,4 +14,8 @@ public interface PluginConfig {
     default String outputDirectoryName() {
         return "model";
     }
+
+    static ImmutablePluginConfig.Builder builder() {
+        return ImmutablePluginConfig.builder();
+    }
 }
