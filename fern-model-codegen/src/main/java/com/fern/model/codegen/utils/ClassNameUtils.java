@@ -9,10 +9,14 @@ public class ClassNameUtils {
     public static final ClassName STRING_CLASS_NAME = ClassName.get(String.class);
     public static final ClassName OPTIONAL_CLASS_NAME = ClassName.get(Optional.class);
 
-    private ClassNameUtils() {}
+    private final FilepathUtils filepathUtils;
 
-    public static ClassName getClassName(NamedTypeReference namedTypeReference) {
+    public ClassNameUtils(FilepathUtils filepathUtils) {
+        this.filepathUtils = filepathUtils;
+    }
+
+    public ClassName getClassName(NamedTypeReference namedTypeReference) {
         return ClassName.get(
-                FilepathUtils.convertFilepathToPackage(namedTypeReference.filepath()), namedTypeReference.name());
+                filepathUtils.convertFilepathToPackage(namedTypeReference.filepath()), namedTypeReference.name());
     }
 }

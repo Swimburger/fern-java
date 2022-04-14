@@ -1,10 +1,11 @@
-package com.fern.model.codegen;
+package com.fern.model.codegen.enums;
 
 import com.fern.EnumTypeDefinition;
 import com.fern.EnumValue;
 import com.fern.NamedTypeReference;
 import com.fern.Type;
 import com.fern.TypeDefinition;
+import com.fern.model.codegen.TestConstants;
 import com.fern.model.codegen.enums.EnumGenerator;
 import com.fern.model.codegen.enums.GeneratedEnum;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ public class EnumGeneratorTest {
                         .build())
                 .shape(Type._enum(migrationStatusEnumDef))
                 .build();
-        EnumGenerator enumGenerator = new EnumGenerator(migrationStatusTypeDef.name(), migrationStatusEnumDef);
+        EnumGenerator enumGenerator = new EnumGenerator(migrationStatusTypeDef.name(), migrationStatusEnumDef, TestConstants.GENERATOR_CONTEXT);
         GeneratedEnum generatedEnum = enumGenerator.generate();
         System.out.println(generatedEnum.file().toString());
     }

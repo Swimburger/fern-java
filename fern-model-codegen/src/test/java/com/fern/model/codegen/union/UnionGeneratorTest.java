@@ -1,4 +1,4 @@
-package com.fern.model.codegen;
+package com.fern.model.codegen.union;
 
 import com.fern.ContainerType;
 import com.fern.NamedTypeReference;
@@ -8,6 +8,8 @@ import com.fern.Type;
 import com.fern.TypeDefinition;
 import com.fern.TypeReference;
 import com.fern.UnionTypeDefinition;
+import com.fern.model.codegen.GeneratorContext;
+import com.fern.model.codegen.TestConstants;
 import com.fern.model.codegen.union.GeneratedUnion;
 import com.fern.model.codegen.union.UnionGenerator;
 import java.util.Collections;
@@ -54,10 +56,12 @@ public class UnionGeneratorTest {
                         .build())
                 .shape(Type.union(unionTypeDefinition))
                 .build();
+        GeneratorContext generatorContext = new GeneratorContext(TestConstants.PLUGIN_CONFIG,
+                Collections.singletonMap(variableValueTypeDefinition.name(), variableValueTypeDefinition));
         UnionGenerator unionGenerator = new UnionGenerator(
                 variableValueTypeDefinition.name(),
                 unionTypeDefinition,
-                Collections.singletonMap(variableValueTypeDefinition.name(), variableValueTypeDefinition));
+                generatorContext);
         GeneratedUnion generatedUnion = unionGenerator.generate();
         System.out.println(generatedUnion.file().toString());
     }

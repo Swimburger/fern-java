@@ -7,6 +7,8 @@ import com.fern.IntermediateRepresentation;
 import com.fern.model.codegen.config.PluginConfig;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.List;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
@@ -22,7 +24,7 @@ public final class ModelGeneratorCli {
             .registerModule(new Jdk8Module().configureAbsentsAsNulls(true));
 
     private static final PluginConfig HARDCODED_PLUGIN_CONFIG = PluginConfig.builder()
-            .outputDirectoryName("model")
+            .modelSubprojectDirectoryName("build/fern/model")
             .packagePrefix("com")
             .build();
 
@@ -33,12 +35,13 @@ public final class ModelGeneratorCli {
                 .build()
                 .defaultHelp(true)
                 .description("Generates Java objects based on types in your Fern API spec.");
-        parser.addArgument(IR_ARG_NAME).nargs("1").help("Filepath to Fern IR JSON (intermediate json).");
+        parser.addArgument(IR_ARG_NAME).nargs(1).help("Filepath to Fern IR JSON (intermediate json).");
         try {
             Namespace namespace = parser.parseArgs(args);
-            String irLocation = namespace.getString(IR_ARG_NAME);
+            String irLocation = ((List<String>) namespace.get(IR_ARG_NAME)).get(0);
+            String irJson = Files.readString(new File(irLocation).toPath());
             IntermediateRepresentation intermediateRepresentation =
-                    OBJECT_MAPPER.readValue(new File(irLocation), IntermediateRepresentation.class);
+                    OBJECT_MAPPER.readValue(irJson, IntermediateRepresentation.class);
             ModelGenerator modelGenerator =
                     new ModelGenerator(intermediateRepresentation.types(), HARDCODED_PLUGIN_CONFIG);
             modelGenerator.buildModelSubproject();

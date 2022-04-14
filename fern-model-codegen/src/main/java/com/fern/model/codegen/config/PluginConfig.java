@@ -11,7 +11,7 @@ public interface PluginConfig {
     Optional<String> packagePrefix();
 
     @Value.Default
-    default String outputDirectoryName() {
+    default String modelSubprojectDirectoryName() {
         return "model";
     }
 

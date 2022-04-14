@@ -1,4 +1,4 @@
-package com.fern.model.codegen;
+package com.fern.model.codegen.object;
 
 import com.fern.ContainerType;
 import com.fern.NamedTypeReference;
@@ -8,6 +8,7 @@ import com.fern.PrimitiveType;
 import com.fern.Type;
 import com.fern.TypeDefinition;
 import com.fern.TypeReference;
+import com.fern.model.codegen.TestConstants;
 import com.fern.model.codegen.interfaces.GeneratedInterface;
 import com.fern.model.codegen.interfaces.InterfaceGenerator;
 import com.fern.model.codegen.object.GeneratedObject;
@@ -34,7 +35,8 @@ public class ObjectGeneratorTest {
                         .build(),
                 objectTypeDefinition,
                 Collections.emptyList(),
-                Optional.empty());
+                Optional.empty(),
+                TestConstants.GENERATOR_CONTEXT);
         GeneratedObject generatedObject = objectGenerator.generate();
         System.out.println(generatedObject.file().toString());
     }
@@ -56,13 +58,14 @@ public class ObjectGeneratorTest {
                 .shape(Type.object(withDocsObjectTypeDefinition))
                 .build();
         InterfaceGenerator interfaceGenerator =
-                new InterfaceGenerator(withDocsObjectTypeDefinition, withDocsTypeDefinition.name());
+                new InterfaceGenerator(withDocsObjectTypeDefinition, withDocsTypeDefinition.name(), TestConstants.GENERATOR_CONTEXT);
         GeneratedInterface withDocsInterface = interfaceGenerator.generate();
         ObjectGenerator objectGenerator = new ObjectGenerator(
                 withDocsTypeDefinition.name(),
                 withDocsObjectTypeDefinition,
                 Collections.emptyList(),
-                Optional.of(withDocsInterface));
+                Optional.of(withDocsInterface),
+                TestConstants.GENERATOR_CONTEXT);
         GeneratedObject withDocsObject = objectGenerator.generate();
         System.out.println(withDocsObject.file().toString());
     }
