@@ -26,6 +26,8 @@ import javax.lang.model.element.Modifier;
 
 public class EnumGenerator {
 
+    private static final Modifier[] ENUM_CLASS_MODIFIERS = new Modifier[] {Modifier.PUBLIC, Modifier.FINAL};
+
     private static final String VALUE_TYPE_NAME = "Value";
     private static final String VALUE_FIELD_NAME = "value";
 
@@ -56,7 +58,7 @@ public class EnumGenerator {
         Map<EnumValue, FieldSpec> enumConstants = getConstants();
         VisitorUtils.GeneratedVisitor generatedVisitor = getVisitor();
         TypeSpec enumTypeSpec = TypeSpec.classBuilder(namedTypeReference.name())
-                .addModifiers(getClassModifiers())
+                .addModifiers(ENUM_CLASS_MODIFIERS)
                 .addFields(enumConstants.values())
                 .addFields(getPrivateMembers())
                 .addMethod(getConstructor())
@@ -76,10 +78,6 @@ public class EnumGenerator {
                 .definition(enumTypeDefinition)
                 .className(generatedEnumClassName)
                 .build();
-    }
-
-    private Modifier[] getClassModifiers() {
-        return new Modifier[] {Modifier.PUBLIC, Modifier.FINAL};
     }
 
     private Map<EnumValue, FieldSpec> getConstants() {
