@@ -422,8 +422,8 @@ public final class UnionGenerator extends Generator<UnionTypeDefinition> {
         }
 
         @Override
-        public Boolean visitUnknown(String s) {
-            throw new RuntimeException("Encountere unknown type reference: " + s);
+        public Boolean visitUnknown(String unknownTyp) {
+            throw new RuntimeException("Encountered unknown type reference: " + unknownTyp);
         }
     }
 }
