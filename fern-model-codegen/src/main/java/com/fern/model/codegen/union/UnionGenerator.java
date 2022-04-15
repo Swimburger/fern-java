@@ -62,9 +62,7 @@ public final class UnionGenerator extends Generator<UnionTypeDefinition> {
     private final ClassName internalValueInterfaceClassName;
 
     public UnionGenerator(
-            NamedType namedType,
-            UnionTypeDefinition unionTypeDefinition,
-            GeneratorContext generatorContext) {
+            NamedType namedType, UnionTypeDefinition unionTypeDefinition, GeneratorContext generatorContext) {
         super(generatorContext);
         this.namedType = namedType;
         this.unionTypeDefinition = unionTypeDefinition;

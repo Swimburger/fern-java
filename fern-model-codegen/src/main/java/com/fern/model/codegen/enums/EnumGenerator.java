@@ -50,9 +50,7 @@ public final class EnumGenerator extends Generator<EnumTypeDefinition> {
     private final ClassName valueFieldClassName;
 
     public EnumGenerator(
-            NamedType namedType,
-            EnumTypeDefinition enumTypeDefinition,
-            GeneratorContext generatorContext) {
+            NamedType namedType, EnumTypeDefinition enumTypeDefinition, GeneratorContext generatorContext) {
         super(generatorContext);
         this.namedType = namedType;
         this.enumTypeDefinition = enumTypeDefinition;

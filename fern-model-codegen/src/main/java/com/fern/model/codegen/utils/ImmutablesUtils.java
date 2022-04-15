@@ -51,7 +51,6 @@ public final class ImmutablesUtils {
 
     public ClassName getImmutablesClassName(NamedType namedType) {
         return ClassName.get(
-                filepathUtils.convertFilepathToPackage(namedType.fernFilepath()),
-                IMMUTABLE_PREFIX + namedType.name());
+                filepathUtils.convertFilepathToPackage(namedType.fernFilepath()), IMMUTABLE_PREFIX + namedType.name());
     }
 }

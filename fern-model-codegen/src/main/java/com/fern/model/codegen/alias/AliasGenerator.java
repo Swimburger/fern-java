@@ -30,9 +30,7 @@ public final class AliasGenerator extends Generator<AliasTypeDefinition> {
     private final ClassName generatedAliasClassName;
 
     public AliasGenerator(
-            AliasTypeDefinition aliasTypeDefinition,
-            NamedType namedType,
-            GeneratorContext generatorContext) {
+            AliasTypeDefinition aliasTypeDefinition, NamedType namedType, GeneratorContext generatorContext) {
         super(generatorContext);
         this.aliasTypeDefinition = aliasTypeDefinition;
         this.namedType = namedType;

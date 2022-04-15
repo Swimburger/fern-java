@@ -1,6 +1,5 @@
 package com.fern.model.codegen.interfaces;
 
-import com.fern.FernFilepath;
 import com.fern.NamedType;
 import com.fern.ObjectTypeDefinition;
 import com.fern.model.codegen.Generator;
@@ -18,9 +17,7 @@ public final class InterfaceGenerator extends Generator<ObjectTypeDefinition> {
     private final NamedType namedType;
 
     public InterfaceGenerator(
-            ObjectTypeDefinition objectTypeDefinition,
-            NamedType namedType,
-            GeneratorContext generatorContext) {
+            ObjectTypeDefinition objectTypeDefinition, NamedType namedType, GeneratorContext generatorContext) {
         super(generatorContext);
         this.objectTypeDefinition = objectTypeDefinition;
         this.namedType = namedType;

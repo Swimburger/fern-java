@@ -16,7 +16,6 @@ public final class ClassNameUtils {
     }
 
     public ClassName getClassName(NamedType namedType) {
-        return ClassName.get(
-                filepathUtils.convertFilepathToPackage(namedType.fernFilepath()), namedType.name());
+        return ClassName.get(filepathUtils.convertFilepathToPackage(namedType.fernFilepath()), namedType.name());
     }
 }

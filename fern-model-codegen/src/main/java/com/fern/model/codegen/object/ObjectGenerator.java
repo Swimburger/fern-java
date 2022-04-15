@@ -73,9 +73,7 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
         annotationSpecs.add(AnnotationSpec.builder(StagedBuilderStyle.class).build());
         annotationSpecs.add(AnnotationSpec.builder(JsonDeserialize.class)
                 .addMember(
-                        "as",
-                        "$T.class",
-                        generatorContext.getImmutablesUtils().getImmutablesClassName(namedType))
+                        "as", "$T.class", generatorContext.getImmutablesUtils().getImmutablesClassName(namedType))
                 .build());
         annotationSpecs.add(AnnotationSpec.builder(JsonIgnoreProperties.class)
                 .addMember("value", "{$S}", UnionGenerator.UNION_DISCRIMINATOR_PROPERTY_NAME)

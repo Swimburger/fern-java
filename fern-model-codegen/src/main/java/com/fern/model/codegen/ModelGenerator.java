@@ -94,8 +94,7 @@ public final class ModelGenerator {
         private final TypeDefinition typeDefinition;
         private final Map<NamedType, GeneratedInterface> generatedInterfaces;
 
-        TypeDefinitionGenerator(
-                TypeDefinition typeDefinition, Map<NamedType, GeneratedInterface> generatedInterfaces) {
+        TypeDefinitionGenerator(TypeDefinition typeDefinition, Map<NamedType, GeneratedInterface> generatedInterfaces) {
             this.typeDefinition = typeDefinition;
             this.generatedInterfaces = generatedInterfaces;
         }
