@@ -44,8 +44,7 @@ public final class ModelGeneratorCli {
             String irJson = Files.readString(new File(irLocation).toPath());
             IntermediateRepresentation intermediateRepresentation =
                     OBJECT_MAPPER.readValue(irJson, IntermediateRepresentation.class);
-            ModelGenerator modelGenerator =
-                    new ModelGenerator(intermediateRepresentation.types(), pluginConfig);
+            ModelGenerator modelGenerator = new ModelGenerator(intermediateRepresentation.types(), pluginConfig);
             modelGenerator.buildModelSubproject();
         } catch (ArgumentParserException e) {
             parser.handleError(e);

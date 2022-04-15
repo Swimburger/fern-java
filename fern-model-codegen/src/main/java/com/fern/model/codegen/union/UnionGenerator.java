@@ -84,6 +84,7 @@ public final class UnionGenerator extends Generator<UnionTypeDefinition> {
         this.internalValueInterfaceClassName = generatedUnionClassName.nestedClass(INTERNAL_VALUE_INTERFACE_NAME);
     }
 
+    @Override
     public GeneratedUnion generate() {
         Map<SingleUnionType, MethodSpec> isTypeMethods = getIsTypeMethods();
         TypeSpec unionTypeSpec = TypeSpec.classBuilder(generatedUnionClassName)

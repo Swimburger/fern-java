@@ -66,6 +66,7 @@ public final class EnumGenerator extends Generator<EnumTypeDefinition> {
         this.valueFieldClassName = generatedEnumClassName.nestedClass(VALUE_TYPE_NAME);
     }
 
+    @Override
     public GeneratedEnum generate() {
         Map<EnumValue, FieldSpec> enumConstants = getConstants();
         VisitorUtils.GeneratedVisitor generatedVisitor = getVisitor();
