@@ -55,11 +55,6 @@ public final class TypeReferenceUtils {
         }
 
         @Override
-        public TypeName visitVoid() {
-            throw new RuntimeException("Void types are unsupported!");
-        }
-
-        @Override
         public TypeName visitUnknown(String unknownType) {
             throw new RuntimeException("Encountered unknown type reference: " + unknownType);
         }
