@@ -231,12 +231,12 @@ public final class UnionGenerator extends Generator<UnionTypeDefinition> {
                                 .keyName(singleUnionType.discriminantValue())
                                 .build();
                     } else {
-                    return VisitorUtils.VisitMethodArgs.builder()
-                            .keyName(singleUnionType.discriminantValue())
-                            .visitorType(generatorContext
-                                    .getTypeReferenceUtils()
-                                    .convertToTypeName(true, singleUnionType.valueType()))
-                            .build();
+                        return VisitorUtils.VisitMethodArgs.builder()
+                                .keyName(singleUnionType.discriminantValue())
+                                .visitorType(generatorContext
+                                        .getTypeReferenceUtils()
+                                        .convertToTypeName(true, singleUnionType.valueType()))
+                                .build();
                     }
                 })
                 .collect(Collectors.toList());
