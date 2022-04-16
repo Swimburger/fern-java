@@ -55,6 +55,11 @@ public final class TypeReferenceUtils {
         }
 
         @Override
+        public TypeName visitVoid() {
+            throw new RuntimeException("Void types should be handled separately!");
+        }
+
+        @Override
         public TypeName visitUnknown(String unknownType) {
             throw new RuntimeException("Encountered unknown type reference: " + unknownType);
         }
