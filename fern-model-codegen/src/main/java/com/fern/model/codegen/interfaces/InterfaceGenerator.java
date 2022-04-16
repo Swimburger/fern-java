@@ -43,7 +43,7 @@ public final class InterfaceGenerator extends Generator<ObjectTypeDefinition> {
     private ClassName getInterfaceClassName() {
         String nonInterfacePackageName =
                 generatorContext.getFilepathUtils().convertFilepathToPackage(namedType.fernFilepath());
-        return ClassName.get(nonInterfacePackageName + "." + INTERFACES_PACKAGE_NAME,
-                INTERFACE_PREFIX + namedType.name());
+        return ClassName.get(
+                nonInterfacePackageName + "." + INTERFACES_PACKAGE_NAME, INTERFACE_PREFIX + namedType.name());
     }
 }

@@ -78,8 +78,9 @@ public final class UnionGenerator extends Generator<UnionTypeDefinition> {
         this.internalValueClassNames = this.unionTypeDefinition.types().stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        singleUnionType -> generatedUnionClassName.nestedClass(
-                                generatorContext.getClassNameUtils().getKeywordCompatibleClassName(singleUnionType.discriminantValue()))));
+                        singleUnionType -> generatedUnionClassName.nestedClass(generatorContext
+                                .getClassNameUtils()
+                                .getKeywordCompatibleClassName(singleUnionType.discriminantValue()))));
         this.unknownInternalValueClassName = generatedUnionClassName.nestedClass(UNKNOWN_INTERNAL_VALUE_INTERFACE_NAME);
         this.internalValueInterfaceClassName = generatedUnionClassName.nestedClass(INTERNAL_VALUE_INTERFACE_NAME);
     }

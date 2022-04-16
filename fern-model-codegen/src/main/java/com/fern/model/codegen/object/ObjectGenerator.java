@@ -107,8 +107,8 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
         ClassName immutableClassName = generatorContext.getImmutablesUtils().getImmutablesClassName(namedType);
         ClassName builderClassName = firstMandatoryFieldName.isEmpty()
                 ? immutableClassName.nestedClass("Builder")
-                :
-                        immutableClassName.nestedClass(StringUtils.capitalize(firstMandatoryFieldName.get()) + BUILD_STAGE_SUFFIX);
+                : immutableClassName.nestedClass(
+                        StringUtils.capitalize(firstMandatoryFieldName.get()) + BUILD_STAGE_SUFFIX);
         return MethodSpec.methodBuilder(STATIC_BUILDER_METHOD_NAME)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .returns(builderClassName)
