@@ -79,7 +79,7 @@ public final class UnionGenerator extends Generator<UnionTypeDefinition> {
                 .collect(Collectors.toMap(
                         Function.identity(),
                         singleUnionType -> generatedUnionClassName.nestedClass(
-                                StringUtils.capitalize(singleUnionType.discriminantValue()))));
+                                generatorContext.getClassNameUtils().getKeywordCompatibleClassName(singleUnionType.discriminantValue()))));
         this.unknownInternalValueClassName = generatedUnionClassName.nestedClass(UNKNOWN_INTERNAL_VALUE_INTERFACE_NAME);
         this.internalValueInterfaceClassName = generatedUnionClassName.nestedClass(INTERNAL_VALUE_INTERFACE_NAME);
     }
@@ -289,7 +289,7 @@ public final class UnionGenerator extends Generator<UnionTypeDefinition> {
             String capitalizedDiscriminantValue = StringUtils.capitalize(singleUnionType.discriminantValue());
             ClassName internalValueClassName = internalValueClassNames.get(singleUnionType);
             MethodSpec internalValueImmutablesProperty = getInternalValueImmutablesProperty(singleUnionType);
-            TypeSpec typeSpec = TypeSpec.interfaceBuilder(capitalizedDiscriminantValue)
+            TypeSpec typeSpec = TypeSpec.interfaceBuilder(internalValueClassName)
                     .addAnnotation(Value.Immutable.class)
                     .addAnnotation(AnnotationSpec.builder(JsonTypeName.class)
                             .addMember("value", "$S", singleUnionType.discriminantValue())
