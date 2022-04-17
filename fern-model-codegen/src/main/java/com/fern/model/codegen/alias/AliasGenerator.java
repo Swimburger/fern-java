@@ -34,7 +34,7 @@ public final class AliasGenerator extends Generator<AliasTypeDefinition> {
         super(generatorContext);
         this.aliasTypeDefinition = aliasTypeDefinition;
         this.namedType = namedType;
-        this.generatedAliasClassName = generatorContext.getClassNameUtils().getClassName(namedType);
+        this.generatedAliasClassName = generatorContext.getClassNameUtils().getClassNameForNamedType(namedType);
     }
 
     @Override
@@ -47,7 +47,7 @@ public final class AliasGenerator extends Generator<AliasTypeDefinition> {
             aliasTypeSpec = aliasTypeSpecBuilder.addMethod(getValueOfMethod()).build();
         } else {
             TypeName aliasTypeName =
-                    generatorContext.getTypeReferenceUtils().convertToTypeName(true, aliasTypeDefinition.aliasOf());
+                    generatorContext.getClassNameUtils().getTypeNameFromTypeReference(true, aliasTypeDefinition.aliasOf());
             aliasTypeSpec = aliasTypeSpecBuilder
                     .addMethod(getImmutablesValueProperty(aliasTypeName))
                     .addMethod(getValueOfMethod(aliasTypeName))

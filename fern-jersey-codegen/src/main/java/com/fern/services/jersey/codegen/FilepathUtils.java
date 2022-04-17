@@ -1,4 +1,4 @@
-package com.fern.model.codegen.utils;
+package com.fern.services.jersey.codegen;
 
 import com.fern.FernFilepath;
 import com.fern.model.codegen.config.PluginConfig;

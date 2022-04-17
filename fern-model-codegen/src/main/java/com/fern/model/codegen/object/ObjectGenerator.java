@@ -53,7 +53,7 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
     @Override
     public GeneratedObject generate() {
         ClassName generatedObjectClassName =
-                generatorContext.getClassNameUtils().getClassName(namedType);
+                generatorContext.getClassNameUtils().getClassNameForNamedType(namedType);
         TypeSpec objectTypeSpec = TypeSpec.interfaceBuilder(namedType.name())
                 .addModifiers(OBJECT_INTERFACE_MODIFIERS)
                 .addAnnotations(getAnnotations())
