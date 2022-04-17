@@ -8,10 +8,8 @@ import com.fern.HttpMethod;
 import com.fern.HttpRequest;
 import com.fern.HttpResponse;
 import com.fern.HttpService;
-import com.fern.NamedType;
 import com.fern.TypeReference;
 import com.fern.codegen.utils.ClassNameUtils;
-import com.fern.codegen.GeneratedFile;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
@@ -20,7 +18,6 @@ import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
@@ -50,15 +47,13 @@ public final class ServiceGenerator {
     }
 
     public List<GeneratedService> generate() {
-        return httpServices.stream()
-                .map(this::getGeneratedService)
-                .collect(Collectors.toList());
+        return httpServices.stream().map(this::getGeneratedService).collect(Collectors.toList());
     }
 
     private GeneratedService getGeneratedService(HttpService httpService) {
         ClassName generatedServiceClassName = classNameUtils.getClassNameForNamedType(httpService.name());
         TypeSpec.Builder jerseyServiceBuilder = TypeSpec.interfaceBuilder(
-                StringUtils.capitalize(httpService.name().name()))
+                        StringUtils.capitalize(httpService.name().name()))
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(AnnotationSpec.builder(Consumes.class)
                         .addMember("value", "$T.APPLICATION_JSON", MediaType.class)
@@ -72,9 +67,10 @@ public final class ServiceGenerator {
         List<MethodSpec> httpEndpointMethods = httpService.endpoints().stream()
                 .map(this::getHttpEndpointMethodSpec)
                 .collect(Collectors.toList());
-        TypeSpec jerseyServiceTypeSpec = jerseyServiceBuilder.addMethods(httpEndpointMethods)
-                .build();
-        JavaFile jerseyServiceJavaFile = JavaFile.builder(generatedServiceClassName.packageName(), jerseyServiceTypeSpec)
+        TypeSpec jerseyServiceTypeSpec =
+                jerseyServiceBuilder.addMethods(httpEndpointMethods).build();
+        JavaFile jerseyServiceJavaFile = JavaFile.builder(
+                        generatedServiceClassName.packageName(), jerseyServiceTypeSpec)
                 .build();
         return GeneratedService.builder()
                 .file(jerseyServiceJavaFile)
@@ -84,20 +80,14 @@ public final class ServiceGenerator {
     }
 
     private MethodSpec getHttpEndpointMethodSpec(HttpEndpoint httpEndpoint) {
-        MethodSpec.Builder endpointMethodBuilder = MethodSpec.methodBuilder(
-                httpEndpoint.endpointId())
-                .addAnnotation(
-                        httpEndpoint.method().accept(HttpMethodAnnotationVisitor.INSTANCE))
+        MethodSpec.Builder endpointMethodBuilder = MethodSpec.methodBuilder(httpEndpoint.endpointId())
+                .addAnnotation(httpEndpoint.method().accept(HttpMethodAnnotationVisitor.INSTANCE))
                 .addAnnotation(AnnotationSpec.builder(Path.class)
                         .addMember("value", "$S", httpEndpoint.path())
                         .build())
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
-        httpEndpoint.headers().stream()
-                .map(this::getHeaderParameterSpec)
-                .forEach(endpointMethodBuilder::addParameter);
-        httpEndpoint.parameters().stream()
-                .map(this::getPathParameterSpec)
-                .forEach(endpointMethodBuilder::addParameter);
+        httpEndpoint.headers().stream().map(this::getHeaderParameterSpec).forEach(endpointMethodBuilder::addParameter);
+        httpEndpoint.parameters().stream().map(this::getPathParameterSpec).forEach(endpointMethodBuilder::addParameter);
         httpEndpoint.queryParameters().stream()
                 .map(this::getQueryParameterSpec)
                 .forEach(endpointMethodBuilder::addParameter);
@@ -134,8 +124,7 @@ public final class ServiceGenerator {
     }
 
     private ParameterSpec getRequestParameterSpec(HttpRequest httpRequest) {
-        TypeName requestTypeName =
-                classNameUtils.getTypeNameFromTypeReference(true, httpRequest.bodyType());
+        TypeName requestTypeName = classNameUtils.getTypeNameFromTypeReference(true, httpRequest.bodyType());
         return ParameterSpec.builder(requestTypeName, REQUEST_PARAMETER_NAME).build();
     }
 

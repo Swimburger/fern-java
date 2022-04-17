@@ -20,7 +20,7 @@ class TypeReferenceUtils {
             new TypeReferenceToTypeNameConverter(true);
     private final ContainerToTypeNameConverter containerToTypeNameConverter = new ContainerToTypeNameConverter();
 
-    public TypeReferenceUtils(ClassNameUtils classNameUtils) {
+    TypeReferenceUtils(ClassNameUtils classNameUtils) {
         this.classNameUtils = classNameUtils;
     }
 
