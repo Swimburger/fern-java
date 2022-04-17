@@ -19,4 +19,3 @@ public interface PluginConfig {
         return ImmutablePluginConfig.builder();
     }
 }
-

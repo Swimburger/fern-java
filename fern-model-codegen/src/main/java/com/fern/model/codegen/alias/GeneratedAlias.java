@@ -2,7 +2,7 @@ package com.fern.model.codegen.alias;
 
 import com.fern.AliasTypeDefinition;
 import com.fern.immutables.StagedBuilderStyle;
-import com.fern.model.codegen.GeneratedFile;
+import com.fern.codegen.GeneratedFile;
 import org.immutables.value.Value;
 
 @Value.Immutable

@@ -1,12 +1,20 @@
 package com.fern.services.jersey.codegen;
 
+import com.fern.HttpEndpoint;
+import com.fern.HttpEndpointParameter;
+import com.fern.HttpEndpointQueryParameter;
+import com.fern.HttpHeader;
 import com.fern.HttpMethod;
+import com.fern.HttpRequest;
+import com.fern.HttpResponse;
 import com.fern.HttpService;
 import com.fern.NamedType;
+import com.fern.TypeReference;
 import com.fern.codegen.utils.ClassNameUtils;
-import com.fern.model.codegen.GeneratedFile;
+import com.fern.codegen.GeneratedFile;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeName;
@@ -31,87 +39,111 @@ import org.apache.commons.lang3.StringUtils;
 
 public final class ServiceGenerator {
 
-    private static final ClassName STRING_CLASS_NAME = ClassName.get(String.class);
+    private static final String REQUEST_PARAMETER_NAME = "request";
 
-    private final Map<NamedType, GeneratedFile<?>> generatedFiles;
     private final List<HttpService> httpServices;
     private final ClassNameUtils classNameUtils;
 
-    public ServiceGenerator(Map<NamedType, GeneratedFile<?>> generatedFiles, List<HttpService> httpServices) {
-        this.generatedFiles = generatedFiles;
+    public ServiceGenerator(List<HttpService> httpServices) {
         this.httpServices = httpServices;
         this.classNameUtils = new ClassNameUtils(Optional.empty());
     }
 
-    public void generate() {
-        List<TypeSpec> serviceTypeSpecs = httpServices.stream().map(httpService -> {
-            TypeSpec.Builder jerseyServiceBuilder =
-                    TypeSpec.interfaceBuilder(StringUtils.capitalize(httpService.name().name()))
-                    .addModifiers(Modifier.PUBLIC)
-                    .addAnnotation(AnnotationSpec.builder(Consumes.class)
-                            .addMember("value", "$T.APPLICATION_JSON", MediaType.class)
-                            .build())
-                    .addAnnotation(AnnotationSpec.builder(Produces.class)
-                            .addMember("value", "$T.APPLICATION_JSON", MediaType.class)
-                            .build())
-                    .addAnnotation(AnnotationSpec.builder(Path.class)
-                            .addMember("value", "$S", httpService.basePath())
-                            .build());
-            List<MethodSpec> httpEndpointMethods = httpService.endpoints().stream().map(httpEndpoint -> {
-                MethodSpec.Builder endpointMethodBuilder = MethodSpec.methodBuilder(httpEndpoint.endpointId())
-                        .addAnnotation(httpEndpoint.method().accept(HttpMethodAnnotationVisitor.INSTANCE))
-                        .addAnnotation(AnnotationSpec.builder(Path.class)
-                                .addMember("value", "$S", httpEndpoint.path())
-                                .build())
-                        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
-                httpEndpoint.headers().forEach(httpHeader -> {
-                        String capitalizedHeaderParameterName = StringUtils.capitalize(httpHeader.header());
-                        TypeName headerTypeName = classNameUtils.getTypeNameFromTypeReference(
-                            false, httpHeader.valueType());
-                        endpointMethodBuilder.addParameter(ParameterSpec.builder(headerTypeName, capitalizedHeaderParameterName)
-                                .addAnnotation(AnnotationSpec.builder(HeaderParam.class)
-                                        .addMember("value", "$S", httpHeader.header())
-                                        .build())
-                                .build());
-                });
-                httpEndpoint.parameters().forEach(pathParameter -> {
-                    String capitalizedPathParameterName = StringUtils.capitalize(pathParameter.key());
-                    TypeName headerTypeName = classNameUtils.getTypeNameFromTypeReference(
-                            false, pathParameter.valueType());
-                    endpointMethodBuilder.addParameter(ParameterSpec.builder(headerTypeName, capitalizedPathParameterName)
-                            .addAnnotation(AnnotationSpec.builder(PathParam.class)
-                                    .addMember("value", "$S", pathParameter.key())
-                                    .build())
-                            .build());
-                });
-                httpEndpoint.queryParameters().forEach(queryParameter -> {
-                    String capitalizedQueryParam = StringUtils.capitalize(queryParameter.key());
-                    TypeName parameterTypeName = classNameUtils.getTypeNameFromTypeReference(
-                            false, queryParameter.valueType());
-                    endpointMethodBuilder.addParameter(ParameterSpec.builder(parameterTypeName, capitalizedQueryParam)
-                            .addAnnotation(AnnotationSpec.builder(QueryParam.class)
-                                    .addMember("value", "$S", queryParameter.key())
-                                    .build())
-                            .build());
-                });
-                httpEndpoint.request().ifPresent(httpRequest -> {
-                    TypeName requestTypeName = classNameUtils.getTypeNameFromTypeReference(true,
-                            httpRequest.bodyType());
-                    endpointMethodBuilder.addParameter(requestTypeName, "request");
-                });
-                httpEndpoint.response().ifPresent(httpResponse -> {
-                    TypeName responseTypeName = classNameUtils.getTypeNameFromTypeReference(true,
-                            httpResponse.bodyType());
-                    endpointMethodBuilder.returns(responseTypeName);
-                });
-                return endpointMethodBuilder.build();
-            }).collect(Collectors.toList());
-            jerseyServiceBuilder.addMethods(httpEndpointMethods);
-            return jerseyServiceBuilder.build();
-        }).collect(Collectors.toList());
+    public List<GeneratedService> generate() {
+        return httpServices.stream()
+                .map(this::getGeneratedService)
+                .collect(Collectors.toList());
     }
 
-    private final static class HttpMethodAnnotationVisitor implements HttpMethod.Visitor<AnnotationSpec> {
+    private GeneratedService getGeneratedService(HttpService httpService) {
+        ClassName generatedServiceClassName = classNameUtils.getClassNameForNamedType(httpService.name());
+        TypeSpec.Builder jerseyServiceBuilder = TypeSpec.interfaceBuilder(
+                StringUtils.capitalize(httpService.name().name()))
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(AnnotationSpec.builder(Consumes.class)
+                        .addMember("value", "$T.APPLICATION_JSON", MediaType.class)
+                        .build())
+                .addAnnotation(AnnotationSpec.builder(Produces.class)
+                        .addMember("value", "$T.APPLICATION_JSON", MediaType.class)
+                        .build())
+                .addAnnotation(AnnotationSpec.builder(Path.class)
+                        .addMember("value", "$S", httpService.basePath())
+                        .build());
+        List<MethodSpec> httpEndpointMethods = httpService.endpoints().stream()
+                .map(this::getHttpEndpointMethodSpec)
+                .collect(Collectors.toList());
+        TypeSpec jerseyServiceTypeSpec = jerseyServiceBuilder.addMethods(httpEndpointMethods)
+                .build();
+        JavaFile jerseyServiceJavaFile = JavaFile.builder(generatedServiceClassName.packageName(), jerseyServiceTypeSpec)
+                .build();
+        return GeneratedService.builder()
+                .file(jerseyServiceJavaFile)
+                .definition(httpService)
+                .className(generatedServiceClassName)
+                .build();
+    }
+
+    private MethodSpec getHttpEndpointMethodSpec(HttpEndpoint httpEndpoint) {
+        MethodSpec.Builder endpointMethodBuilder = MethodSpec.methodBuilder(
+                httpEndpoint.endpointId())
+                .addAnnotation(
+                        httpEndpoint.method().accept(HttpMethodAnnotationVisitor.INSTANCE))
+                .addAnnotation(AnnotationSpec.builder(Path.class)
+                        .addMember("value", "$S", httpEndpoint.path())
+                        .build())
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
+        httpEndpoint.headers().stream()
+                .map(this::getHeaderParameterSpec)
+                .forEach(endpointMethodBuilder::addParameter);
+        httpEndpoint.parameters().stream()
+                .map(this::getPathParameterSpec)
+                .forEach(endpointMethodBuilder::addParameter);
+        httpEndpoint.queryParameters().stream()
+                .map(this::getQueryParameterSpec)
+                .forEach(endpointMethodBuilder::addParameter);
+        httpEndpoint.request().ifPresent(httpRequest -> {
+            ParameterSpec requestParameterSpec = getRequestParameterSpec(httpRequest);
+            endpointMethodBuilder.addParameter(requestParameterSpec);
+        });
+        httpEndpoint.response().ifPresent(httpResponse -> {
+            TypeName responseTypeName = getResponseTypeName(httpResponse);
+            endpointMethodBuilder.returns(responseTypeName);
+        });
+        return endpointMethodBuilder.build();
+    }
+
+    private ParameterSpec getHeaderParameterSpec(HttpHeader header) {
+        return getParameterSpec(HeaderParam.class, header.header(), header.valueType());
+    }
+
+    private ParameterSpec getPathParameterSpec(HttpEndpointParameter pathParameter) {
+        return getParameterSpec(PathParam.class, pathParameter.key(), pathParameter.valueType());
+    }
+
+    private ParameterSpec getQueryParameterSpec(HttpEndpointQueryParameter queryParameter) {
+        return getParameterSpec(QueryParam.class, queryParameter.key(), queryParameter.valueType());
+    }
+
+    private <T> ParameterSpec getParameterSpec(Class<T> paramClass, String paramName, TypeReference paramType) {
+        TypeName typeName = classNameUtils.getTypeNameFromTypeReference(false, paramType);
+        return ParameterSpec.builder(typeName, paramName)
+                .addAnnotation(AnnotationSpec.builder(paramClass)
+                        .addMember("value", "$S", paramName)
+                        .build())
+                .build();
+    }
+
+    private ParameterSpec getRequestParameterSpec(HttpRequest httpRequest) {
+        TypeName requestTypeName =
+                classNameUtils.getTypeNameFromTypeReference(true, httpRequest.bodyType());
+        return ParameterSpec.builder(requestTypeName, REQUEST_PARAMETER_NAME).build();
+    }
+
+    private TypeName getResponseTypeName(HttpResponse httpResponse) {
+        return classNameUtils.getTypeNameFromTypeReference(true, httpResponse.bodyType());
+    }
+
+    private static final class HttpMethodAnnotationVisitor implements HttpMethod.Visitor<AnnotationSpec> {
 
         private static final HttpMethodAnnotationVisitor INSTANCE = new HttpMethodAnnotationVisitor();
 

@@ -46,8 +46,9 @@ public final class AliasGenerator extends Generator<AliasTypeDefinition> {
         if (aliasTypeDefinition.aliasOf().isVoid()) {
             aliasTypeSpec = aliasTypeSpecBuilder.addMethod(getValueOfMethod()).build();
         } else {
-            TypeName aliasTypeName =
-                    generatorContext.getClassNameUtils().getTypeNameFromTypeReference(true, aliasTypeDefinition.aliasOf());
+            TypeName aliasTypeName = generatorContext
+                    .getClassNameUtils()
+                    .getTypeNameFromTypeReference(true, aliasTypeDefinition.aliasOf());
             aliasTypeSpec = aliasTypeSpecBuilder
                     .addMethod(getImmutablesValueProperty(aliasTypeName))
                     .addMethod(getValueOfMethod(aliasTypeName))

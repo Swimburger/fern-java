@@ -146,8 +146,8 @@ public final class UnionGenerator extends Generator<UnionTypeDefinition> {
     private List<MethodSpec> getStaticBuilderMethods() {
         return unionTypeDefinition.types().stream()
                 .map(singleUnionType -> {
-                    String keyWordCompatibleName = KeyWordUtils
-                            .getKeyWordCompatibleName(singleUnionType.discriminantValue());
+                    String keyWordCompatibleName =
+                            KeyWordUtils.getKeyWordCompatibleName(singleUnionType.discriminantValue());
                     MethodSpec.Builder staticBuilder = MethodSpec.methodBuilder(keyWordCompatibleName)
                             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                             .returns(generatedUnionClassName);
