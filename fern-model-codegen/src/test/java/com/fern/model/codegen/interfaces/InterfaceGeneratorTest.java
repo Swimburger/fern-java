@@ -4,6 +4,7 @@ import com.fern.ContainerType;
 import com.fern.FernFilepath;
 import com.fern.NamedType;
 import com.fern.ObjectField;
+import com.fern.ObjectProperty;
 import com.fern.ObjectTypeDefinition;
 import com.fern.PrimitiveType;
 import com.fern.Type;
@@ -17,7 +18,7 @@ public class InterfaceGeneratorTest {
     @Test
     public void test_basic() {
         ObjectTypeDefinition objectTypeDefinition = ObjectTypeDefinition.builder()
-                .addFields(ObjectField.builder()
+                .addProperties(ObjectProperty.builder()
                         .key("docs")
                         .valueType(TypeReference.container(
                                 ContainerType.optional(TypeReference.primitive(PrimitiveType.STRING))))
