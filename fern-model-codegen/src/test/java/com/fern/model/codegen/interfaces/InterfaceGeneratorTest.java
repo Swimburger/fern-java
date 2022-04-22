@@ -3,7 +3,6 @@ package com.fern.model.codegen.interfaces;
 import com.fern.ContainerType;
 import com.fern.FernFilepath;
 import com.fern.NamedType;
-import com.fern.ObjectField;
 import com.fern.ObjectProperty;
 import com.fern.ObjectTypeDefinition;
 import com.fern.PrimitiveType;
