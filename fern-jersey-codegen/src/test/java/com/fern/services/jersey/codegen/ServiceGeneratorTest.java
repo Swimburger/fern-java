@@ -2,7 +2,6 @@ package com.fern.services.jersey.codegen;
 
 import com.fern.FernFilepath;
 import com.fern.HttpEndpoint;
-import com.fern.HttpEndpointParameter;
 import com.fern.HttpMethod;
 import com.fern.HttpRequest;
 import com.fern.HttpResponse;
