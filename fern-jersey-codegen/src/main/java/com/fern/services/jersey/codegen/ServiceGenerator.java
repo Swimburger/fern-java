@@ -1,8 +1,6 @@
 package com.fern.services.jersey.codegen;
 
 import com.fern.HttpEndpoint;
-import com.fern.HttpEndpointParameter;
-import com.fern.HttpEndpointQueryParameter;
 import com.fern.HttpHeader;
 import com.fern.HttpMethod;
 import com.fern.HttpRequest;
