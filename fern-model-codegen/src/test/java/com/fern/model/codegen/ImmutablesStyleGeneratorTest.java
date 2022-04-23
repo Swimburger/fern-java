@@ -10,7 +10,8 @@ public class ImmutablesStyleGeneratorTest {
     @Test
     public void test_generatedStagedBuilder() {
         ClassNameUtils classNameUtils = new ClassNameUtils(Optional.of("com.fern"));
-        GeneratedFile stagedBuilderJavaFile = ImmutablesStyleGenerator.generateStagedBuilderImmutablesStyle(classNameUtils);
+        GeneratedFile stagedBuilderJavaFile =
+                ImmutablesStyleGenerator.generateStagedBuilderImmutablesStyle(classNameUtils);
         System.out.println(stagedBuilderJavaFile.file().toString());
     }
 }
