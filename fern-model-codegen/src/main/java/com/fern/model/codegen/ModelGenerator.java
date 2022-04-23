@@ -7,11 +7,12 @@ import com.fern.ObjectTypeDefinition;
 import com.fern.Type;
 import com.fern.TypeDefinition;
 import com.fern.UnionTypeDefinition;
-import com.fern.codegen.GeneratedFile;
+import com.fern.codegen.GeneratedFileWithDefinition;
+import com.fern.codegen.IGeneratedFile;
 import com.fern.model.codegen.alias.AliasGenerator;
 import com.fern.model.codegen.config.PluginConfig;
 import com.fern.model.codegen.enums.EnumGenerator;
-import com.fern.model.codegen.interfaces.GeneratedInterface;
+import com.fern.model.codegen.interfaces.GeneratedInterfaceWithDefinition;
 import com.fern.model.codegen.interfaces.InterfaceGenerator;
 import com.fern.model.codegen.object.ObjectGenerator;
 import com.fern.model.codegen.union.UnionGenerator;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class ModelGenerator {
 
@@ -58,17 +60,20 @@ public final class ModelGenerator {
     }
 
     private List<JavaFile> generateJavaFiles() {
-        Map<NamedType, GeneratedInterface> generatedInterfaces = getGeneratedInterfaces();
-        List<GeneratedFile<?>> generatedFiles = typeDefinitions.stream()
+        Map<NamedType, GeneratedInterfaceWithDefinition> generatedInterfaces = getGeneratedInterfaces();
+        List<GeneratedFileWithDefinition<?>> generatedFiles = typeDefinitions.stream()
                 .map(typeDefinition ->
                         typeDefinition.shape().accept(new TypeDefinitionGenerator(typeDefinition, generatedInterfaces)))
                 .collect(Collectors.toList());
-        return Streams.concat(generatedInterfaces.values().stream(), generatedFiles.stream())
-                .map(GeneratedFile::file)
+        return Streams.concat(
+                        generatedInterfaces.values().stream(),
+                        generatedFiles.stream(),
+                        Stream.of(generatorContext.getStagedImmutablesFile()))
+                .map(IGeneratedFile::file)
                 .collect(Collectors.toList());
     }
 
-    private Map<NamedType, GeneratedInterface> getGeneratedInterfaces() {
+    private Map<NamedType, GeneratedInterfaceWithDefinition> getGeneratedInterfaces() {
         Set<NamedType> interfaceCandidates = typeDefinitions.stream()
                 .map(TypeDefinition::shape)
                 .map(Type::getObject)
@@ -90,21 +95,22 @@ public final class ModelGenerator {
         }));
     }
 
-    private final class TypeDefinitionGenerator implements Type.Visitor<GeneratedFile<?>> {
+    private final class TypeDefinitionGenerator implements Type.Visitor<GeneratedFileWithDefinition<?>> {
 
         private final TypeDefinition typeDefinition;
-        private final Map<NamedType, GeneratedInterface> generatedInterfaces;
+        private final Map<NamedType, GeneratedInterfaceWithDefinition> generatedInterfaces;
 
-        TypeDefinitionGenerator(TypeDefinition typeDefinition, Map<NamedType, GeneratedInterface> generatedInterfaces) {
+        TypeDefinitionGenerator(
+                TypeDefinition typeDefinition, Map<NamedType, GeneratedInterfaceWithDefinition> generatedInterfaces) {
             this.typeDefinition = typeDefinition;
             this.generatedInterfaces = generatedInterfaces;
         }
 
         @Override
-        public GeneratedFile<?> visitObject(ObjectTypeDefinition objectTypeDefinition) {
-            Optional<GeneratedInterface> selfInterface =
+        public GeneratedFileWithDefinition<?> visitObject(ObjectTypeDefinition objectTypeDefinition) {
+            Optional<GeneratedInterfaceWithDefinition> selfInterface =
                     Optional.ofNullable(generatedInterfaces.get(typeDefinition.name()));
-            List<GeneratedInterface> extendedInterfaces = objectTypeDefinition._extends().stream()
+            List<GeneratedInterfaceWithDefinition> extendedInterfaces = objectTypeDefinition._extends().stream()
                     .map(generatedInterfaces::get)
                     .sorted(Comparator.comparing(
                             generatedInterface -> generatedInterface.className().simpleName()))
@@ -115,28 +121,28 @@ public final class ModelGenerator {
         }
 
         @Override
-        public GeneratedFile<?> visitUnion(UnionTypeDefinition unionTypeDefinition) {
+        public GeneratedFileWithDefinition<?> visitUnion(UnionTypeDefinition unionTypeDefinition) {
             UnionGenerator unionGenerator =
                     new UnionGenerator(typeDefinition.name(), unionTypeDefinition, generatorContext);
             return unionGenerator.generate();
         }
 
         @Override
-        public GeneratedFile<?> visitAlias(AliasTypeDefinition aliasTypeDefinition) {
+        public GeneratedFileWithDefinition<?> visitAlias(AliasTypeDefinition aliasTypeDefinition) {
             AliasGenerator aliasGenerator =
                     new AliasGenerator(aliasTypeDefinition, typeDefinition.name(), generatorContext);
             return aliasGenerator.generate();
         }
 
         @Override
-        public GeneratedFile<?> visitEnum(EnumTypeDefinition enumTypeDefinition) {
+        public GeneratedFileWithDefinition<?> visitEnum(EnumTypeDefinition enumTypeDefinition) {
             EnumGenerator enumGenerator =
                     new EnumGenerator(typeDefinition.name(), enumTypeDefinition, generatorContext);
             return enumGenerator.generate();
         }
 
         @Override
-        public GeneratedFile<?> visitUnknown(String unknownType) {
+        public GeneratedFileWithDefinition<?> visitUnknown(String unknownType) {
             throw new RuntimeException("Encountered unknown Type: " + unknownType);
         }
     }

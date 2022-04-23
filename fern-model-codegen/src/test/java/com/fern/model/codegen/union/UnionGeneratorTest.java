@@ -62,7 +62,7 @@ public class UnionGeneratorTest {
                 variableValueTypeDefinition.name(),
                 unionTypeDefinition,
                 generatorContext);
-        GeneratedUnion generatedUnion = unionGenerator.generate();
+        GeneratedUnionWithDefinition generatedUnion = unionGenerator.generate();
         System.out.println(generatedUnion.file().toString());
     }
 }

@@ -25,7 +25,7 @@ public final class InterfaceGenerator extends Generator<ObjectTypeDefinition> {
     }
 
     @Override
-    public GeneratedInterface generate() {
+    public GeneratedInterfaceWithDefinition generate() {
         ClassName generatedInterfaceClassName = getInterfaceClassName();
         TypeSpec interfaceTypeSpec = TypeSpec.interfaceBuilder(generatedInterfaceClassName.simpleName())
                 .addModifiers(Modifier.PUBLIC)
@@ -33,10 +33,10 @@ public final class InterfaceGenerator extends Generator<ObjectTypeDefinition> {
                 .build();
         JavaFile interfaceFile = JavaFile.builder(generatedInterfaceClassName.packageName(), interfaceTypeSpec)
                 .build();
-        return GeneratedInterface.builder()
+        return GeneratedInterfaceWithDefinition.builder()
                 .file(interfaceFile)
-                .definition(objectTypeDefinition)
                 .className(generatedInterfaceClassName)
+                .definition(objectTypeDefinition)
                 .build();
     }
 

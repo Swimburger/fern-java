@@ -5,11 +5,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fern.NamedType;
 import com.fern.ObjectProperty;
 import com.fern.ObjectTypeDefinition;
-import com.fern.codegen.GeneratedFile;
-import com.fern.immutables.StagedBuilderStyle;
+import com.fern.codegen.GeneratedFileWithDefinition;
 import com.fern.model.codegen.Generator;
 import com.fern.model.codegen.GeneratorContext;
-import com.fern.model.codegen.interfaces.GeneratedInterface;
+import com.fern.model.codegen.interfaces.GeneratedInterfaceWithDefinition;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
@@ -33,14 +32,14 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
 
     private final NamedType namedType;
     private final ObjectTypeDefinition objectTypeDefinition;
-    private final List<GeneratedInterface> extendedInterfaces;
-    private final Optional<GeneratedInterface> selfInterface;
+    private final List<GeneratedInterfaceWithDefinition> extendedInterfaces;
+    private final Optional<GeneratedInterfaceWithDefinition> selfInterface;
 
     public ObjectGenerator(
             NamedType namedType,
             ObjectTypeDefinition objectTypeDefinition,
-            List<GeneratedInterface> extendedInterfaces,
-            Optional<GeneratedInterface> selfInterface,
+            List<GeneratedInterfaceWithDefinition> extendedInterfaces,
+            Optional<GeneratedInterfaceWithDefinition> selfInterface,
             GeneratorContext generatorContext) {
         super(generatorContext);
         this.namedType = namedType;
@@ -50,7 +49,7 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
     }
 
     @Override
-    public GeneratedObject generate() {
+    public GeneratedObjectWithDefinition generate() {
         ClassName generatedObjectClassName =
                 generatorContext.getClassNameUtils().getClassNameForNamedType(namedType);
         TypeSpec objectTypeSpec = TypeSpec.interfaceBuilder(namedType.name())
@@ -61,17 +60,18 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
                 .build();
         JavaFile objectFile = JavaFile.builder(generatedObjectClassName.packageName(), objectTypeSpec)
                 .build();
-        return GeneratedObject.builder()
+        return GeneratedObjectWithDefinition.builder()
                 .file(objectFile)
-                .definition(objectTypeDefinition)
                 .className(generatedObjectClassName)
+                .definition(objectTypeDefinition)
                 .build();
     }
 
     private List<AnnotationSpec> getAnnotations() {
         List<AnnotationSpec> annotationSpecs = new ArrayList<>();
         annotationSpecs.add(AnnotationSpec.builder(Value.Immutable.class).build());
-        annotationSpecs.add(AnnotationSpec.builder(StagedBuilderStyle.class).build());
+        annotationSpecs.add(AnnotationSpec.builder(generatorContext.getStagedImmutablesBuilderClassname())
+                .build());
         annotationSpecs.add(AnnotationSpec.builder(JsonDeserialize.class)
                 .addMember(
                         "as", "$T.class", generatorContext.getImmutablesUtils().getImmutablesClassName(namedType))
@@ -84,8 +84,9 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
 
     private List<TypeName> getSuperInterfaces() {
         List<TypeName> superInterfaces = new ArrayList<>();
-        superInterfaces.addAll(
-                extendedInterfaces.stream().map(GeneratedFile::className).collect(Collectors.toList()));
+        superInterfaces.addAll(extendedInterfaces.stream()
+                .map(GeneratedFileWithDefinition::className)
+                .collect(Collectors.toList()));
         selfInterface.ifPresent(generatedInterface -> superInterfaces.add(generatedInterface.className()));
         return superInterfaces;
     }
@@ -116,9 +117,9 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
     }
 
     private static Optional<String> getFirstRequiredFieldName(
-            List<GeneratedInterface> superInterfaces, List<ObjectProperty> properties) {
+            List<GeneratedInterfaceWithDefinition> superInterfaces, List<ObjectProperty> properties) {
         // Required field from super interfaces take priority
-        for (GeneratedInterface superInterface : superInterfaces) {
+        for (GeneratedInterfaceWithDefinition superInterface : superInterfaces) {
             Optional<String> firstMandatoryFieldName =
                     getFirstRequiredFieldName(superInterface.definition().properties());
             if (firstMandatoryFieldName.isPresent()) {

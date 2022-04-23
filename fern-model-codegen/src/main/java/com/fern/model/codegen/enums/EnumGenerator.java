@@ -68,7 +68,7 @@ public final class EnumGenerator extends Generator<EnumTypeDefinition> {
     }
 
     @Override
-    public GeneratedEnum generate() {
+    public GeneratedEnumWithDefinition generate() {
         Map<EnumValue, FieldSpec> enumConstants = getConstants();
         VisitorUtils.GeneratedVisitor generatedVisitor = getVisitor();
         TypeSpec enumTypeSpec = TypeSpec.classBuilder(namedType.name())
@@ -87,10 +87,10 @@ public final class EnumGenerator extends Generator<EnumTypeDefinition> {
                 .build();
         JavaFile enumFile = JavaFile.builder(generatedEnumClassName.packageName(), enumTypeSpec)
                 .build();
-        return GeneratedEnum.builder()
+        return GeneratedEnumWithDefinition.builder()
                 .file(enumFile)
-                .definition(enumTypeDefinition)
                 .className(generatedEnumClassName)
+                .definition(enumTypeDefinition)
                 .build();
     }
 

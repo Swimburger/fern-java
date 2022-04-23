@@ -27,7 +27,7 @@ public class EnumGeneratorTest {
                 .build();
         EnumGenerator enumGenerator = new EnumGenerator(
                 migrationStatusTypeDef.name(), migrationStatusEnumDef, TestConstants.GENERATOR_CONTEXT);
-        GeneratedEnum generatedEnum = enumGenerator.generate();
+        GeneratedEnumWithDefinition generatedEnum = enumGenerator.generate();
         System.out.println(generatedEnum.file().toString());
     }
 }
