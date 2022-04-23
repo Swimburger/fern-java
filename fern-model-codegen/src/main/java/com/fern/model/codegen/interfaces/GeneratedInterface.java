@@ -7,9 +7,9 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @StagedBuilderStyle
-public interface GeneratedInterfaceWithDefinition extends GeneratedFileWithDefinition<ObjectTypeDefinition> {
+public interface GeneratedInterface extends GeneratedFileWithDefinition<ObjectTypeDefinition> {
 
-    static ImmutableGeneratedInterfaceWithDefinition.FileBuildStage builder() {
-        return ImmutableGeneratedInterfaceWithDefinition.builder();
+    static ImmutableGeneratedInterface.FileBuildStage builder() {
+        return ImmutableGeneratedInterface.builder();
     }
 }

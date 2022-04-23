@@ -8,7 +8,7 @@ import com.fern.ObjectTypeDefinition;
 import com.fern.codegen.GeneratedFileWithDefinition;
 import com.fern.model.codegen.Generator;
 import com.fern.model.codegen.GeneratorContext;
-import com.fern.model.codegen.interfaces.GeneratedInterfaceWithDefinition;
+import com.fern.model.codegen.interfaces.GeneratedInterface;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
@@ -32,14 +32,14 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
 
     private final NamedType namedType;
     private final ObjectTypeDefinition objectTypeDefinition;
-    private final List<GeneratedInterfaceWithDefinition> extendedInterfaces;
-    private final Optional<GeneratedInterfaceWithDefinition> selfInterface;
+    private final List<GeneratedInterface> extendedInterfaces;
+    private final Optional<GeneratedInterface> selfInterface;
 
     public ObjectGenerator(
             NamedType namedType,
             ObjectTypeDefinition objectTypeDefinition,
-            List<GeneratedInterfaceWithDefinition> extendedInterfaces,
-            Optional<GeneratedInterfaceWithDefinition> selfInterface,
+            List<GeneratedInterface> extendedInterfaces,
+            Optional<GeneratedInterface> selfInterface,
             GeneratorContext generatorContext) {
         super(generatorContext);
         this.namedType = namedType;
@@ -49,7 +49,7 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
     }
 
     @Override
-    public GeneratedObjectWithDefinition generate() {
+    public GeneratedObject generate() {
         ClassName generatedObjectClassName =
                 generatorContext.getClassNameUtils().getClassNameForNamedType(namedType);
         TypeSpec objectTypeSpec = TypeSpec.interfaceBuilder(namedType.name())
@@ -60,7 +60,7 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
                 .build();
         JavaFile objectFile = JavaFile.builder(generatedObjectClassName.packageName(), objectTypeSpec)
                 .build();
-        return GeneratedObjectWithDefinition.builder()
+        return GeneratedObject.builder()
                 .file(objectFile)
                 .className(generatedObjectClassName)
                 .definition(objectTypeDefinition)
@@ -117,9 +117,9 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
     }
 
     private static Optional<String> getFirstRequiredFieldName(
-            List<GeneratedInterfaceWithDefinition> superInterfaces, List<ObjectProperty> properties) {
+            List<GeneratedInterface> superInterfaces, List<ObjectProperty> properties) {
         // Required field from super interfaces take priority
-        for (GeneratedInterfaceWithDefinition superInterface : superInterfaces) {
+        for (GeneratedInterface superInterface : superInterfaces) {
             Optional<String> firstMandatoryFieldName =
                     getFirstRequiredFieldName(superInterface.definition().properties());
             if (firstMandatoryFieldName.isPresent()) {

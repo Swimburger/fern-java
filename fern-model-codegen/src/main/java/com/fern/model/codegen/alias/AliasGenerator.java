@@ -37,7 +37,7 @@ public final class AliasGenerator extends Generator<AliasTypeDefinition> {
     }
 
     @Override
-    public GeneratedAliasWithDefinition generate() {
+    public GeneratedAlias generate() {
         TypeSpec.Builder aliasTypeSpecBuilder = TypeSpec.interfaceBuilder(generatedAliasClassName)
                 .addModifiers(ALIAS_CLASS_MODIFIERS)
                 .addAnnotations(getAnnotationSpecs());
@@ -55,7 +55,7 @@ public final class AliasGenerator extends Generator<AliasTypeDefinition> {
         }
         JavaFile aliasFile = JavaFile.builder(generatedAliasClassName.packageName(), aliasTypeSpec)
                 .build();
-        return GeneratedAliasWithDefinition.builder()
+        return GeneratedAlias.builder()
                 .file(aliasFile)
                 .className(generatedAliasClassName)
                 .definition(aliasTypeDefinition)

@@ -27,7 +27,7 @@ public final class AliasGeneratorTest {
                 .build();
         AliasGenerator aliasGenerator = new AliasGenerator(
                 aliasTypeDefinition, problemIdTypeDefinition.name(), TestConstants.GENERATOR_CONTEXT);
-        GeneratedAliasWithDefinition generatedAlias = aliasGenerator.generate();
+        GeneratedAlias generatedAlias = aliasGenerator.generate();
         System.out.println(generatedAlias.file().toString());
     }
 }

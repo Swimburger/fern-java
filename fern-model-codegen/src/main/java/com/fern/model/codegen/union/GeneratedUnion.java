@@ -7,9 +7,9 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @StagedBuilderStyle
-public interface GeneratedUnionWithDefinition extends GeneratedFileWithDefinition<UnionTypeDefinition> {
+public interface GeneratedUnion extends GeneratedFileWithDefinition<UnionTypeDefinition> {
 
-    static ImmutableGeneratedUnionWithDefinition.FileBuildStage builder() {
-        return ImmutableGeneratedUnionWithDefinition.builder();
+    static ImmutableGeneratedUnion.FileBuildStage builder() {
+        return ImmutableGeneratedUnion.builder();
     }
 }

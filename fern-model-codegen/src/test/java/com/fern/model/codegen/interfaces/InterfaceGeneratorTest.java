@@ -32,7 +32,7 @@ public class InterfaceGeneratorTest {
                 .build();
         InterfaceGenerator interfaceGenerator = new InterfaceGenerator(
                 objectTypeDefinition, withDocsTypeDefinition.name(), TestConstants.GENERATOR_CONTEXT);
-        GeneratedInterfaceWithDefinition generatedInterface = interfaceGenerator.generate();
+        GeneratedInterface generatedInterface = interfaceGenerator.generate();
         System.out.println(generatedInterface.file().toString());
     }
 }

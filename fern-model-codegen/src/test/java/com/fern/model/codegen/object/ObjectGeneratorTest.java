@@ -10,7 +10,7 @@ import com.fern.Type;
 import com.fern.TypeDefinition;
 import com.fern.TypeReference;
 import com.fern.model.codegen.TestConstants;
-import com.fern.model.codegen.interfaces.GeneratedInterfaceWithDefinition;
+import com.fern.model.codegen.interfaces.GeneratedInterface;
 import com.fern.model.codegen.interfaces.InterfaceGenerator;
 import java.util.Collections;
 import java.util.Optional;
@@ -36,7 +36,7 @@ public class ObjectGeneratorTest {
                 Collections.emptyList(),
                 Optional.empty(),
                 TestConstants.GENERATOR_CONTEXT);
-        GeneratedObjectWithDefinition generatedObject = objectGenerator.generate();
+        GeneratedObject generatedObject = objectGenerator.generate();
         System.out.println(generatedObject.file().toString());
     }
 
@@ -58,14 +58,14 @@ public class ObjectGeneratorTest {
                 .build();
         InterfaceGenerator interfaceGenerator = new InterfaceGenerator(
                 withDocsObjectTypeDefinition, withDocsTypeDefinition.name(), TestConstants.GENERATOR_CONTEXT);
-        GeneratedInterfaceWithDefinition withDocsInterface = interfaceGenerator.generate();
+        GeneratedInterface withDocsInterface = interfaceGenerator.generate();
         ObjectGenerator objectGenerator = new ObjectGenerator(
                 withDocsTypeDefinition.name(),
                 withDocsObjectTypeDefinition,
                 Collections.emptyList(),
                 Optional.of(withDocsInterface),
                 TestConstants.GENERATOR_CONTEXT);
-        GeneratedObjectWithDefinition withDocsObject = objectGenerator.generate();
+        GeneratedObject withDocsObject = objectGenerator.generate();
         System.out.println(withDocsObject.file().toString());
     }
 }

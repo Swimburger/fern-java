@@ -7,9 +7,9 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @StagedBuilderStyle
-public interface GeneratedEnumWithDefinition extends GeneratedFileWithDefinition<EnumTypeDefinition> {
+public interface GeneratedEnum extends GeneratedFileWithDefinition<EnumTypeDefinition> {
 
-    static ImmutableGeneratedEnumWithDefinition.FileBuildStage builder() {
-        return ImmutableGeneratedEnumWithDefinition.builder();
+    static ImmutableGeneratedEnum.FileBuildStage builder() {
+        return ImmutableGeneratedEnum.builder();
     }
 }

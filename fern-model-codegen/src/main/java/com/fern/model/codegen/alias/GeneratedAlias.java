@@ -7,9 +7,9 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @StagedBuilderStyle
-public interface GeneratedAliasWithDefinition extends GeneratedFileWithDefinition<AliasTypeDefinition> {
+public interface GeneratedAlias extends GeneratedFileWithDefinition<AliasTypeDefinition> {
 
-    static ImmutableGeneratedAliasWithDefinition.FileBuildStage builder() {
-        return ImmutableGeneratedAliasWithDefinition.builder();
+    static ImmutableGeneratedAlias.FileBuildStage builder() {
+        return ImmutableGeneratedAlias.builder();
     }
 }

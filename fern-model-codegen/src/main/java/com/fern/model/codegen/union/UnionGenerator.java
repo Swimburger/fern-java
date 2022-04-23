@@ -78,7 +78,7 @@ public final class UnionGenerator extends Generator<UnionTypeDefinition> {
     }
 
     @Override
-    public GeneratedUnionWithDefinition generate() {
+    public GeneratedUnion generate() {
         Map<SingleUnionType, MethodSpec> isTypeMethods = getIsTypeMethods();
         Map<SingleUnionType, GeneratedInternalValueTypeSpec> internalValueTypeSpecs = getInternalValueTypeSpecs();
         TypeSpec unionTypeSpec = TypeSpec.classBuilder(generatedUnionClassName)
@@ -100,7 +100,7 @@ public final class UnionGenerator extends Generator<UnionTypeDefinition> {
                 .build();
         JavaFile unionFile = JavaFile.builder(generatedUnionClassName.packageName(), unionTypeSpec)
                 .build();
-        return GeneratedUnionWithDefinition.builder()
+        return GeneratedUnion.builder()
                 .file(unionFile)
                 .className(generatedUnionClassName)
                 .definition(unionTypeDefinition)
