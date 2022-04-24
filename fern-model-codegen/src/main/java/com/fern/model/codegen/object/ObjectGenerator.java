@@ -50,8 +50,7 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
         this.objectTypeDefinition = objectTypeDefinition;
         this.extendedInterfaces = extendedInterfaces;
         this.selfInterface = selfInterface;
-        this.generatedObjectClassName =
-                generatorContext.getClassNameUtils().getClassNameForNamedType(namedType);
+        this.generatedObjectClassName = generatorContext.getClassNameUtils().getClassNameForNamedType(namedType);
         this.generatedObjectImmutablesClassName =
                 generatorContext.getImmutablesUtils().getImmutablesClassName(generatedObjectClassName);
     }
@@ -64,11 +63,10 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
                 .addSuperinterfaces(getSuperInterfaces());
         Map<ObjectProperty, MethodSpec> methodSpecsByProperty = new HashMap<>();
         if (selfInterface.isEmpty()) {
-            methodSpecsByProperty.putAll(generatorContext.getImmutablesUtils()
-                    .getImmutablesPropertyMethods(objectTypeDefinition));
+            methodSpecsByProperty.putAll(
+                    generatorContext.getImmutablesUtils().getImmutablesPropertyMethods(objectTypeDefinition));
         }
-        objectTypeSpecBuilder.addMethods(methodSpecsByProperty.values())
-                .addMethod(generateStaticBuilder());
+        objectTypeSpecBuilder.addMethods(methodSpecsByProperty.values()).addMethod(generateStaticBuilder());
         TypeSpec objectTypeSpec = objectTypeSpecBuilder.build();
         JavaFile objectFile = JavaFile.builder(generatedObjectClassName.packageName(), objectTypeSpec)
                 .build();
@@ -85,8 +83,7 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
         annotationSpecs.add(AnnotationSpec.builder(generatorContext.getStagedImmutablesBuilderClassname())
                 .build());
         annotationSpecs.add(AnnotationSpec.builder(JsonDeserialize.class)
-                .addMember(
-                        "as", "$T.class", generatedObjectImmutablesClassName)
+                .addMember("as", "$T.class", generatedObjectImmutablesClassName)
                 .build());
         annotationSpecs.add(AnnotationSpec.builder(JsonIgnoreProperties.class)
                 .addMember("ignoreUnknown", "$L", Boolean.TRUE.toString())

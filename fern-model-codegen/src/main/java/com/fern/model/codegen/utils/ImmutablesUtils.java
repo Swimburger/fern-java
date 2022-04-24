@@ -51,6 +51,7 @@ public final class ImmutablesUtils {
 
     public ClassName getImmutablesClassName(ClassName interfaceClassName) {
         return ClassName.get(
-                interfaceClassName.packageName(), IMMUTABLE_PREFIX + StringUtils.capitalize(interfaceClassName.simpleName()));
+                interfaceClassName.packageName(),
+                IMMUTABLE_PREFIX + StringUtils.capitalize(interfaceClassName.simpleName()));
     }
 }
