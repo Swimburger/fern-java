@@ -35,8 +35,12 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ModelGenerator {
+
+    private static final Logger log = LoggerFactory.getLogger(ModelGenerator.class);
 
     private static final String SRC_MAIN_JAVA = "src/main/java";
 
@@ -78,7 +82,7 @@ public final class ModelGenerator {
                     "-d",
                     pluginConfig.modelSubprojectDirectoryName() + "/build/classes"));
             command.addAll(javaFilePaths);
-            System.out.println(command);
+            log.debug("Running annotation processor {}", command);
             Process proc = Runtime.getRuntime().exec(command.toArray(new String[0]));
             StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream());
             StreamGobbler outputGobbler = new StreamGobbler(proc.getInputStream());
@@ -90,8 +94,8 @@ public final class ModelGenerator {
         }
     }
 
-    class StreamGobbler extends Thread {
-        InputStream is;
+    private static class StreamGobbler extends Thread {
+        private final InputStream is;
 
         // reads everything from is until empty.
         StreamGobbler(InputStream is) {
@@ -103,9 +107,11 @@ public final class ModelGenerator {
                 InputStreamReader isr = new InputStreamReader(is);
                 BufferedReader br = new BufferedReader(isr);
                 String line = null;
-                while ((line = br.readLine()) != null) System.out.println(line);
+                while ((line = br.readLine()) != null) {
+                    log.info(line);
+                }
             } catch (IOException ioe) {
-                ioe.printStackTrace();
+                log.error("Encountered exception while running annotation procesor", ioe);
             }
         }
     }
