@@ -2,7 +2,7 @@ package com.fern.model.codegen.object;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fern.codegen.GeneratedFileWithDefinition;
+import com.fern.codegen.GeneratedFile;
 import com.fern.model.codegen.Generator;
 import com.fern.model.codegen.GeneratorContext;
 import com.fern.model.codegen.interfaces.GeneratedInterface;
@@ -25,7 +25,7 @@ import javax.lang.model.element.Modifier;
 import org.apache.commons.lang3.StringUtils;
 import org.immutables.value.Value;
 
-public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
+public final class ObjectGenerator extends Generator {
 
     private static final Modifier[] OBJECT_INTERFACE_MODIFIERS = new Modifier[] {Modifier.PUBLIC};
 
@@ -73,7 +73,7 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
         return GeneratedObject.builder()
                 .file(objectFile)
                 .className(generatedObjectClassName)
-                .definition(objectTypeDefinition)
+                .objectTypeDefinition(objectTypeDefinition)
                 .build();
     }
 
@@ -94,7 +94,7 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
     private List<TypeName> getSuperInterfaces() {
         List<TypeName> superInterfaces = new ArrayList<>();
         superInterfaces.addAll(extendedInterfaces.stream()
-                .map(GeneratedFileWithDefinition::className)
+                .map(GeneratedFile::className)
                 .collect(Collectors.toList()));
         selfInterface.ifPresent(generatedInterface -> superInterfaces.add(generatedInterface.className()));
         return superInterfaces;
@@ -119,7 +119,7 @@ public final class ObjectGenerator extends Generator<ObjectTypeDefinition> {
         // Required field from super interfaces take priority
         for (GeneratedInterface superInterface : superInterfaces) {
             Optional<String> firstMandatoryFieldName =
-                    getFirstRequiredFieldName(superInterface.definition().properties());
+                    getFirstRequiredFieldName(superInterface.objectTypeDefinition().properties());
             if (firstMandatoryFieldName.isPresent()) {
                 return firstMandatoryFieldName;
             }

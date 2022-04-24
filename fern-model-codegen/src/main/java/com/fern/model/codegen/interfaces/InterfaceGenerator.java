@@ -9,7 +9,7 @@ import com.types.NamedType;
 import com.types.ObjectTypeDefinition;
 import javax.lang.model.element.Modifier;
 
-public final class InterfaceGenerator extends Generator<ObjectTypeDefinition> {
+public final class InterfaceGenerator extends Generator {
 
     private static final String INTERFACE_PREFIX = "I";
     private static final String INTERFACES_PACKAGE_NAME = "interfaces";
@@ -39,7 +39,7 @@ public final class InterfaceGenerator extends Generator<ObjectTypeDefinition> {
         return GeneratedInterface.builder()
                 .file(interfaceFile)
                 .className(generatedInterfaceClassName)
-                .definition(objectTypeDefinition)
+                .objectTypeDefinition(objectTypeDefinition)
                 .build();
     }
 
