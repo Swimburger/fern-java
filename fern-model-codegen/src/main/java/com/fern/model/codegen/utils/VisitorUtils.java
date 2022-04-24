@@ -34,12 +34,12 @@ public final class VisitorUtils {
         return ParameterizedTypeName.get(visitorInterfaceClassName, VISITOR_RETURN_TYPE);
     }
 
-    public GeneratedVisitor buildVisitorInterface(List<VisitMethodArgs> visitMethodArgsList) {
-        Map<String, MethodSpec> visitMethodsByKeyName = new HashMap<>();
+    public <T> GeneratedVisitor<T> buildVisitorInterface(List<VisitMethodArgs<T>> visitMethodArgsList) {
+        Map<T, MethodSpec> visitMethodsByKeyName = new HashMap<>();
         List<MethodSpec> visitMethods = visitMethodArgsList.stream()
                 .map(visitMethodArgs -> {
                     MethodSpec visitMethod = visitMethodArgs.convertToMethod();
-                    visitMethodsByKeyName.put(visitMethodArgs.keyName(), visitMethod);
+                    visitMethodsByKeyName.put(visitMethodArgs.key(), visitMethod);
                     return visitMethod;
                 })
                 .collect(Collectors.toList());
@@ -53,7 +53,7 @@ public final class VisitorUtils {
                         .returns(VISITOR_RETURN_TYPE)
                         .build())
                 .build();
-        return GeneratedVisitor.builder()
+        return GeneratedVisitor.<T>builder()
                 .typeSpec(visitorTypeSpec)
                 .putAllVisitMethodsByKeyName(visitMethodsByKeyName)
                 .build();
@@ -61,7 +61,9 @@ public final class VisitorUtils {
 
     @Value.Immutable
     @StagedBuilderStyle
-    public interface VisitMethodArgs {
+    public interface VisitMethodArgs<T> {
+        T key();
+
         String keyName();
 
         Optional<TypeName> visitorType();
@@ -77,19 +79,19 @@ public final class VisitorUtils {
             return methodSpecBuilder.build();
         }
 
-        static ImmutableVisitMethodArgs.KeyNameBuildStage builder() {
+        static <T> ImmutableVisitMethodArgs.KeyBuildStage<T> builder() {
             return ImmutableVisitMethodArgs.builder();
         }
     }
 
     @Value.Immutable
     @StagedBuilderStyle
-    public interface GeneratedVisitor {
+    public interface GeneratedVisitor<T> {
         TypeSpec typeSpec();
 
-        Map<String, MethodSpec> visitMethodsByKeyName();
+        Map<T, MethodSpec> visitMethodsByKeyName();
 
-        static ImmutableGeneratedVisitor.TypeSpecBuildStage builder() {
+        static <T> ImmutableGeneratedVisitor.TypeSpecBuildStage<T> builder() {
             return ImmutableGeneratedVisitor.builder();
         }
     }
