@@ -7,7 +7,6 @@ import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
-import com.types.NamedType;
 import com.types.ObjectProperty;
 import com.types.ObjectTypeDefinition;
 import java.util.Map;
