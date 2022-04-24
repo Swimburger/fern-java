@@ -1,12 +1,12 @@
 package com.fern.model.codegen.enums;
 
+import com.fern.model.codegen.TestConstants;
 import com.types.EnumTypeDefinition;
 import com.types.EnumValue;
 import com.types.FernFilepath;
 import com.types.NamedType;
 import com.types.Type;
 import com.types.TypeDefinition;
-import com.fern.model.codegen.TestConstants;
 import org.junit.jupiter.api.Test;
 
 public class EnumGeneratorTest {

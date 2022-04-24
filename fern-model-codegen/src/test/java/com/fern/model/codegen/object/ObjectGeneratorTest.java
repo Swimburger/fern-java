@@ -1,5 +1,8 @@
 package com.fern.model.codegen.object;
 
+import com.fern.model.codegen.TestConstants;
+import com.fern.model.codegen.interfaces.GeneratedInterface;
+import com.fern.model.codegen.interfaces.InterfaceGenerator;
 import com.types.ContainerType;
 import com.types.FernFilepath;
 import com.types.NamedType;
@@ -9,9 +12,6 @@ import com.types.PrimitiveType;
 import com.types.Type;
 import com.types.TypeDefinition;
 import com.types.TypeReference;
-import com.fern.model.codegen.TestConstants;
-import com.fern.model.codegen.interfaces.GeneratedInterface;
-import com.fern.model.codegen.interfaces.InterfaceGenerator;
 import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;

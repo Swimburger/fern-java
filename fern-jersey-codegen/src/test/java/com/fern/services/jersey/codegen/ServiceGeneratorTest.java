@@ -14,7 +14,7 @@ import com.types.Type;
 import com.types.TypeReference;
 import java.util.Collections;
 
-public class ServiceGeneratorTest {
+public final class ServiceGeneratorTest {
 
     // @Test
     public void test_basic() {

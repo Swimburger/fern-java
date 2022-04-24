@@ -1,5 +1,6 @@
 package com.fern.model.codegen.alias;
 
+import com.fern.model.codegen.TestConstants;
 import com.types.AliasTypeDefinition;
 import com.types.FernFilepath;
 import com.types.NamedType;
@@ -7,7 +8,6 @@ import com.types.PrimitiveType;
 import com.types.Type;
 import com.types.TypeDefinition;
 import com.types.TypeReference;
-import com.fern.model.codegen.TestConstants;
 import org.junit.jupiter.api.Test;
 
 public final class AliasGeneratorTest {

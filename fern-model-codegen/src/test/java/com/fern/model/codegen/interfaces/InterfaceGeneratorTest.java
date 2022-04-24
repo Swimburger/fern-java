@@ -1,5 +1,6 @@
 package com.fern.model.codegen.interfaces;
 
+import com.fern.model.codegen.TestConstants;
 import com.types.ContainerType;
 import com.types.FernFilepath;
 import com.types.NamedType;
@@ -9,7 +10,6 @@ import com.types.PrimitiveType;
 import com.types.Type;
 import com.types.TypeDefinition;
 import com.types.TypeReference;
-import com.fern.model.codegen.TestConstants;
 import org.junit.jupiter.api.Test;
 
 public class InterfaceGeneratorTest {

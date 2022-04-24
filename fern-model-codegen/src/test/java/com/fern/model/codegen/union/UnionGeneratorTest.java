@@ -1,5 +1,7 @@
 package com.fern.model.codegen.union;
 
+import com.fern.model.codegen.GeneratorContext;
+import com.fern.model.codegen.TestConstants;
 import com.types.ContainerType;
 import com.types.FernFilepath;
 import com.types.NamedType;
@@ -9,8 +11,6 @@ import com.types.Type;
 import com.types.TypeDefinition;
 import com.types.TypeReference;
 import com.types.UnionTypeDefinition;
-import com.fern.model.codegen.GeneratorContext;
-import com.fern.model.codegen.TestConstants;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
