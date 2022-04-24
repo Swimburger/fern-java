@@ -69,8 +69,8 @@ public final class VisitorUtils {
         Optional<TypeName> visitorType();
 
         default MethodSpec convertToMethod() {
-            MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder(VISITOR_VISIT_METHOD_NAME_PREFIX
-                            + StringUtils.capitalize(keyName()))
+            MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder(
+                            VISITOR_VISIT_METHOD_NAME_PREFIX + StringUtils.capitalize(keyName()))
                     .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                     .returns(VISITOR_RETURN_TYPE);
             if (visitorType().isPresent()) {
