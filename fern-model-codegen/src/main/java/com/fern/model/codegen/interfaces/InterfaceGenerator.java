@@ -4,9 +4,12 @@ import com.fern.model.codegen.Generator;
 import com.fern.model.codegen.GeneratorContext;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 import com.types.NamedType;
+import com.types.ObjectProperty;
 import com.types.ObjectTypeDefinition;
+import java.util.Map;
 import javax.lang.model.element.Modifier;
 
 public final class InterfaceGenerator extends Generator {
@@ -27,12 +30,11 @@ public final class InterfaceGenerator extends Generator {
     @Override
     public GeneratedInterface generate() {
         ClassName generatedInterfaceClassName = getInterfaceClassName();
+        Map<ObjectProperty, MethodSpec> methodSpecsByProperties =
+                generatorContext.getImmutablesUtils().getImmutablesPropertyMethods(objectTypeDefinition);
         TypeSpec interfaceTypeSpec = TypeSpec.interfaceBuilder(generatedInterfaceClassName.simpleName())
                 .addModifiers(Modifier.PUBLIC)
-                .addMethods(generatorContext
-                        .getImmutablesUtils()
-                        .getImmutablesPropertyMethods(objectTypeDefinition)
-                        .values())
+                .addMethods(methodSpecsByProperties.values())
                 .build();
         JavaFile interfaceFile = JavaFile.builder(generatedInterfaceClassName.packageName(), interfaceTypeSpec)
                 .build();
@@ -40,6 +42,7 @@ public final class InterfaceGenerator extends Generator {
                 .file(interfaceFile)
                 .className(generatedInterfaceClassName)
                 .objectTypeDefinition(objectTypeDefinition)
+                .putAllMethodSpecsByProperties(methodSpecsByProperties)
                 .build();
     }
 

@@ -66,7 +66,9 @@ public final class ObjectGenerator extends Generator {
             methodSpecsByProperty.putAll(
                     generatorContext.getImmutablesUtils().getImmutablesPropertyMethods(objectTypeDefinition));
         }
-        objectTypeSpecBuilder.addMethods(methodSpecsByProperty.values()).addMethod(generateStaticBuilder());
+        objectTypeSpecBuilder
+                .addMethods(methodSpecsByProperty.values())
+                .addMethod(generateStaticBuilder(methodSpecsByProperty));
         TypeSpec objectTypeSpec = objectTypeSpecBuilder.build();
         JavaFile objectFile = JavaFile.builder(generatedObjectClassName.packageName(), objectTypeSpec)
                 .build();
@@ -93,16 +95,14 @@ public final class ObjectGenerator extends Generator {
 
     private List<TypeName> getSuperInterfaces() {
         List<TypeName> superInterfaces = new ArrayList<>();
-        superInterfaces.addAll(extendedInterfaces.stream()
-                .map(GeneratedFile::className)
-                .collect(Collectors.toList()));
+        superInterfaces.addAll(
+                extendedInterfaces.stream().map(GeneratedFile::className).collect(Collectors.toList()));
         selfInterface.ifPresent(generatedInterface -> superInterfaces.add(generatedInterface.className()));
         return superInterfaces;
     }
 
-    private MethodSpec generateStaticBuilder() {
-        Optional<String> firstMandatoryFieldName =
-                getFirstRequiredFieldName(extendedInterfaces, objectTypeDefinition.properties());
+    private MethodSpec generateStaticBuilder(Map<ObjectProperty, MethodSpec> methodSpecsByProperty) {
+        Optional<String> firstMandatoryFieldName = getFirstRequiredFieldName(extendedInterfaces, methodSpecsByProperty);
         ClassName builderClassName = firstMandatoryFieldName.isEmpty()
                 ? generatedObjectImmutablesClassName.nestedClass("Builder")
                 : generatedObjectImmutablesClassName.nestedClass(
@@ -115,22 +115,23 @@ public final class ObjectGenerator extends Generator {
     }
 
     private static Optional<String> getFirstRequiredFieldName(
-            List<GeneratedInterface> superInterfaces, List<ObjectProperty> properties) {
+            List<GeneratedInterface> superInterfaces, Map<ObjectProperty, MethodSpec> methodSpecsByProperty) {
         // Required field from super interfaces take priority
         for (GeneratedInterface superInterface : superInterfaces) {
             Optional<String> firstMandatoryFieldName =
-                    getFirstRequiredFieldName(superInterface.objectTypeDefinition().properties());
+                    getFirstRequiredFieldName(superInterface.methodSpecsByProperties());
             if (firstMandatoryFieldName.isPresent()) {
                 return firstMandatoryFieldName;
             }
         }
-        return getFirstRequiredFieldName(properties);
+        return getFirstRequiredFieldName(methodSpecsByProperty);
     }
 
-    private static Optional<String> getFirstRequiredFieldName(List<ObjectProperty> properties) {
-        for (ObjectProperty property : properties) {
+    private static Optional<String> getFirstRequiredFieldName(Map<ObjectProperty, MethodSpec> methodSpecsByProperty) {
+        for (Map.Entry<ObjectProperty, MethodSpec> entry : methodSpecsByProperty.entrySet()) {
+            ObjectProperty property = entry.getKey();
             if (property.valueType().isPrimitive() || property.valueType().isNamed()) {
-                return Optional.of(property.key());
+                return Optional.of(entry.getValue().name);
             }
         }
         return Optional.empty();
