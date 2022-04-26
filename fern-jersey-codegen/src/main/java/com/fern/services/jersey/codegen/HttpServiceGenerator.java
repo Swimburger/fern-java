@@ -1,9 +1,11 @@
 package com.fern.services.jersey.codegen;
 
+import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratedHttpService;
 import com.fern.codegen.GeneratedInterface;
 import com.fern.codegen.GeneratedWireMessage;
 import com.fern.codegen.GeneratorContext;
+import com.fern.codegen.utils.ClassNameUtils;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.model.codegen.Generator;
 import com.services.http.HttpEndpoint;
@@ -14,6 +16,7 @@ import com.services.http.PathParameter;
 import com.services.http.QueryParameter;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
@@ -21,6 +24,10 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.types.NamedType;
 import com.types.TypeReference;
+import feign.Feign;
+import feign.jackson.JacksonDecoder;
+import feign.jackson.JacksonEncoder;
+import feign.jaxrs.JAXRSContract;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,23 +49,29 @@ import org.apache.commons.lang3.StringUtils;
 
 public final class HttpServiceGenerator extends Generator {
 
+    private static final String GET_CLIENT_METHOD_NAME = "getClient";
+
     private final HttpService httpService;
     private final Map<NamedType, GeneratedInterface> generatedInterfaces;
+    private final ClassName generatedServiceClassName;
     private final List<GeneratedWireMessage> generatedWireMessages = new ArrayList<>();
+    private final GeneratedFile generatedObjectMapper;
 
     public HttpServiceGenerator(
             GeneratorContext generatorContext,
             Map<NamedType, GeneratedInterface> generatedInterfaces,
-            HttpService httpService) {
+            HttpService httpService,
+            GeneratedFile generatedObjectMapper) {
         super(generatorContext, PackageType.SERVICES);
         this.httpService = httpService;
         this.generatedInterfaces = generatedInterfaces;
+        this.generatedServiceClassName =
+                generatorContext.getClassNameUtils().getClassNameForNamedType(httpService.name(), packageType);
+        this.generatedObjectMapper = generatedObjectMapper;
     }
 
     @Override
     public GeneratedHttpService generate() {
-        ClassName generatedServiceClassName =
-                generatorContext.getClassNameUtils().getClassNameForNamedType(httpService.name(), packageType);
         TypeSpec.Builder jerseyServiceBuilder = TypeSpec.interfaceBuilder(
                         StringUtils.capitalize(httpService.name().name()))
                 .addModifiers(Modifier.PUBLIC)
@@ -74,8 +87,10 @@ public final class HttpServiceGenerator extends Generator {
         List<MethodSpec> httpEndpointMethods = httpService.endpoints().stream()
                 .map(this::getHttpEndpointMethodSpec)
                 .collect(Collectors.toList());
-        TypeSpec jerseyServiceTypeSpec =
-                jerseyServiceBuilder.addMethods(httpEndpointMethods).build();
+        TypeSpec jerseyServiceTypeSpec = jerseyServiceBuilder
+                .addMethods(httpEndpointMethods)
+                .addMethod(getStaticClientBuilderMethod())
+                .build();
         JavaFile jerseyServiceJavaFile = JavaFile.builder(
                         generatedServiceClassName.packageName(), jerseyServiceTypeSpec)
                 .build();
@@ -115,6 +130,33 @@ public final class HttpServiceGenerator extends Generator {
             wireMessageGeneratorResult.generatedWireMessage().ifPresent(generatedWireMessages::add);
         });
         return endpointMethodBuilder.build();
+    }
+
+    private MethodSpec getStaticClientBuilderMethod() {
+        return MethodSpec.methodBuilder(GET_CLIENT_METHOD_NAME)
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addParameter(ClassNameUtils.STRING_CLASS_NAME, "url")
+                .returns(generatedServiceClassName)
+                .addCode(CodeBlock.builder()
+                        .add("return $T.builder()\n", Feign.class)
+                        .indent()
+                        .indent()
+                        .add(".contract(new $T())\n", JAXRSContract.class)
+                        .add(
+                                ".decoder(new $T($T.$L))\n",
+                                JacksonDecoder.class,
+                                generatedObjectMapper.className(),
+                                ObjectMapperGenerator.JSON_MAPPER_FIELD_NAME)
+                        .add(
+                                ".encoder(new $T($T.$L))\n",
+                                JacksonEncoder.class,
+                                generatedObjectMapper.className(),
+                                ObjectMapperGenerator.JSON_MAPPER_FIELD_NAME)
+                        .add(".target($T, $L);", generatedServiceClassName, "url")
+                        .unindent()
+                        .unindent()
+                        .build())
+                .build();
     }
 
     private ParameterSpec getHeaderParameterSpec(HttpHeader header) {

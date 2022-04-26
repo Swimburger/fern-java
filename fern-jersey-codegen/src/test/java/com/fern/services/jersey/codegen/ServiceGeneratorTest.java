@@ -1,7 +1,9 @@
 package com.fern.services.jersey.codegen;
 
+import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratedHttpService;
 import com.fern.codegen.GeneratorContext;
+import com.fern.codegen.utils.ClassNameUtils;
 import com.services.commons.ResponseErrors;
 import com.services.commons.WireMessage;
 import com.services.http.HttpEndpoint;
@@ -62,8 +64,10 @@ public final class ServiceGeneratorTest {
                                 .build())
                         .build())
                 .build();
+        ClassNameUtils classNameUtils = new ClassNameUtils(Optional.of(PACKAGE_PREFIX));
+        GeneratedFile generatedObjectMapperClass = ObjectMapperGenerator.generateObjectMappersClass(classNameUtils);
         HttpServiceGenerator httpServiceGenerator = new HttpServiceGenerator(GENERATOR_CONTEXT,
-                Collections.emptyMap(), testHttpService);
+                Collections.emptyMap(), testHttpService, generatedObjectMapperClass);
         GeneratedHttpService generatedHttpService = httpServiceGenerator.generate();
         System.out.println(generatedHttpService.file().toString());
     }

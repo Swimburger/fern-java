@@ -10,6 +10,7 @@ import com.fern.model.codegen.ImmutablesStyleGenerator;
 import com.fern.model.codegen.ModelGenerator;
 import com.fern.model.codegen.ModelGeneratorResult;
 import com.fern.services.jersey.codegen.HttpServiceGenerator;
+import com.fern.services.jersey.codegen.ObjectMapperGenerator;
 import com.squareup.javapoet.JavaFile;
 import com.types.NamedType;
 import com.types.TypeDefinition;
@@ -76,10 +77,12 @@ public final class ClientGeneratorCli {
         GeneratorContext generatorContext = new GeneratorContext(pluginConfig.packagePrefix(), typeDefinitionsByName);
         ModelGenerator modelGenerator = new ModelGenerator(ir.types(), generatorContext);
         ModelGeneratorResult modelGeneratorResult = modelGenerator.generate();
+        GeneratedFile generatedObjectMapper =
+                ObjectMapperGenerator.generateObjectMappersClass(generatorContext.getClassNameUtils());
         List<GeneratedHttpService> generatedHttpServices = ir.services().http().stream()
                 .map(httpService -> {
-                    HttpServiceGenerator httpServiceGenerator =
-                            new HttpServiceGenerator(generatorContext, modelGeneratorResult.interfaces(), httpService);
+                    HttpServiceGenerator httpServiceGenerator = new HttpServiceGenerator(
+                            generatorContext, modelGeneratorResult.interfaces(), httpService, generatedObjectMapper);
                     return httpServiceGenerator.generate();
                 })
                 .collect(Collectors.toList());
