@@ -3,7 +3,6 @@ package com.fern.codegen;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.utils.ClassNameUtils;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;

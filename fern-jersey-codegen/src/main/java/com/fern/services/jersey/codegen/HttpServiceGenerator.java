@@ -130,7 +130,8 @@ public final class HttpServiceGenerator extends Generator {
     }
 
     private MethodSpec getStaticClientBuilderMethod() {
-        ClassName objectMapperClassName = generatorContext.getClientObjectMappersFile().className();
+        ClassName objectMapperClassName =
+                generatorContext.getClientObjectMappersFile().className();
         return MethodSpec.methodBuilder(GET_CLIENT_METHOD_NAME)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addParameter(ClassNameUtils.STRING_CLASS_NAME, "url")

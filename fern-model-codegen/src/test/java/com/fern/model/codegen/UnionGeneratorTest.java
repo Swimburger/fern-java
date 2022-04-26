@@ -2,8 +2,6 @@ package com.fern.model.codegen;
 
 import com.fern.codegen.GeneratedUnion;
 import com.fern.codegen.GeneratorContext;
-import com.fern.codegen.ImmutablesStyleGenerator;
-import com.fern.codegen.utils.ClassNameUtils;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.types.ContainerType;
 import com.types.FernFilepath;

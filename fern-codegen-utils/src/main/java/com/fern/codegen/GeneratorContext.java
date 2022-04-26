@@ -3,7 +3,6 @@ package com.fern.codegen;
 import com.fern.codegen.utils.ClassNameUtils;
 import com.fern.codegen.utils.ImmutablesUtils;
 import com.fern.codegen.utils.VisitorUtils;
-import com.squareup.javapoet.ClassName;
 import com.types.NamedType;
 import com.types.TypeDefinition;
 import java.util.Map;
@@ -18,9 +17,7 @@ public final class GeneratorContext {
     private final GeneratedFile stagedImmutablesFile;
     private final GeneratedFile clientObjectMappersFile;
 
-    public GeneratorContext(
-            Optional<String> packagePrefix,
-            Map<NamedType, TypeDefinition> typeDefinitionsByName) {
+    public GeneratorContext(Optional<String> packagePrefix, Map<NamedType, TypeDefinition> typeDefinitionsByName) {
         this.classNameUtils = new ClassNameUtils(packagePrefix);
         this.immutablesUtils = new ImmutablesUtils(classNameUtils);
         this.visitorUtils = new VisitorUtils();

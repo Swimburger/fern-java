@@ -72,14 +72,13 @@ public final class ClientGeneratorCli {
     private static void generate(IntermediateRepresentation ir, PluginConfig pluginConfig) {
         Map<NamedType, TypeDefinition> typeDefinitionsByName =
                 ir.types().stream().collect(Collectors.toUnmodifiableMap(TypeDefinition::name, Function.identity()));
-        GeneratorContext generatorContext =
-                new GeneratorContext(pluginConfig.packagePrefix(), typeDefinitionsByName);
+        GeneratorContext generatorContext = new GeneratorContext(pluginConfig.packagePrefix(), typeDefinitionsByName);
         ModelGenerator modelGenerator = new ModelGenerator(ir.types(), generatorContext);
         ModelGeneratorResult modelGeneratorResult = modelGenerator.generate();
         List<GeneratedHttpService> generatedHttpServices = ir.services().http().stream()
                 .map(httpService -> {
-                    HttpServiceGenerator httpServiceGenerator = new HttpServiceGenerator(
-                            generatorContext, modelGeneratorResult.interfaces(), httpService);
+                    HttpServiceGenerator httpServiceGenerator =
+                            new HttpServiceGenerator(generatorContext, modelGeneratorResult.interfaces(), httpService);
                     return httpServiceGenerator.generate();
                 })
                 .collect(Collectors.toList());

@@ -41,6 +41,7 @@ public final class ClassNameUtils {
         return typeReferenceUtils.convertToTypeName(primitiveAllowed, typeReference);
     }
 
+    @SuppressWarnings("RightCurly")
     private static String getCompatibleClassName(String name) {
         StringBuilder camelCaseNameBuilder = new StringBuilder();
         boolean shouldCapitalize = false;
