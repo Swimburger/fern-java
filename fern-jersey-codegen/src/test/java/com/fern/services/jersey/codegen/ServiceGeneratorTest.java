@@ -4,6 +4,8 @@ import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratedHttpService;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameUtils;
+import com.fern.model.codegen.ImmutablesStyleGenerator;
+import com.fern.model.codegen.TestConstants;
 import com.services.commons.ResponseErrors;
 import com.services.commons.WireMessage;
 import com.services.http.HttpEndpoint;
@@ -24,7 +26,9 @@ public final class ServiceGeneratorTest {
 
     private static final String PACKAGE_PREFIX = "com";
     private static final GeneratorContext GENERATOR_CONTEXT =
-            new GeneratorContext(Optional.of(PACKAGE_PREFIX), Collections.emptyMap());
+            new GeneratorContext(Optional.of(PACKAGE_PREFIX), Collections.emptyMap(),
+                    ImmutablesStyleGenerator.generateStagedBuilderImmutablesStyle(new ClassNameUtils(Optional.of(
+                            TestConstants.PACKAGE_PREFIX))));
 
     @Test
     public void test_basic() {
