@@ -1,5 +1,6 @@
 package com.fern.services.jersey.codegen;
 
+import com.fern.codegen.GeneratedHttpService;
 import com.services.commons.ResponseErrors;
 import com.services.commons.WireMessage;
 import com.services.http.HttpEndpoint;
@@ -54,8 +55,8 @@ public final class ServiceGeneratorTest {
                                 .build())
                         .build())
                 .build();
-        ServiceGenerator serviceGenerator = new ServiceGenerator(Collections.singletonList(testHttpService));
-        GeneratedServiceWithDefinition generatedService = serviceGenerator.generate().get(0);
-        System.out.println(generatedService.file().toString());
+        ServiceGenerator serviceGenerator = new ServiceGenerator(null, testHttpService);
+        GeneratedHttpService generatedHttpService = serviceGenerator.generate().get(0);
+        System.out.println(generatedHttpService.file().toString());
     }
 }

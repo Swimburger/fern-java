@@ -1,0 +1,29 @@
+package com.fern.model.codegen;
+
+import com.fern.codegen.GeneratedAlias;
+import com.fern.codegen.GeneratedEnum;
+import com.fern.codegen.GeneratedInterface;
+import com.fern.codegen.GeneratedObject;
+import com.fern.codegen.GeneratedUnion;
+import java.util.List;
+import org.immutables.value.Value;
+
+@Value.Immutable
+public interface ModelGeneratorResult {
+
+    List<GeneratedAlias> aliases();
+
+    List<GeneratedEnum> enums();
+
+    List<GeneratedInterface> interfaces();
+
+    List<GeneratedObject> objects();
+
+    List<GeneratedUnion> unions();
+
+    class Builder extends ImmutableModelGeneratorResult.Builder {}
+
+    static ModelGeneratorResult.Builder builder() {
+        return new ModelGeneratorResult.Builder();
+    }
+}

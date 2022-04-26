@@ -1,5 +1,6 @@
 package com.fern.model.codegen;
 
+import com.fern.codegen.GeneratorContext;
 import com.fern.model.codegen.config.PluginConfig;
 import java.util.Collections;
 
@@ -11,7 +12,7 @@ public final class TestConstants {
             .build();
 
     public static final GeneratorContext GENERATOR_CONTEXT =
-            new GeneratorContext(PLUGIN_CONFIG, Collections.emptyMap());
+            new GeneratorContext(PLUGIN_CONFIG.packagePrefix(), Collections.emptyMap());
 
     private TestConstants() {
     }

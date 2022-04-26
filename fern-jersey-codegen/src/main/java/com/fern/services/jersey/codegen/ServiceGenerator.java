@@ -1,6 +1,9 @@
 package com.fern.services.jersey.codegen;
 
-import com.fern.codegen.utils.ClassNameUtils;
+import com.fern.codegen.GeneratedHttpService;
+import com.fern.codegen.GeneratorContext;
+import com.fern.codegen.utils.ClassNameUtils.PackageType;
+import com.fern.model.codegen.Generator;
 import com.services.commons.WireMessage;
 import com.services.http.HttpEndpoint;
 import com.services.http.HttpHeader;
@@ -17,7 +20,6 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.types.TypeReference;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 import javax.ws.rs.Consumes;
@@ -34,24 +36,19 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 
-public final class ServiceGenerator {
+public final class ServiceGenerator extends Generator {
 
-    private static final String REQUEST_PARAMETER_NAME = "request";
+    private final HttpService httpService;
 
-    private final List<HttpService> httpServices;
-    private final ClassNameUtils classNameUtils;
-
-    public ServiceGenerator(List<HttpService> httpServices) {
-        this.httpServices = httpServices;
-        this.classNameUtils = new ClassNameUtils(Optional.empty());
+    public ServiceGenerator(GeneratorContext generatorContext, HttpService httpService) {
+        super(generatorContext, PackageType.SERVICES);
+        this.httpService = httpService;
     }
 
-    public List<GeneratedServiceWithDefinition> generate() {
-        return httpServices.stream().map(this::getGeneratedService).collect(Collectors.toList());
-    }
-
-    private GeneratedServiceWithDefinition getGeneratedService(HttpService httpService) {
-        ClassName generatedServiceClassName = classNameUtils.getClassNameForNamedType(httpService.name());
+    @Override
+    public GeneratedHttpService generate() {
+        ClassName generatedServiceClassName =
+                generatorContext.getClassNameUtils().getClassNameForNamedType(httpService.name(), packageType);
         TypeSpec.Builder jerseyServiceBuilder = TypeSpec.interfaceBuilder(
                         StringUtils.capitalize(httpService.name().name()))
                 .addModifiers(Modifier.PUBLIC)
@@ -72,7 +69,7 @@ public final class ServiceGenerator {
         JavaFile jerseyServiceJavaFile = JavaFile.builder(
                         generatedServiceClassName.packageName(), jerseyServiceTypeSpec)
                 .build();
-        return GeneratedServiceWithDefinition.builder()
+        return GeneratedHttpService.builder()
                 .file(jerseyServiceJavaFile)
                 .className(generatedServiceClassName)
                 .httpService(httpService)
@@ -91,13 +88,20 @@ public final class ServiceGenerator {
         httpEndpoint.queryParameters().stream()
                 .map(this::getQueryParameterSpec)
                 .forEach(endpointMethodBuilder::addParameter);
-        httpEndpoint.request().ifPresent(httpRequest -> {
-            ParameterSpec requestParameterSpec = getRequestTypeName(httpRequest);
-            endpointMethodBuilder.addParameter(requestParameterSpec);
+        httpEndpoint.request().ifPresent(requestWireMessage -> {
+            ServiceWireMessageGenerator serviceWireMessageGenerator =
+                    new ServiceWireMessageGenerator(
+                            generatorContext, httpService, httpEndpoint, requestWireMessage, true);
+            WireMessageGeneratorResult wireMessageGeneratorResult = serviceWireMessageGenerator.generate();
+            endpointMethodBuilder.addParameter(ParameterSpec.builder(wireMessageGeneratorResult.typeName(), "request")
+                    .build());
         });
-        httpEndpoint.response().ifPresent(httpResponse -> {
-            TypeName responseTypeName = getResponseTypeName(httpResponse);
-            endpointMethodBuilder.returns(responseTypeName);
+        httpEndpoint.response().ifPresent(responseWireMessage -> {
+            ServiceWireMessageGenerator serviceWireMessageGenerator =
+                    new ServiceWireMessageGenerator(
+                            generatorContext, httpService, httpEndpoint, responseWireMessage, false);
+            WireMessageGeneratorResult wireMessageGeneratorResult = serviceWireMessageGenerator.generate();
+            endpointMethodBuilder.returns(wireMessageGeneratorResult.typeName());
         });
         return endpointMethodBuilder.build();
     }
@@ -115,7 +119,7 @@ public final class ServiceGenerator {
     }
 
     private <T> ParameterSpec getParameterSpec(Class<T> paramClass, String paramName, TypeReference paramType) {
-        TypeName typeName = classNameUtils.getTypeNameFromTypeReference(false, paramType);
+        TypeName typeName = generatorContext.getClassNameUtils().getTypeNameFromTypeReference(false, paramType);
         return ParameterSpec.builder(typeName, paramName)
                 .addAnnotation(AnnotationSpec.builder(paramClass)
                         .addMember("value", "$S", paramName)
