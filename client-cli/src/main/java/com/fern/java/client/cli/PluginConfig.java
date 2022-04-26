@@ -1,4 +1,4 @@
-package com.fern.model.codegen.config;
+package com.fern.java.client.cli;
 
 import com.fern.immutables.StagedBuilderStyle;
 import java.util.Optional;

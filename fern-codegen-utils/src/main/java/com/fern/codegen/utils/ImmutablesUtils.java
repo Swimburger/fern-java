@@ -1,8 +1,6 @@
 package com.fern.codegen.utils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fern.codegen.utils.ClassNameUtils;
-import com.fern.codegen.utils.KeyWordUtils;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;

@@ -4,17 +4,11 @@ dependencies {
     implementation 'com.fern:fern-immutables-style'
     implementation 'com.squareup:javapoet'
     implementation 'org.slf4j:slf4j-api'
-    implementation 'org.slf4j:slf4j-log4j12'
-    implementation 'org.slf4j:slf4j-log4j12'
-    implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'org.apache.commons:commons-lang3'
     implementation 'com.google.code.findbugs:annotations'
     implementation 'com.palantir.common:streams'
-    implementation 'net.sourceforge.argparse4j:argparse4j'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-guava'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
     implementation 'org.immutables:value::annotations'
-    implementation 'org.immutables:value-processor'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
 
     annotationProcessor 'org.immutables:value'
 

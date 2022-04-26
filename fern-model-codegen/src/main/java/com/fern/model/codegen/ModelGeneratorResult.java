@@ -5,7 +5,9 @@ import com.fern.codegen.GeneratedEnum;
 import com.fern.codegen.GeneratedInterface;
 import com.fern.codegen.GeneratedObject;
 import com.fern.codegen.GeneratedUnion;
+import com.types.NamedType;
 import java.util.List;
+import java.util.Map;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -15,7 +17,7 @@ public interface ModelGeneratorResult {
 
     List<GeneratedEnum> enums();
 
-    List<GeneratedInterface> interfaces();
+    Map<NamedType, GeneratedInterface> interfaces();
 
     List<GeneratedObject> objects();
 

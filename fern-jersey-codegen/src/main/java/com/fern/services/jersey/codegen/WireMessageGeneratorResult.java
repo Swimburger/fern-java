@@ -1,6 +1,6 @@
 package com.fern.services.jersey.codegen;
 
-import com.fern.codegen.GeneratedFile;
+import com.fern.codegen.GeneratedWireMessage;
 import com.fern.immutables.StagedBuilderStyle;
 import com.squareup.javapoet.TypeName;
 import java.util.Optional;
@@ -12,7 +12,7 @@ public interface WireMessageGeneratorResult {
 
     TypeName typeName();
 
-    Optional<GeneratedFile> generatedWireMessage();
+    Optional<GeneratedWireMessage> generatedWireMessage();
 
     static ImmutableWireMessageGeneratorResult.TypeNameBuildStage builder() {
         return ImmutableWireMessageGeneratorResult.builder();

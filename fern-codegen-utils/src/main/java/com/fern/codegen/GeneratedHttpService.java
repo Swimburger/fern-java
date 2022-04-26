@@ -2,6 +2,7 @@ package com.fern.codegen;
 
 import com.fern.immutables.StagedBuilderStyle;
 import com.services.http.HttpService;
+import java.util.List;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -9,6 +10,8 @@ import org.immutables.value.Value;
 public interface GeneratedHttpService extends GeneratedFile {
 
     HttpService httpService();
+
+    List<GeneratedWireMessage> generatedWireMessages();
 
     static ImmutableGeneratedHttpService.FileBuildStage builder() {
         return ImmutableGeneratedHttpService.builder();

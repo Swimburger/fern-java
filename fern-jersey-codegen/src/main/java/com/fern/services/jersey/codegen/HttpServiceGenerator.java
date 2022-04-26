@@ -1,10 +1,11 @@
 package com.fern.services.jersey.codegen;
 
 import com.fern.codegen.GeneratedHttpService;
+import com.fern.codegen.GeneratedInterface;
+import com.fern.codegen.GeneratedWireMessage;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.model.codegen.Generator;
-import com.services.commons.WireMessage;
 import com.services.http.HttpEndpoint;
 import com.services.http.HttpHeader;
 import com.services.http.HttpMethod;
@@ -18,8 +19,11 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+import com.types.NamedType;
 import com.types.TypeReference;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 import javax.ws.rs.Consumes;
@@ -36,13 +40,19 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 
-public final class ServiceGenerator extends Generator {
+public final class HttpServiceGenerator extends Generator {
 
     private final HttpService httpService;
+    private final Map<NamedType, GeneratedInterface> generatedInterfaces;
+    private final List<GeneratedWireMessage> generatedWireMessages = new ArrayList<>();
 
-    public ServiceGenerator(GeneratorContext generatorContext, HttpService httpService) {
+    public HttpServiceGenerator(
+            GeneratorContext generatorContext,
+            Map<NamedType, GeneratedInterface> generatedInterfaces,
+            HttpService httpService) {
         super(generatorContext, PackageType.SERVICES);
         this.httpService = httpService;
+        this.generatedInterfaces = generatedInterfaces;
     }
 
     @Override
@@ -73,6 +83,7 @@ public final class ServiceGenerator extends Generator {
                 .file(jerseyServiceJavaFile)
                 .className(generatedServiceClassName)
                 .httpService(httpService)
+                .addAllGeneratedWireMessages(generatedWireMessages)
                 .build();
     }
 
@@ -89,19 +100,19 @@ public final class ServiceGenerator extends Generator {
                 .map(this::getQueryParameterSpec)
                 .forEach(endpointMethodBuilder::addParameter);
         httpEndpoint.request().ifPresent(requestWireMessage -> {
-            ServiceWireMessageGenerator serviceWireMessageGenerator =
-                    new ServiceWireMessageGenerator(
-                            generatorContext, httpService, httpEndpoint, requestWireMessage, true);
+            ServiceWireMessageGenerator serviceWireMessageGenerator = new ServiceWireMessageGenerator(
+                    generatorContext, generatedInterfaces, httpService, httpEndpoint, requestWireMessage, true);
             WireMessageGeneratorResult wireMessageGeneratorResult = serviceWireMessageGenerator.generate();
             endpointMethodBuilder.addParameter(ParameterSpec.builder(wireMessageGeneratorResult.typeName(), "request")
                     .build());
+            wireMessageGeneratorResult.generatedWireMessage().ifPresent(generatedWireMessages::add);
         });
         httpEndpoint.response().ifPresent(responseWireMessage -> {
-            ServiceWireMessageGenerator serviceWireMessageGenerator =
-                    new ServiceWireMessageGenerator(
-                            generatorContext, httpService, httpEndpoint, responseWireMessage, false);
+            ServiceWireMessageGenerator serviceWireMessageGenerator = new ServiceWireMessageGenerator(
+                    generatorContext, generatedInterfaces, httpService, httpEndpoint, responseWireMessage, false);
             WireMessageGeneratorResult wireMessageGeneratorResult = serviceWireMessageGenerator.generate();
             endpointMethodBuilder.returns(wireMessageGeneratorResult.typeName());
+            wireMessageGeneratorResult.generatedWireMessage().ifPresent(generatedWireMessages::add);
         });
         return endpointMethodBuilder.build();
     }
@@ -125,14 +136,6 @@ public final class ServiceGenerator extends Generator {
                         .addMember("value", "$S", paramName)
                         .build())
                 .build();
-    }
-
-    private ParameterSpec getRequestTypeName(WireMessage httpRequest) {
-        throw new RuntimeException("Unsupported");
-    }
-
-    private TypeName getResponseTypeName(WireMessage httpResponse) {
-        throw new RuntimeException("Unsupported");
     }
 
     private static final class HttpMethodAnnotationVisitor implements HttpMethod.Visitor<AnnotationSpec> {

@@ -7,7 +7,6 @@ import com.fern.codegen.GeneratedObject;
 import com.fern.codegen.GeneratedUnion;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
-import com.fern.model.codegen.config.PluginConfig;
 import com.types.AliasTypeDefinition;
 import com.types.EnumTypeDefinition;
 import com.types.NamedType;
@@ -29,28 +28,23 @@ public final class ModelGenerator {
 
     private static final Logger log = LoggerFactory.getLogger(ModelGenerator.class);
 
-    private static final String SRC_GENERATED_JAVA = "src/generated/java";
-
     private final List<TypeDefinition> typeDefinitions;
     private final Map<NamedType, TypeDefinition> typeDefinitionsByName;
-    private final PluginConfig pluginConfig;
     private final GeneratorContext generatorContext;
 
-    public ModelGenerator(List<TypeDefinition> typeDefinitions, PluginConfig pluginConfig) {
+    public ModelGenerator(List<TypeDefinition> typeDefinitions, GeneratorContext generatorContext) {
         this.typeDefinitions = typeDefinitions;
-        this.typeDefinitionsByName = typeDefinitions.stream()
-                .collect(Collectors.toUnmodifiableMap(TypeDefinition::name, Function.identity()));
-        this.pluginConfig = pluginConfig;
-        this.generatorContext = new GeneratorContext(pluginConfig.packagePrefix(), typeDefinitionsByName);
+        this.typeDefinitionsByName = generatorContext.getTypeDefinitionsByName();
+        this.generatorContext = generatorContext;
     }
 
-    private ModelGeneratorResult generate() {
+    public ModelGeneratorResult generate() {
         ModelGeneratorResult.Builder modelGeneratorResultBuilder = ModelGeneratorResult.builder();
         Map<NamedType, GeneratedInterface> generatedInterfaces = getGeneratedInterfaces();
-        modelGeneratorResultBuilder.addAllInterfaces(generatedInterfaces.values());
-        typeDefinitions.forEach(typeDefinition ->
-                        typeDefinition.shape().accept(new TypeDefinitionGenerator(typeDefinition, generatedInterfaces
-                                , modelGeneratorResultBuilder)));
+        modelGeneratorResultBuilder.putAllInterfaces(generatedInterfaces);
+        typeDefinitions.forEach(typeDefinition -> typeDefinition
+                .shape()
+                .accept(new TypeDefinitionGenerator(typeDefinition, generatedInterfaces, modelGeneratorResultBuilder)));
         return modelGeneratorResultBuilder.build();
     }
 
@@ -103,7 +97,10 @@ public final class ModelGenerator {
             ObjectGenerator objectGenerator = new ObjectGenerator(
                     typeDefinition.name(),
                     PackageType.TYPES,
-                    objectTypeDefinition, extendedInterfaces, selfInterface, generatorContext);
+                    objectTypeDefinition,
+                    extendedInterfaces,
+                    selfInterface,
+                    generatorContext);
             GeneratedObject generatedObject = objectGenerator.generate();
             modelGeneratorResultBuilder.addObjects(generatedObject);
             return null;

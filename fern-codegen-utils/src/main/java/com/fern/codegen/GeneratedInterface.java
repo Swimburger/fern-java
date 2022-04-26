@@ -1,6 +1,5 @@
 package com.fern.codegen;
 
-import com.fern.codegen.GeneratedFile;
 import com.fern.immutables.StagedBuilderStyle;
 import com.squareup.javapoet.MethodSpec;
 import com.types.ObjectProperty;

@@ -15,6 +15,7 @@ import com.types.TypeDefinition;
 import com.types.TypeReference;
 import com.types.UnionTypeDefinition;
 import java.util.Collections;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 public class UnionGeneratorTest {
@@ -58,7 +59,8 @@ public class UnionGeneratorTest {
                         .build())
                 .shape(Type.union(unionTypeDefinition))
                 .build();
-        GeneratorContext generatorContext = new GeneratorContext(TestConstants.PLUGIN_CONFIG.packagePrefix(),
+        GeneratorContext generatorContext = new GeneratorContext(
+                Optional.of(TestConstants.PACKAGE_PREFIX),
                 Collections.singletonMap(variableValueTypeDefinition.name(), variableValueTypeDefinition));
         UnionGenerator unionGenerator = new UnionGenerator(
                 variableValueTypeDefinition.name(),
@@ -93,7 +95,7 @@ public class UnionGeneratorTest {
                         .build())
                 .shape(Type.union(unionTypeDefinition))
                 .build();
-        GeneratorContext generatorContext = new GeneratorContext(TestConstants.PLUGIN_CONFIG.packagePrefix(),
+        GeneratorContext generatorContext = new GeneratorContext(Optional.of(TestConstants.PACKAGE_PREFIX),
                 Collections.singletonMap(variableValueTypeDefinition.name(), variableValueTypeDefinition));
         UnionGenerator unionGenerator = new UnionGenerator(
                 variableValueTypeDefinition.name(),

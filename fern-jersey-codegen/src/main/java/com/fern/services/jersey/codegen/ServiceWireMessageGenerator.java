@@ -2,13 +2,13 @@ package com.fern.services.jersey.codegen;
 
 import com.fern.codegen.GeneratedEnum;
 import com.fern.codegen.GeneratedFile;
+import com.fern.codegen.GeneratedInterface;
 import com.fern.codegen.GeneratedObject;
 import com.fern.codegen.GeneratedUnion;
 import com.fern.codegen.GeneratedWireMessage;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.model.codegen.EnumGenerator;
-import com.fern.model.codegen.Generator;
 import com.fern.model.codegen.ObjectGenerator;
 import com.fern.model.codegen.UnionGenerator;
 import com.services.commons.WireMessage;
@@ -21,12 +21,16 @@ import com.types.NamedType;
 import com.types.ObjectTypeDefinition;
 import com.types.Type;
 import com.types.UnionTypeDefinition;
-import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public final class ServiceWireMessageGenerator {
 
     private final GeneratorContext generatorContext;
+    private final Map<NamedType, GeneratedInterface> generatedInterfaces;
     private final HttpService httpService;
     private final HttpEndpoint httpEndpoint;
     private final WireMessage wireMessage;
@@ -34,11 +38,13 @@ public final class ServiceWireMessageGenerator {
 
     public ServiceWireMessageGenerator(
             GeneratorContext generatorContext,
+            Map<NamedType, GeneratedInterface> generatedInterfaces,
             HttpService httpService,
             HttpEndpoint httpEndpoint,
             WireMessage wireMessage,
             boolean isRequest) {
         this.generatorContext = generatorContext;
+        this.generatedInterfaces = generatedInterfaces;
         this.httpService = httpService;
         this.httpEndpoint = httpEndpoint;
         this.wireMessage = wireMessage;
@@ -61,11 +67,10 @@ public final class ServiceWireMessageGenerator {
 
         @Override
         public WireMessageGeneratorResult visitAlias(AliasTypeDefinition aliasTypeDefinition) {
-            TypeName aliasTypeName = generatorContext.getClassNameUtils().getTypeNameFromTypeReference(true,
-                    aliasTypeDefinition.aliasOf());
-            return WireMessageGeneratorResult.builder()
-                    .typeName(aliasTypeName)
-                    .build();
+            TypeName aliasTypeName = generatorContext
+                    .getClassNameUtils()
+                    .getTypeNameFromTypeReference(true, aliasTypeDefinition.aliasOf());
+            return WireMessageGeneratorResult.builder().typeName(aliasTypeName).build();
         }
 
         @Override
@@ -81,14 +86,18 @@ public final class ServiceWireMessageGenerator {
 
         @Override
         public WireMessageGeneratorResult visitObject(ObjectTypeDefinition objectTypeDefinition) {
-            ObjectGenerator objectGenerator =
-                    new ObjectGenerator(
-                            getNamedType(),
-                            PackageType.SERVICES,
-                            objectTypeDefinition,
-                            Collections.emptyList(), // pass through generated interfaces
-                            Optional.empty(),
-                            generatorContext);
+            List<GeneratedInterface> extendedInterfaces = objectTypeDefinition._extends().stream()
+                    .map(generatedInterfaces::get)
+                    .sorted(Comparator.comparing(
+                            generatedInterface -> generatedInterface.className().simpleName()))
+                    .collect(Collectors.toList());
+            ObjectGenerator objectGenerator = new ObjectGenerator(
+                    getNamedType(),
+                    PackageType.SERVICES,
+                    objectTypeDefinition,
+                    extendedInterfaces,
+                    Optional.empty(),
+                    generatorContext);
             GeneratedObject generatedObject = objectGenerator.generate();
             return WireMessageGeneratorResult.builder()
                     .typeName(generatedObject.className())

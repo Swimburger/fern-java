@@ -8,6 +8,7 @@ public abstract class Generator {
 
     @SuppressWarnings("VisibilityModifier")
     protected final GeneratorContext generatorContext;
+
     protected final PackageType packageType;
 
     public Generator(GeneratorContext generatorContext, PackageType packageType) {
