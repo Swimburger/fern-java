@@ -16,16 +16,17 @@ public final class GeneratorContext {
     private final VisitorUtils visitorUtils;
     private final Map<NamedType, TypeDefinition> typeDefinitionsByName;
     private final GeneratedFile stagedImmutablesFile;
+    private final GeneratedFile clientObjectMappersFile;
 
     public GeneratorContext(
             Optional<String> packagePrefix,
-            Map<NamedType, TypeDefinition> typeDefinitionsByName,
-            GeneratedFile stagedImmutablesFile) {
+            Map<NamedType, TypeDefinition> typeDefinitionsByName) {
         this.classNameUtils = new ClassNameUtils(packagePrefix);
         this.immutablesUtils = new ImmutablesUtils(classNameUtils);
         this.visitorUtils = new VisitorUtils();
         this.typeDefinitionsByName = typeDefinitionsByName;
-        this.stagedImmutablesFile = stagedImmutablesFile;
+        this.stagedImmutablesFile = ImmutablesStyleGenerator.generateStagedBuilderImmutablesStyle(classNameUtils);
+        this.clientObjectMappersFile = ClientObjectMapperGenerator.generateObjectMappersClass(classNameUtils);
     }
 
     public ClassNameUtils getClassNameUtils() {
@@ -48,7 +49,7 @@ public final class GeneratorContext {
         return stagedImmutablesFile;
     }
 
-    public ClassName getStagedImmutablesBuilderClassname() {
-        return stagedImmutablesFile.className();
+    public GeneratedFile getClientObjectMappersFile() {
+        return clientObjectMappersFile;
     }
 }

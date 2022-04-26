@@ -1,4 +1,4 @@
-package com.fern.model.codegen;
+package com.fern.codegen;
 
 import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.utils.ClassNameUtils;

@@ -1,4 +1,4 @@
-package com.fern.services.jersey.codegen;
+package com.fern.codegen;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -14,12 +14,12 @@ import com.squareup.javapoet.TypeSpec;
 import java.util.Optional;
 import javax.lang.model.element.Modifier;
 
-public final class ObjectMapperGenerator {
+public final class ClientObjectMapperGenerator {
 
     public static final String OBJECT_MAPPERS_CLASS_NAME = "ObjectMappers";
     public static final String JSON_MAPPER_FIELD_NAME = "JSON_MAPPER";
 
-    private ObjectMapperGenerator() {}
+    private ClientObjectMapperGenerator() {}
 
     public static GeneratedFile generateObjectMappersClass(ClassNameUtils classNameUtils) {
         ClassName stagedBuilderClassName =

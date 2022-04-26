@@ -47,10 +47,12 @@ public final class ClassNameUtils {
         for (int i = 0; i < name.length(); ++i) {
             if (i == 0) {
                 camelCaseNameBuilder.append(Character.toUpperCase(name.charAt(i)));
-            } else if (name.charAt(i) == '_') {
-                camelCaseNameBuilder.append(Character.toUpperCase(name.charAt(i)));
-                shouldCapitalize = true;
-            } else {
+            }
+            // else if (name.charAt(i) == '_') {
+            //     camelCaseNameBuilder.append(Character.toUpperCase(name.charAt(i)));
+            //     shouldCapitalize = true;
+            // }
+            else {
                 if (shouldCapitalize) {
                     camelCaseNameBuilder.append(Character.toUpperCase(name.charAt(i)));
                 } else {
