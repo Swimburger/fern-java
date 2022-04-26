@@ -63,7 +63,7 @@ public final class ServiceWireMessageGenerator {
                 .build();
     }
 
-    public class WireMessageVisitor implements Type.Visitor<WireMessageGeneratorResult> {
+    public final class WireMessageVisitor implements Type.Visitor<WireMessageGeneratorResult> {
 
         @Override
         public WireMessageGeneratorResult visitAlias(AliasTypeDefinition aliasTypeDefinition) {
