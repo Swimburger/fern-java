@@ -142,7 +142,7 @@ workflows:
           context: jfrog
 
       - publish-release:
-          request: [ compile, check, unit-test ]
+          requires: [ compile, check, unit-test ]
           filters:
             branches:
               only:
