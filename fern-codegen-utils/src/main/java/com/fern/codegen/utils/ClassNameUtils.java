@@ -83,6 +83,8 @@ public final class ClassNameUtils {
                 return "interfaces";
             case SERVICES:
                 return "services";
+            case ERRORS:
+                return "errors";
         }
         throw new IllegalStateException("Encountered unknown PackageType: " + packageType);
     }
