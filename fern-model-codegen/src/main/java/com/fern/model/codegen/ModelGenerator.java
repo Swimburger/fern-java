@@ -56,7 +56,8 @@ public final class ModelGenerator {
                 .map(errorDefinition -> {
                     ExceptionGenerator exceptionGenerator = new ExceptionGenerator(generatorContext, errorDefinition);
                     return exceptionGenerator.generate();
-                }).collect(Collectors.toList());
+                })
+                .collect(Collectors.toList());
         modelGeneratorResultBuilder.addAllExceptions(generatedExceptions);
         return modelGeneratorResultBuilder.build();
     }

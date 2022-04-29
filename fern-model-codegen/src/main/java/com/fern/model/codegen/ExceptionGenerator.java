@@ -38,25 +38,29 @@ public final class ExceptionGenerator extends Generator {
 
     @Override
     public GeneratedException generate() {
-        ClassName generatedExceptionClassName =
-                generatorContext.getClassNameUtils().getClassNameForNamedType(errorDefinition.name(), packageType);
-        TypeSpec.Builder errorExceptionTypeSpec = TypeSpec.classBuilder(
-                generatorContext.getClassNameUtils().getClassNameForNamedType(errorDefinition.name(), packageType))
+        TypeSpec.Builder errorExceptionTypeSpec = TypeSpec.classBuilder(generatorContext
+                        .getClassNameUtils()
+                        .getClassNameForNamedType(errorDefinition.name(), packageType))
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addAnnotation(AnnotationSpec.builder(JsonDeserialize.class)
-                        .addMember("as", "$T.class",
-                                generatorContext.getImmutablesUtils().getImmutablesClassName(generatedExceptionClassName))
+                        .addMember(
+                                "as",
+                                "$T.class",
+                                generatorContext
+                                        .getImmutablesUtils()
+                                        .getImmutablesClassName(generatedExceptionClassName))
                         .build())
                 .addAnnotation(generatorContext.getStagedImmutablesFile().className())
                 .addSuperinterface(ClassNameUtils.EXCEPTION_CLASS_NAME)
                 .addSuperinterface(generatorContext.getApiExceptionFile().className());
         if (errorDefinition.http().isPresent()) {
             errorExceptionTypeSpec
-                    .addSuperinterface(generatorContext.getHttpApiExceptionFile().className())
+                    .addSuperinterface(
+                            generatorContext.getHttpApiExceptionFile().className())
                     .addField(FieldSpec.builder(TypeName.INT, STATUS_CODE_FIELD_NAME)
-                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                        .initializer("$L", errorDefinition.http().get().statusCode())
-                        .build());
+                            .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                            .initializer("$L", errorDefinition.http().get().statusCode())
+                            .build());
         }
         Map<ErrorProperty, MethodSpec> methodSpecsByProperty =
                 generatorContext.getImmutablesUtils().getImmutablesPropertyMethods(errorDefinition);
