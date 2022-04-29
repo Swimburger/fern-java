@@ -64,7 +64,7 @@ public final class ServiceGeneratorTest {
                         .build())
                 .build();
         HttpServiceGenerator httpServiceGenerator = new HttpServiceGenerator(
-                GENERATOR_CONTEXT, Collections.emptyMap(), testHttpService);
+                GENERATOR_CONTEXT, Collections.emptyMap(), Collections.emptyList(), testHttpService);
         GeneratedHttpService generatedHttpService = httpServiceGenerator.generate();
         System.out.println(generatedHttpService.file().toString());
     }

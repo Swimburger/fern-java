@@ -78,7 +78,11 @@ public final class ClientGeneratorCli {
         List<GeneratedHttpService> generatedHttpServices = ir.services().http().stream()
                 .map(httpService -> {
                     HttpServiceGenerator httpServiceGenerator =
-                            new HttpServiceGenerator(generatorContext, modelGeneratorResult.interfaces(), httpService);
+                            new HttpServiceGenerator(
+                                    generatorContext,
+                                    modelGeneratorResult.interfaces(),
+                                    modelGeneratorResult.exceptions(),
+                                    httpService);
                     return httpServiceGenerator.generate();
                 })
                 .collect(Collectors.toList());
@@ -95,8 +99,10 @@ public final class ClientGeneratorCli {
         generatedFiles.add(generatorContext.getAuthHeaderFile());
         generatedFiles.add(generatorContext.getApiExceptionFile());
         generatedFiles.add(generatorContext.getHttpApiExceptionFile());
+        generatedFiles.add(generatorContext.getUnknownRemoteExceptionFile());
         generatedHttpServices.forEach(generatedHttpService -> {
             generatedFiles.add(generatedHttpService);
+            generatedHttpService.generatedErrorDecoder().ifPresent(generatedFiles::add);
             generatedFiles.addAll(generatedHttpService.generatedWireMessages());
         });
         writeToFiles(generatedFiles, pluginConfig);
