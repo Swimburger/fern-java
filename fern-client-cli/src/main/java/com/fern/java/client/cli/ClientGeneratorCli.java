@@ -77,12 +77,11 @@ public final class ClientGeneratorCli {
         ModelGeneratorResult modelGeneratorResult = modelGenerator.generate();
         List<GeneratedHttpService> generatedHttpServices = ir.services().http().stream()
                 .map(httpService -> {
-                    HttpServiceGenerator httpServiceGenerator =
-                            new HttpServiceGenerator(
-                                    generatorContext,
-                                    modelGeneratorResult.interfaces(),
-                                    modelGeneratorResult.exceptions(),
-                                    httpService);
+                    HttpServiceGenerator httpServiceGenerator = new HttpServiceGenerator(
+                            generatorContext,
+                            modelGeneratorResult.interfaces(),
+                            modelGeneratorResult.exceptions(),
+                            httpService);
                     return httpServiceGenerator.generate();
                 })
                 .collect(Collectors.toList());

@@ -75,7 +75,8 @@ public final class HttpServiceGenerator extends Generator {
                 generatorContext.getClassNameUtils().getClassNameForNamedType(httpService.name(), packageType);
         this.generatedExceptionsByType = generatedExceptions.stream()
                 .collect(Collectors.toMap(
-                        generatedException -> generatedException.errorDefinition().name(),
+                        generatedException ->
+                                generatedException.errorDefinition().name(),
                         Function.identity()));
     }
 
@@ -96,24 +97,14 @@ public final class HttpServiceGenerator extends Generator {
         List<MethodSpec> httpEndpointMethods = httpService.endpoints().stream()
                 .map(this::getHttpEndpointMethodSpec)
                 .collect(Collectors.toList());
+        Optional<GeneratedErrorDecoder> maybeGeneratedErrorDecoder = getGeneratedErrorDecoder();
         TypeSpec jerseyServiceTypeSpec = jerseyServiceBuilder
                 .addMethods(httpEndpointMethods)
-                .addMethod(getStaticClientBuilderMethod())
+                .addMethod(getStaticClientBuilderMethod(maybeGeneratedErrorDecoder))
                 .build();
         JavaFile jerseyServiceJavaFile = JavaFile.builder(
                         generatedServiceClassName.packageName(), jerseyServiceTypeSpec)
                 .build();
-
-        Optional<GeneratedErrorDecoder> maybeGeneratedErrorDecoder = Optional.empty();
-        boolean shouldGenerateErrorDecoder = httpService.endpoints().stream()
-                .map(HttpEndpoint::errors)
-                .flatMap(responseErrors -> responseErrors.possibleErrors().stream())
-                .count() > 0;
-        if (shouldGenerateErrorDecoder) {
-            ServiceErrorDecoderGenerator serviceErrorDecoderGenerator =
-                    new ServiceErrorDecoderGenerator(generatorContext, httpService);
-            maybeGeneratedErrorDecoder = Optional.of(serviceErrorDecoderGenerator.generate());
-        }
         return GeneratedHttpService.builder()
                 .file(jerseyServiceJavaFile)
                 .className(generatedServiceClassName)
@@ -121,6 +112,21 @@ public final class HttpServiceGenerator extends Generator {
                 .generatedErrorDecoder(maybeGeneratedErrorDecoder)
                 .addAllGeneratedWireMessages(generatedWireMessages)
                 .build();
+    }
+
+    private Optional<GeneratedErrorDecoder> getGeneratedErrorDecoder() {
+        Optional<GeneratedErrorDecoder> maybeGeneratedErrorDecoder = Optional.empty();
+        boolean shouldGenerateErrorDecoder = httpService.endpoints().stream()
+                        .map(HttpEndpoint::errors)
+                        .flatMap(responseErrors -> responseErrors.possibleErrors().stream())
+                        .count()
+                > 0;
+        if (shouldGenerateErrorDecoder) {
+            ServiceErrorDecoderGenerator serviceErrorDecoderGenerator =
+                    new ServiceErrorDecoderGenerator(generatorContext, httpService);
+            maybeGeneratedErrorDecoder = Optional.of(serviceErrorDecoderGenerator.generate());
+        }
+        return maybeGeneratedErrorDecoder;
     }
 
     private MethodSpec getHttpEndpointMethodSpec(HttpEndpoint httpEndpoint) {
@@ -163,37 +169,41 @@ public final class HttpServiceGenerator extends Generator {
             exceptionsAdded = true;
         }
         if (exceptionsAdded) {
-            endpointMethodBuilder.addException(generatorContext.getUnknownRemoteExceptionFile().className());
+            endpointMethodBuilder.addException(
+                    generatorContext.getUnknownRemoteExceptionFile().className());
         }
         return endpointMethodBuilder.build();
     }
 
-    private MethodSpec getStaticClientBuilderMethod() {
+    private MethodSpec getStaticClientBuilderMethod(Optional<GeneratedErrorDecoder> generatedErrorDecoder) {
         ClassName objectMapperClassName =
                 generatorContext.getClientObjectMappersFile().className();
+        CodeBlock.Builder codeBlockBuilder = CodeBlock.builder()
+                .add("return $T.builder()\n", Feign.class)
+                .indent()
+                .indent()
+                .add(".contract(new $T())\n", JAXRSContract.class)
+                .add(
+                        ".decoder(new $T($T.$L))\n",
+                        JacksonDecoder.class,
+                        objectMapperClassName,
+                        ClientObjectMapperGenerator.JSON_MAPPER_FIELD_NAME)
+                .add(
+                        ".encoder(new $T($T.$L))\n",
+                        JacksonEncoder.class,
+                        objectMapperClassName,
+                        ClientObjectMapperGenerator.JSON_MAPPER_FIELD_NAME)
+                .add(".target($T.class, $L);", generatedServiceClassName, "url");
+        if (generatedErrorDecoder.isPresent()) {
+            codeBlockBuilder.add(
+                    ".errorDecoder(new $T())", generatedErrorDecoder.get().className());
+        }
+        CodeBlock codeBlock = codeBlockBuilder.unindent().unindent().build();
         return MethodSpec.methodBuilder(GET_CLIENT_METHOD_NAME)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addParameter(ClassNameUtils.STRING_CLASS_NAME, "url")
                 .returns(generatedServiceClassName)
-                .addCode(CodeBlock.builder()
-                        .add("return $T.builder()\n", Feign.class)
-                        .indent()
-                        .indent()
-                        .add(".contract(new $T())\n", JAXRSContract.class)
-                        .add(
-                                ".decoder(new $T($T.$L))\n",
-                                JacksonDecoder.class,
-                                objectMapperClassName,
-                                ClientObjectMapperGenerator.JSON_MAPPER_FIELD_NAME)
-                        .add(
-                                ".encoder(new $T($T.$L))\n",
-                                JacksonEncoder.class,
-                                objectMapperClassName,
-                                ClientObjectMapperGenerator.JSON_MAPPER_FIELD_NAME)
-                        .add(".target($T.class, $L);", generatedServiceClassName, "url")
-                        .unindent()
-                        .unindent()
-                        .build())
+                .addCode(codeBlock)
                 .build();
     }
 

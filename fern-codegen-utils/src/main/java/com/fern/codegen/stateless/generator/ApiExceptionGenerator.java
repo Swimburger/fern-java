@@ -23,8 +23,8 @@ public final class ApiExceptionGenerator {
     private ApiExceptionGenerator() {}
 
     public static GeneratedFile generateApiExceptionInterface(ClassNameUtils classNameUtils) {
-        ClassName apiExceptionInterfaceClassname = classNameUtils.getClassName(
-                API_EXCEPTION_INTERFACE_CLASS_NAME, Optional.empty(), Optional.empty());
+        ClassName apiExceptionInterfaceClassname =
+                classNameUtils.getClassName(API_EXCEPTION_INTERFACE_CLASS_NAME, Optional.empty(), Optional.empty());
         TypeSpec apiExceptionTypeSpec = TypeSpec.interfaceBuilder(API_EXCEPTION_INTERFACE_CLASS_NAME)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addMethod(MethodSpec.methodBuilder(GET_ERROR_INSTANCE_ID_METHOD_NAME)
@@ -41,8 +41,8 @@ public final class ApiExceptionGenerator {
     }
 
     public static GeneratedFile generateHttpApiExceptionInterface(ClassNameUtils classNameUtils) {
-        ClassName httpApiExceptionInterfaceClassname = classNameUtils.getClassName(
-                API_EXCEPTION_INTERFACE_CLASS_NAME, Optional.empty(), Optional.empty());
+        ClassName httpApiExceptionInterfaceClassname =
+                classNameUtils.getClassName(API_EXCEPTION_INTERFACE_CLASS_NAME, Optional.empty(), Optional.empty());
         TypeSpec httpApiExceptionTypeSpec = TypeSpec.interfaceBuilder(HTTP_API_EXCEPTION_CLASS_NAME)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addMethod(MethodSpec.methodBuilder(GET_STATUS_CODE_METHOD_NAME)
@@ -67,7 +67,7 @@ public final class ApiExceptionGenerator {
                 .addSuperinterface(ClassName.get(RemoteException.class))
                 .build();
         JavaFile httpApiExceptionFile = JavaFile.builder(
-                unknownRemoteExceptionClassName.packageName(), unknownRemoteExceptionTypeSpec)
+                        unknownRemoteExceptionClassName.packageName(), unknownRemoteExceptionTypeSpec)
                 .build();
         return GeneratedFile.builder()
                 .file(httpApiExceptionFile)

@@ -106,7 +106,8 @@ public final class ServiceErrorDecoderGenerator extends Generator {
                             .map(baseExceptionClassNames::get)
                             .collect(Collectors.toList());
                     return getNestedErrorTypeSpec(namedType, endpointBaseExceptionClassNames);
-                }).collectToMap();
+                })
+                .collectToMap();
         TypeSpec errorDecoderTypeSpec = TypeSpec.classBuilder(errorDecoderClassName.simpleName())
                 .addModifiers(Modifier.FINAL)
                 .addSuperinterface(ErrorDecoder.class)
@@ -151,7 +152,8 @@ public final class ServiceErrorDecoderGenerator extends Generator {
                             GET_EXCEPTION_METHOD_NAME)
                     .endControlFlow();
         }
-        codeBlockBuilder.addStatement("return new $T($S)",
+        codeBlockBuilder.addStatement(
+                "return new $T($S)",
                 generatorContext.getUnknownRemoteExceptionFile().className(),
                 "Failed to read response body");
         return decodeMethodSpecBuilder.addCode(codeBlockBuilder.build()).build();
@@ -205,7 +207,9 @@ public final class ServiceErrorDecoderGenerator extends Generator {
                                 JsonTypeInfo.As.EXISTING_PROPERTY.name())
                         .addMember("property", "$S", httpEndpoint.errors().discriminant())
                         .addMember("visible", "true")
-                        .addMember("defaultImpl", "$T.class",
+                        .addMember(
+                                "defaultImpl",
+                                "$T.class",
                                 generatorContext.getUnknownRemoteExceptionFile().className())
                         .build());
         AnnotationSpec.Builder jsonSubTypeAnnotationBuilder = AnnotationSpec.builder(JsonSubTypes.class);
