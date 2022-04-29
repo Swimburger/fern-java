@@ -27,7 +27,6 @@ import com.types.NamedType;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

@@ -11,7 +11,6 @@ import com.fern.codegen.utils.ClassNameUtils;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.model.codegen.Generator;
 import com.services.commons.ResponseError;
-import com.services.commons.ResponseErrors;
 import com.services.http.HttpEndpoint;
 import com.services.http.HttpHeader;
 import com.services.http.HttpMethod;
