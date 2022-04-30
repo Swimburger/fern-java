@@ -83,10 +83,8 @@ public final class ServiceErrorDecoderGenerator extends Generator {
             if (!httpEndpoint.errors().possibleErrors().isEmpty()) {
                 ClassName endpointBaseException = generatorContext
                         .getClassNameUtils()
-                        .getClassName(
-                                httpEndpoint.endpointId() + NESTED_ENDPOINT_EXCEPTION_SUFFIX,
-                                Optional.of(PackageType.SERVICES),
-                                Optional.of(httpService.name().fernFilepath()));
+                        .getNestedClassName(
+                                errorDecoderClassName, httpEndpoint.endpointId() + NESTED_ENDPOINT_EXCEPTION_SUFFIX);
                 baseExceptionClassNames.put(httpEndpoint, endpointBaseException);
             }
         });
@@ -97,9 +95,13 @@ public final class ServiceErrorDecoderGenerator extends Generator {
     }
 
     public GeneratedErrorDecoder generate() {
-        Map<HttpEndpoint, TypeSpec> endpointToBaseException = httpService.endpoints().stream()
+        Map<HttpEndpoint, ClassName> endpointToBaseException = httpService.endpoints().stream()
                 .filter(httpEndpoint -> !httpEndpoint.errors().possibleErrors().isEmpty())
-                .collect(Collectors.toMap(Function.identity(), this::getEndpointExceptionUnionInterface));
+                .collect(Collectors.toMap(Function.identity(), baseExceptionClassNames::get));
+        List<TypeSpec> baseExceptionTypeSpecs = httpService.endpoints().stream()
+                .filter(httpEndpoint -> !httpEndpoint.errors().possibleErrors().isEmpty())
+                .map(this::getBaseEndpointExceptionInterface)
+                .collect(Collectors.toList());
         Map<NamedType, TypeSpec> nestedErrorTypeSpecs = KeyedStream.stream(errorToEndpoints.asMap())
                 .map((namedType, httpEndpoints) -> {
                     List<ClassName> endpointBaseExceptionClassNames = httpEndpoints.stream()
@@ -114,7 +116,7 @@ public final class ServiceErrorDecoderGenerator extends Generator {
                 .addMethod(getDecodeMethodSpec(endpointToBaseException))
                 .addMethod(getDecodeExceptionMethodSpec())
                 .addType(getExceptionRetrieverInterface())
-                .addTypes(endpointToBaseException.values())
+                .addTypes(baseExceptionTypeSpecs)
                 .addTypes(nestedErrorTypeSpecs.values())
                 .build();
         JavaFile errorDecoderServiceFile = JavaFile.builder(errorDecoderClassName.packageName(), errorDecoderTypeSpec)
@@ -125,7 +127,7 @@ public final class ServiceErrorDecoderGenerator extends Generator {
                 .build();
     }
 
-    private MethodSpec getDecodeMethodSpec(Map<HttpEndpoint, TypeSpec> endpointToBaseException) {
+    private MethodSpec getDecodeMethodSpec(Map<HttpEndpoint, ClassName> endpointToBaseException) {
         MethodSpec.Builder decodeMethodSpecBuilder = MethodSpec.methodBuilder(DECODE_METHOD_NAME)
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
@@ -135,7 +137,7 @@ public final class ServiceErrorDecoderGenerator extends Generator {
         CodeBlock.Builder codeBlockBuilder = CodeBlock.builder();
         boolean ifStatementStarted = false;
         for (HttpEndpoint httpEndpoint : httpService.endpoints()) {
-            if (!httpEndpoint.errors().possibleErrors().isEmpty()) {
+            if (httpEndpoint.errors().possibleErrors().isEmpty()) {
                 continue;
             }
             codeBlockBuilder
@@ -148,14 +150,15 @@ public final class ServiceErrorDecoderGenerator extends Generator {
                             "return $L($L, $T.class).$L()",
                             DECODE_EXCEPTION_METHOD_NAME,
                             DECODE_METHOD_RESPONSE_PARAMETER_NAME,
-                            endpointToBaseException.get(httpEndpoint).name,
+                            endpointToBaseException.get(httpEndpoint),
                             GET_EXCEPTION_METHOD_NAME)
                     .endControlFlow();
         }
         codeBlockBuilder.addStatement(
-                "return new $T($S)",
+                "return new $T($S + $L)",
                 generatorContext.getUnknownRemoteExceptionFile().className(),
-                "Failed to read response body");
+                "Encountered exception for unknown method: ",
+                DECODE_METHOD_KEY_PARAMETER_NAME);
         return decodeMethodSpecBuilder.addCode(codeBlockBuilder.build()).build();
     }
 
@@ -170,7 +173,7 @@ public final class ServiceErrorDecoderGenerator extends Generator {
                 .addParameter(
                         ParameterizedTypeName.get(ClassName.get(Class.class), decodeMethodGeneric),
                         DECODE_EXCEPTION_CLAZZ_PARAMETER_NAME)
-                .beginControlFlow("try ")
+                .beginControlFlow("try")
                 .addStatement(
                         "return $T.$L.readValue($L.body().asInputStream(), $L)",
                         generatorContext.getClientObjectMappersFile().className(),
@@ -179,7 +182,10 @@ public final class ServiceErrorDecoderGenerator extends Generator {
                         DECODE_EXCEPTION_CLAZZ_PARAMETER_NAME)
                 .endControlFlow()
                 .beginControlFlow("catch ($T e)", ClassName.get(IOException.class))
-                .addStatement("return () -> e")
+                .addStatement(
+                        "return () -> new $T($S)",
+                        generatorContext.getUnknownRemoteExceptionFile().className(),
+                        "Failed to read error body")
                 .endControlFlow()
                 .build();
     }
@@ -187,16 +193,15 @@ public final class ServiceErrorDecoderGenerator extends Generator {
     private TypeSpec getExceptionRetrieverInterface() {
         return TypeSpec.interfaceBuilder(EXCEPTION_RETRIEVER_CLASSNAME)
                 .addMethod(MethodSpec.methodBuilder(GET_EXCEPTION_METHOD_NAME)
-                        .addModifiers(Modifier.ABSTRACT)
+                        .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                         .returns(Exception.class)
                         .build())
                 .build();
     }
 
-    private TypeSpec getEndpointExceptionUnionInterface(HttpEndpoint httpEndpoint) {
+    private TypeSpec getBaseEndpointExceptionInterface(HttpEndpoint httpEndpoint) {
         ClassName endpointBaseException = baseExceptionClassNames.get(httpEndpoint);
         TypeSpec.Builder endpointBaseExceptionBuilder = TypeSpec.interfaceBuilder(endpointBaseException.simpleName())
-                .addModifiers(Modifier.ABSTRACT)
                 .addSuperinterface(exceptionRetrieverClassName)
                 .addAnnotation(AnnotationSpec.builder(JsonTypeInfo.class)
                         .addMember("use", "$T.$L", ClassName.get(JsonTypeInfo.Id.class), JsonTypeInfo.Id.NAME.name())
@@ -235,13 +240,15 @@ public final class ServiceErrorDecoderGenerator extends Generator {
                         .build())
                 .addSuperinterfaces(endpointBaseExceptions)
                 .addMethod(MethodSpec.methodBuilder(IMMUTABLES_ERROR_ATTRIBUTE_NAME)
-                        .addModifiers(Modifier.ABSTRACT)
+                        .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                         .addAnnotation(JsonValue.class)
+                        .returns(errorClassNames.get(errorNamedType))
                         .build())
                 .addMethod(MethodSpec.methodBuilder(GET_EXCEPTION_METHOD_NAME)
-                        .addModifiers(Modifier.ABSTRACT, Modifier.DEFAULT)
+                        .addModifiers(Modifier.DEFAULT, Modifier.PUBLIC)
                         .addAnnotation(Override.class)
                         .addStatement("return error()")
+                        .returns(Exception.class)
                         .build())
                 .build();
     }
