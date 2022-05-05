@@ -1,4 +1,4 @@
-package com.fern.services.jersey.codegen;
+package com.fern.client.jersey;
 
 import com.fern.codegen.GeneratedErrorDecoder;
 import com.fern.codegen.GeneratedException;
@@ -52,7 +52,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 
-public final class HttpServiceGenerator extends Generator {
+public final class HttpServiceClientGenerator extends Generator {
 
     private static final String GET_CLIENT_METHOD_NAME = "getClient";
     private static final String AUTHORIZATION_HEADER_NAME = "Authorization";
@@ -63,7 +63,7 @@ public final class HttpServiceGenerator extends Generator {
     private final ClassName generatedServiceClassName;
     private final List<GeneratedWireMessage> generatedWireMessages = new ArrayList<>();
 
-    public HttpServiceGenerator(
+    public HttpServiceClientGenerator(
             GeneratorContext generatorContext,
             Map<NamedType, GeneratedInterface> generatedInterfaces,
             List<GeneratedException> generatedExceptions,

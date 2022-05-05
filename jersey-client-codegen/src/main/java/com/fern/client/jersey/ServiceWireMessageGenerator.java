@@ -1,4 +1,4 @@
-package com.fern.services.jersey.codegen;
+package com.fern.client.jersey;
 
 import com.fern.codegen.GeneratedEnum;
 import com.fern.codegen.GeneratedFile;

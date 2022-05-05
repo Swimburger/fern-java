@@ -1,4 +1,4 @@
-package com.fern.services.jersey.codegen;
+package com.fern.client.jersey;
 
 import com.errors.ErrorDefinition;
 import com.errors.ErrorProperty;
@@ -25,7 +25,7 @@ import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public final class ServiceGeneratorTest {
+public final class HttpServiceClientGeneratorTest {
 
     private static final String PACKAGE_PREFIX = "com";
     private static final GeneratorContext GENERATOR_CONTEXT = new GeneratorContext(
@@ -70,9 +70,9 @@ public final class ServiceGeneratorTest {
                                 .build())
                         .build())
                 .build();
-        HttpServiceGenerator httpServiceGenerator = new HttpServiceGenerator(
+        HttpServiceClientGenerator httpServiceClientGenerator = new HttpServiceClientGenerator(
                 GENERATOR_CONTEXT, Collections.emptyMap(), Collections.emptyList(), testHttpService);
-        GeneratedHttpService generatedHttpService = httpServiceGenerator.generate();
+        GeneratedHttpService generatedHttpService = httpServiceClientGenerator.generate();
         System.out.println(generatedHttpService.file().toString());
         Assertions.assertThat(generatedHttpService.generatedErrorDecoder()).isEmpty();
     }
@@ -139,12 +139,12 @@ public final class ServiceGeneratorTest {
         ExceptionGenerator personIdNotFoundExceptionGenerator =
                 new ExceptionGenerator(GENERATOR_CONTEXT, personIdNotFound);
         GeneratedException personIdNotFoundException = personIdNotFoundExceptionGenerator.generate();
-        HttpServiceGenerator httpServiceGenerator = new HttpServiceGenerator(
+        HttpServiceClientGenerator httpServiceClientGenerator = new HttpServiceClientGenerator(
                 GENERATOR_CONTEXT,
                 Collections.emptyMap(),
                 Collections.singletonList(personIdNotFoundException),
                 testHttpService);
-        GeneratedHttpService generatedHttpService = httpServiceGenerator.generate();
+        GeneratedHttpService generatedHttpService = httpServiceClientGenerator.generate();
         System.out.println(generatedHttpService.file().toString());
         Assertions.assertThat(generatedHttpService.generatedErrorDecoder()).isPresent();
         System.out.println(generatedHttpService.generatedErrorDecoder().get().file().toString());

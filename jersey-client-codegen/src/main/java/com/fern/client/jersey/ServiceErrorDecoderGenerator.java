@@ -1,4 +1,4 @@
-package com.fern.services.jersey.codegen;
+package com.fern.client.jersey;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

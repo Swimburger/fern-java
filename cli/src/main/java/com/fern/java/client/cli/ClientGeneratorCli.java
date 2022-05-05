@@ -8,7 +8,7 @@ import com.fern.codegen.GeneratedHttpService;
 import com.fern.codegen.GeneratorContext;
 import com.fern.model.codegen.ModelGenerator;
 import com.fern.model.codegen.ModelGeneratorResult;
-import com.fern.services.jersey.codegen.HttpServiceGenerator;
+import com.fern.client.jersey.HttpServiceClientGenerator;
 import com.squareup.javapoet.JavaFile;
 import com.types.NamedType;
 import com.types.TypeDefinition;
@@ -62,12 +62,12 @@ public final class ClientGeneratorCli {
         ModelGeneratorResult modelGeneratorResult = modelGenerator.generate();
         List<GeneratedHttpService> generatedHttpServices = ir.services().http().stream()
                 .map(httpService -> {
-                    HttpServiceGenerator httpServiceGenerator = new HttpServiceGenerator(
+                    HttpServiceClientGenerator httpServiceClientGenerator = new HttpServiceClientGenerator(
                             generatorContext,
                             modelGeneratorResult.interfaces(),
                             modelGeneratorResult.exceptions(),
                             httpService);
-                    return httpServiceGenerator.generate();
+                    return httpServiceClientGenerator.generate();
                 })
                 .collect(Collectors.toList());
         List<GeneratedFile> generatedFiles = new ArrayList<>();
