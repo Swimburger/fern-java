@@ -6,6 +6,7 @@ import com.fern.IntermediateRepresentation;
 import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratedHttpService;
 import com.fern.codegen.GeneratorContext;
+import com.fern.codegen.IGeneratedFile;
 import com.fern.model.codegen.ModelGenerator;
 import com.fern.model.codegen.ModelGeneratorResult;
 import com.fern.client.jersey.HttpServiceClientGenerator;
@@ -70,7 +71,7 @@ public final class ClientGeneratorCli {
                     return httpServiceClientGenerator.generate();
                 })
                 .collect(Collectors.toList());
-        List<GeneratedFile> generatedFiles = new ArrayList<>();
+        List<IGeneratedFile> generatedFiles = new ArrayList<>();
         generatedFiles.addAll(modelGeneratorResult.aliases());
         generatedFiles.addAll(modelGeneratorResult.enums());
         generatedFiles.addAll(modelGeneratorResult.interfaces().values());
@@ -92,7 +93,7 @@ public final class ClientGeneratorCli {
         writeToFiles(generatedFiles, pluginConfig);
     }
 
-    private static synchronized void writeToFiles(List<GeneratedFile> generatedFiles, PluginConfig pluginConfig) {
+    private static synchronized void writeToFiles(List<IGeneratedFile> generatedFiles, PluginConfig pluginConfig) {
         Path srcPath = Paths.get(pluginConfig.outputDirectory(), SRC_GENERATED_JAVA);
         generatedFiles.forEach(generatedFile -> {
             JavaFile javaFile = generatedFile.file();

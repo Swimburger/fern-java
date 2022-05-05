@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
+import javax.ws.rs.WebApplicationException;
 import org.immutables.value.Value;
 
 public final class ServiceErrorDecoderGenerator extends Generator {
@@ -94,6 +95,7 @@ public final class ServiceErrorDecoderGenerator extends Generator {
         });
     }
 
+    @Override
     public GeneratedErrorDecoder generate() {
         Map<HttpEndpoint, ClassName> endpointToBaseException = httpService.endpoints().stream()
                 .filter(httpEndpoint -> !httpEndpoint.errors().possibleErrors().isEmpty())

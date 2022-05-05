@@ -8,7 +8,7 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @StagedBuilderStyle
-public interface GeneratedHttpService extends GeneratedFile {
+public interface GeneratedHttpService extends IGeneratedFile {
 
     HttpService httpService();
 

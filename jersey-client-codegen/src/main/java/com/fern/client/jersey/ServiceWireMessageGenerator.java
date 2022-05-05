@@ -7,6 +7,7 @@ import com.fern.codegen.GeneratedObject;
 import com.fern.codegen.GeneratedUnion;
 import com.fern.codegen.GeneratedWireMessage;
 import com.fern.codegen.GeneratorContext;
+import com.fern.codegen.IGeneratedFile;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.model.codegen.EnumGenerator;
 import com.fern.model.codegen.ObjectGenerator;
@@ -26,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
 
 public final class ServiceWireMessageGenerator {
 
@@ -121,7 +124,7 @@ public final class ServiceWireMessageGenerator {
             throw new RuntimeException("Encountered unknown Type in Wire Reference: " + unknownType);
         }
 
-        private GeneratedWireMessage getGeneratedWireMessage(GeneratedFile generatedFile) {
+        private GeneratedWireMessage getGeneratedWireMessage(IGeneratedFile generatedFile) {
             return GeneratedWireMessage.builder()
                     .file(generatedFile.file())
                     .className(generatedFile.className())
