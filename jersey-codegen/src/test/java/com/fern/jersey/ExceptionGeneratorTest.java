@@ -1,4 +1,4 @@
-package com.fern.client.jersey;
+package com.fern.jersey;
 
 import com.errors.ErrorDefinition;
 import com.errors.ErrorProperty;
