@@ -52,10 +52,7 @@ public final class HttpServiceClientGenerator extends Generator {
         this.generatedServiceClassName =
                 generatorContext.getClassNameUtils().getClassNameForNamedType(httpService.name(), packageType);
         this.jerseyServiceGeneratorUtils = new JerseyServiceGeneratorUtils(
-                generatorContext,
-                generatedInterfaces,
-                generatedExceptions,
-                httpService);
+                generatorContext, generatedInterfaces, generatedExceptions, httpService);
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.fern.jersey.server;
 
 import com.fern.codegen.GeneratedException;
-import com.fern.codegen.GeneratedHttpServiceClient;
 import com.fern.codegen.GeneratedHttpServiceServer;
 import com.fern.codegen.GeneratedInterface;
 import com.fern.codegen.GeneratorContext;
@@ -25,7 +24,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 
-public class HttpServiceServerGenerator extends Generator {
+public final class HttpServiceServerGenerator extends Generator {
 
     private final HttpService httpService;
     private final ClassName generatedServiceClassName;
@@ -41,16 +40,13 @@ public class HttpServiceServerGenerator extends Generator {
         this.generatedServiceClassName =
                 generatorContext.getClassNameUtils().getClassNameForNamedType(httpService.name(), packageType);
         this.jerseyServiceGeneratorUtils = new JerseyServiceGeneratorUtils(
-                generatorContext,
-                generatedInterfaces,
-                generatedExceptions,
-                httpService);
+                generatorContext, generatedInterfaces, generatedExceptions, httpService);
     }
 
     @Override
     public GeneratedHttpServiceServer generate() {
         TypeSpec.Builder jerseyServiceBuilder = TypeSpec.interfaceBuilder(
-                StringUtils.capitalize(httpService.name().name()))
+                        StringUtils.capitalize(httpService.name().name()))
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(AnnotationSpec.builder(Consumes.class)
                         .addMember("value", "$T.APPLICATION_JSON", MediaType.class)
@@ -64,11 +60,10 @@ public class HttpServiceServerGenerator extends Generator {
         List<MethodSpec> httpEndpointMethods = httpService.endpoints().stream()
                 .map(httpEndpoint -> jerseyServiceGeneratorUtils.getHttpEndpointMethodSpec(httpEndpoint, false))
                 .collect(Collectors.toList());
-        TypeSpec jerseyServiceTypeSpec = jerseyServiceBuilder
-                .addMethods(httpEndpointMethods)
-                .build();
+        TypeSpec jerseyServiceTypeSpec =
+                jerseyServiceBuilder.addMethods(httpEndpointMethods).build();
         JavaFile jerseyServiceJavaFile = JavaFile.builder(
-                generatedServiceClassName.packageName(), jerseyServiceTypeSpec)
+                        generatedServiceClassName.packageName(), jerseyServiceTypeSpec)
                 .build();
         return GeneratedHttpServiceServer.builder()
                 .file(jerseyServiceJavaFile)

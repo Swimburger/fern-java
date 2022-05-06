@@ -62,9 +62,7 @@ public final class JerseyServiceGeneratorUtils {
         return generatedWireMessages;
     }
 
-    public MethodSpec getHttpEndpointMethodSpec(
-            HttpEndpoint httpEndpoint,
-            boolean throwsUnknownException) {
+    public MethodSpec getHttpEndpointMethodSpec(HttpEndpoint httpEndpoint, boolean throwsUnknownException) {
         MethodSpec.Builder endpointMethodBuilder = MethodSpec.methodBuilder(httpEndpoint.endpointId())
                 .addAnnotation(httpEndpoint.method().accept(HttpMethodAnnotationVisitor.INSTANCE))
                 .addAnnotation(AnnotationSpec.builder(Path.class)

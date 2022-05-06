@@ -34,7 +34,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
-import javax.ws.rs.WebApplicationException;
 import org.immutables.value.Value;
 
 public final class ServiceErrorDecoderGenerator extends Generator {

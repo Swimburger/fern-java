@@ -4,11 +4,9 @@ import com.errors.ErrorDefinition;
 import com.errors.ErrorProperty;
 import com.errors.HttpErrorConfiguration;
 import com.fern.codegen.GeneratedException;
-import com.fern.codegen.GeneratedHttpServiceClient;
 import com.fern.codegen.GeneratedHttpServiceServer;
 import com.fern.codegen.GeneratorContext;
 import com.fern.jersey.ExceptionGenerator;
-import com.fern.jersey.client.HttpServiceClientGenerator;
 import com.services.commons.ResponseError;
 import com.services.commons.ResponseErrors;
 import com.services.commons.WireMessage;
@@ -24,7 +22,6 @@ import com.types.Type;
 import com.types.TypeReference;
 import java.util.Collections;
 import java.util.Optional;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public final class HttpServiceServerGeneratorTest {

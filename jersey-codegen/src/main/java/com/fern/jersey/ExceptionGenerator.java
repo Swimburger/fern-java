@@ -26,7 +26,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.immutables.value.Value;
 
-public class ExceptionGenerator extends Generator {
+public final class ExceptionGenerator extends Generator {
 
     private static final ClassName WEB_APPLICATION_EXCEPTION_CLASS_NAME = ClassName.get(WebApplicationException.class);
 
@@ -41,22 +41,21 @@ public class ExceptionGenerator extends Generator {
     private final boolean isServerException;
 
     public ExceptionGenerator(
-            GeneratorContext generatorContext,
-            ErrorDefinition errorDefinition,
-            boolean isServerException) {
+            GeneratorContext generatorContext, ErrorDefinition errorDefinition, boolean isServerException) {
         super(generatorContext, PackageType.ERRORS);
         this.generatorContext = generatorContext;
         this.errorDefinition = errorDefinition;
-        this.generatedExceptionClassName =
-                generatorContext.getClassNameUtils().getClassNameForNamedType(errorDefinition.name(), PackageType.ERRORS);
+        this.generatedExceptionClassName = generatorContext
+                .getClassNameUtils()
+                .getClassNameForNamedType(errorDefinition.name(), PackageType.ERRORS);
         this.isServerException = isServerException;
     }
 
     @Override
     public GeneratedException generate() {
         TypeSpec.Builder errorExceptionTypeSpec = TypeSpec.classBuilder(generatorContext
-                .getClassNameUtils()
-                .getClassNameForNamedType(errorDefinition.name(), packageType))
+                        .getClassNameUtils()
+                        .getClassNameForNamedType(errorDefinition.name(), packageType))
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addAnnotation(Value.Immutable.class)
                 .addAnnotation(AnnotationSpec.builder(JsonDeserialize.class)

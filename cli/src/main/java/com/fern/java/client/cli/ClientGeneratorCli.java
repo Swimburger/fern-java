@@ -42,7 +42,7 @@ public final class ClientGeneratorCli {
         generate(ir, fernPluginConfig);
     }
 
-    private static FernPluginConfig getPluginConfig(String pluginPath) throws RuntimeException {
+    private static FernPluginConfig getPluginConfig(String pluginPath) {
         try {
             return OBJECT_MAPPER.readValue(new File(pluginPath), FernPluginConfig.class);
         } catch (IOException e) {
@@ -108,18 +108,15 @@ public final class ClientGeneratorCli {
             CodeGenerationResult.Builder resultBuilder) {
         List<GeneratedException> generatedExceptions = ir.errors().stream()
                 .map(errorDefinition -> {
-                    ExceptionGenerator
-                            exceptionGenerator = new ExceptionGenerator(generatorContext, errorDefinition, false);
+                    ExceptionGenerator exceptionGenerator =
+                            new ExceptionGenerator(generatorContext, errorDefinition, false);
                     return exceptionGenerator.generate();
                 })
                 .collect(Collectors.toList());
         List<GeneratedHttpServiceClient> generatedHttpServiceClients = ir.services().http().stream()
                 .map(httpService -> {
                     HttpServiceClientGenerator httpServiceClientGenerator = new HttpServiceClientGenerator(
-                            generatorContext,
-                            modelGeneratorResult.interfaces(),
-                            generatedExceptions,
-                            httpService);
+                            generatorContext, modelGeneratorResult.interfaces(), generatedExceptions, httpService);
                     return httpServiceClientGenerator.generate();
                 })
                 .collect(Collectors.toList());
@@ -143,18 +140,15 @@ public final class ClientGeneratorCli {
             CodeGenerationResult.Builder resultBuilder) {
         List<GeneratedException> generatedExceptions = ir.errors().stream()
                 .map(errorDefinition -> {
-                    ExceptionGenerator
-                            exceptionGenerator = new ExceptionGenerator(generatorContext, errorDefinition, true);
+                    ExceptionGenerator exceptionGenerator =
+                            new ExceptionGenerator(generatorContext, errorDefinition, true);
                     return exceptionGenerator.generate();
                 })
                 .collect(Collectors.toList());
         List<GeneratedHttpServiceServer> generatedHttpServiceServers = ir.services().http().stream()
                 .map(httpService -> {
                     HttpServiceServerGenerator httpServiceServerGenerator = new HttpServiceServerGenerator(
-                            generatorContext,
-                            modelGeneratorResult.interfaces(),
-                            generatedExceptions,
-                            httpService);
+                            generatorContext, modelGeneratorResult.interfaces(), generatedExceptions, httpService);
                     return httpServiceServerGenerator.generate();
                 })
                 .collect(Collectors.toList());

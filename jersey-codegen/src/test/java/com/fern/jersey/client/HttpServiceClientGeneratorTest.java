@@ -7,7 +7,6 @@ import com.fern.codegen.GeneratedException;
 import com.fern.codegen.GeneratedHttpServiceClient;
 import com.fern.codegen.GeneratorContext;
 import com.fern.jersey.ExceptionGenerator;
-import com.fern.jersey.client.HttpServiceClientGenerator;
 import com.services.commons.ResponseError;
 import com.services.commons.ResponseErrors;
 import com.services.commons.WireMessage;

@@ -1,9 +1,7 @@
 package com.fern.model.codegen;
 
-import com.errors.ErrorDefinition;
 import com.fern.codegen.GeneratedAlias;
 import com.fern.codegen.GeneratedEnum;
-import com.fern.codegen.GeneratedException;
 import com.fern.codegen.GeneratedInterface;
 import com.fern.codegen.GeneratedObject;
 import com.fern.codegen.GeneratedUnion;
@@ -34,9 +32,7 @@ public final class ModelGenerator {
     private final Map<NamedType, TypeDefinition> typeDefinitionsByName;
     private final GeneratorContext generatorContext;
 
-    public ModelGenerator(
-            List<TypeDefinition> typeDefinitions,
-            GeneratorContext generatorContext) {
+    public ModelGenerator(List<TypeDefinition> typeDefinitions, GeneratorContext generatorContext) {
         this.typeDefinitions = typeDefinitions;
         this.typeDefinitionsByName = generatorContext.getTypeDefinitionsByName();
         this.generatorContext = generatorContext;
