@@ -1,6 +1,5 @@
 package com.fern.model.codegen;
 
-import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.IGeneratedFile;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;

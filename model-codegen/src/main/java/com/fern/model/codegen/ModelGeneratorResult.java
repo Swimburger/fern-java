@@ -24,8 +24,6 @@ public interface ModelGeneratorResult {
 
     List<GeneratedUnion> unions();
 
-    List<GeneratedException> exceptions();
-
     class Builder extends ImmutableModelGeneratorResult.Builder {}
 
     static ModelGeneratorResult.Builder builder() {

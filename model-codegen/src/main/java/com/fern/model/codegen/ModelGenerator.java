@@ -31,18 +31,15 @@ public final class ModelGenerator {
     private static final Logger log = LoggerFactory.getLogger(ModelGenerator.class);
 
     private final List<TypeDefinition> typeDefinitions;
-    private final List<ErrorDefinition> errorDefinitions;
     private final Map<NamedType, TypeDefinition> typeDefinitionsByName;
     private final GeneratorContext generatorContext;
 
     public ModelGenerator(
             List<TypeDefinition> typeDefinitions,
-            List<ErrorDefinition> errorDefinitions,
             GeneratorContext generatorContext) {
         this.typeDefinitions = typeDefinitions;
         this.typeDefinitionsByName = generatorContext.getTypeDefinitionsByName();
         this.generatorContext = generatorContext;
-        this.errorDefinitions = errorDefinitions;
     }
 
     public ModelGeneratorResult generate() {
@@ -52,13 +49,6 @@ public final class ModelGenerator {
         typeDefinitions.forEach(typeDefinition -> typeDefinition
                 .shape()
                 .accept(new TypeDefinitionGenerator(typeDefinition, generatedInterfaces, modelGeneratorResultBuilder)));
-        List<GeneratedException> generatedExceptions = errorDefinitions.stream()
-                .map(errorDefinition -> {
-                    ExceptionGenerator exceptionGenerator = new ExceptionGenerator(generatorContext, errorDefinition);
-                    return exceptionGenerator.generate();
-                })
-                .collect(Collectors.toList());
-        modelGeneratorResultBuilder.addAllExceptions(generatedExceptions);
         return modelGeneratorResultBuilder.build();
     }
 
