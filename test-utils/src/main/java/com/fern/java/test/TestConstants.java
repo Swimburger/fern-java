@@ -1,4 +1,4 @@
-package com.fern.model.codegen;
+package com.fern.java.test;
 
 import com.fern.codegen.GeneratorContext;
 import java.util.Collections;
