@@ -1,7 +1,9 @@
 package com.fern.java.client.cli;
 
 import com.fern.codegen.IGeneratedFile;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Style.ImplementationVisibility;
 
@@ -45,7 +47,7 @@ public abstract class CodeGenerationResult {
                 + "}\n"
                 + "\n"
                 + "dependencies {\n"
-                + "    api project(':memory-api:memory-api-java:model')\n"
+                + "    api project('" + getModelSubprojectDependency(pluginConfig) + "')\n"
                 + "    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'\n"
                 + "    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.12.3'\n"
                 + "    implementation 'io.github.openfeign:feign-jackson:11.8'\n"
@@ -58,6 +60,7 @@ public abstract class CodeGenerationResult {
     }
 
     public static String getServerBuildGradle(FernPluginConfig pluginConfig) {
+
         return "plugins {\n"
                 + "    id 'java-library'\n"
                 + "    id \"org.inferred.processors\" version \"3.6.0\"\n"
@@ -68,7 +71,7 @@ public abstract class CodeGenerationResult {
                 + "}\n"
                 + "\n"
                 + "dependencies {\n"
-                + "    api project(':memory-api:memory-api-java:model')\n"
+                + "    api project('" + getModelSubprojectDependency(pluginConfig) + "')\n"
                 + "    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'\n"
                 + "    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.12.3'\n"
                 + "    implementation 'io.github.openfeign:feign-jackson:11.8'\n"
@@ -78,6 +81,13 @@ public abstract class CodeGenerationResult {
                 + "    annotationProcessor 'org.immutables:value:2.8.8'\n"
                 + "    compileOnly 'org.immutables:value-annotations:2.8.8'\n"
                 + "}\n";
+    }
+
+    static String getModelSubprojectDependency(FernPluginConfig fernPluginConfig) {
+        String gradleDependency = Arrays.asList(fernPluginConfig.relativeWorkspacePathOnHost().split("/"))
+                .stream()
+                .collect(Collectors.joining(":"));
+        return ":" + gradleDependency + ":model";
     }
 
     static ImmutableCodeGenerationResult.Builder builder() {
