@@ -27,10 +27,11 @@ public final class ApiExceptionGenerator {
                 classNameUtils.getClassName(API_EXCEPTION_INTERFACE_CLASS_NAME, Optional.empty(), Optional.empty());
         TypeSpec apiExceptionTypeSpec = TypeSpec.interfaceBuilder(API_EXCEPTION_INTERFACE_CLASS_NAME)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                .addMethod(MethodSpec.methodBuilder(GET_ERROR_INSTANCE_ID_METHOD_NAME)
-                        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                        .returns(ClassNameUtils.STRING_CLASS_NAME)
-                        .build())
+                // TODO(dsinghvi): Support generating error instance ids
+                // .addMethod(MethodSpec.methodBuilder(GET_ERROR_INSTANCE_ID_METHOD_NAME)
+                //         .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                //         .returns(ClassNameUtils.STRING_CLASS_NAME)
+                //         .build())
                 .build();
         JavaFile apiExceptionFile = JavaFile.builder(apiExceptionInterfaceClassname.packageName(), apiExceptionTypeSpec)
                 .build();
@@ -65,6 +66,10 @@ public final class ApiExceptionGenerator {
         TypeSpec unknownRemoteExceptionTypeSpec = TypeSpec.classBuilder(UNKNOWN_REMOTE_EXCEPTION_INTERFACE_CLASS_NAME)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .superclass(ClassName.get(RemoteException.class))
+                .addMethod(MethodSpec.constructorBuilder()
+                        .addParameter(ClassNameUtils.STRING_CLASS_NAME, "s")
+                        .addStatement("super(s)")
+                        .build())
                 .build();
         JavaFile httpApiExceptionFile = JavaFile.builder(
                         unknownRemoteExceptionClassName.packageName(), unknownRemoteExceptionTypeSpec)

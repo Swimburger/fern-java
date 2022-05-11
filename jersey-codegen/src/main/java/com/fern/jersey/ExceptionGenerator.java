@@ -67,7 +67,7 @@ public final class ExceptionGenerator extends Generator {
                                         .getImmutablesClassName(generatedExceptionClassName))
                         .build())
                 .addAnnotation(generatorContext.getStagedImmutablesFile().className())
-                .addSuperinterface(getParentExceptionClassName())
+                .superclass(getParentExceptionClassName())
                 .addSuperinterface(generatorContext.getApiExceptionFile().className());
         boolean isHttpError = errorDefinition.http().isPresent();
         if (isHttpError) {

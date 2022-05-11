@@ -48,7 +48,7 @@ public final class HttpServiceClientGenerator extends Generator {
             Map<NamedType, GeneratedInterface> generatedInterfaces,
             List<GeneratedException> generatedExceptions,
             HttpService httpService) {
-        super(generatorContext, PackageType.SERVICES);
+        super(generatorContext, PackageType.CLIENT);
         this.httpService = httpService;
         this.generatedServiceClassName = generatorContext
                 .getClassNameUtils()
@@ -122,12 +122,12 @@ public final class HttpServiceClientGenerator extends Generator {
                         ".encoder(new $T($T.$L))\n",
                         JacksonEncoder.class,
                         objectMapperClassName,
-                        ObjectMapperGenerator.JSON_MAPPER_FIELD_NAME)
-                .add(".target($T.class, $L);", generatedServiceClassName, "url");
+                        ObjectMapperGenerator.JSON_MAPPER_FIELD_NAME);
         if (generatedErrorDecoder.isPresent()) {
             codeBlockBuilder.add(
                     ".errorDecoder(new $T())", generatedErrorDecoder.get().className());
         }
+        codeBlockBuilder.add(".target($T.class, $L);", generatedServiceClassName, "url");
         CodeBlock codeBlock = codeBlockBuilder.unindent().unindent().build();
         return MethodSpec.methodBuilder(GET_CLIENT_METHOD_NAME)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)

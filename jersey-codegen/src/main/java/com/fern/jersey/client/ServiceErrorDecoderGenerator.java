@@ -65,13 +65,13 @@ public final class ServiceErrorDecoderGenerator extends Generator {
     private final Multimap<NamedType, HttpEndpoint> errorToEndpoints = ArrayListMultimap.create();
 
     public ServiceErrorDecoderGenerator(GeneratorContext generatorContext, HttpService httpService) {
-        super(generatorContext, PackageType.SERVICES);
+        super(generatorContext, PackageType.CLIENT);
         this.httpService = httpService;
         this.errorDecoderClassName = generatorContext
                 .getClassNameUtils()
                 .getClassName(
                         httpService.name().name() + ERROR_DECODER_CLASSNAME_SUFFIX,
-                        Optional.of(PackageType.SERVICES),
+                        Optional.of(PackageType.CLIENT),
                         Optional.of(httpService.name().fernFilepath()));
         this.exceptionRetrieverClassName = errorDecoderClassName.nestedClass(EXCEPTION_RETRIEVER_CLASSNAME);
         httpService.endpoints().forEach(httpEndpoint -> {
@@ -165,9 +165,8 @@ public final class ServiceErrorDecoderGenerator extends Generator {
 
     private MethodSpec getDecodeExceptionMethodSpec() {
         TypeVariableName decodeMethodGeneric = TypeVariableName.get("T").withBounds(exceptionRetrieverClassName);
-        return MethodSpec.methodBuilder(DECODE_METHOD_NAME)
+        return MethodSpec.methodBuilder(DECODE_EXCEPTION_METHOD_NAME)
                 .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
-                .addAnnotation(Override.class)
                 .addTypeVariable(decodeMethodGeneric)
                 .returns(exceptionRetrieverClassName)
                 .addParameter(FEIGN_RESPONSE_PARAMETER_TYPE, DECODE_EXCEPTION_RESPONSE_PARAMETER_NAME)

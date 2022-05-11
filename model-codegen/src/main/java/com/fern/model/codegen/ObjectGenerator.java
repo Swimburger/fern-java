@@ -60,7 +60,7 @@ public final class ObjectGenerator extends Generator {
 
     @Override
     public GeneratedObject generate() {
-        TypeSpec.Builder objectTypeSpecBuilder = TypeSpec.interfaceBuilder(namedType.name())
+        TypeSpec.Builder objectTypeSpecBuilder = TypeSpec.interfaceBuilder(generatedObjectClassName)
                 .addModifiers(OBJECT_INTERFACE_MODIFIERS)
                 .addAnnotations(getAnnotations())
                 .addSuperinterfaces(getSuperInterfaces());
