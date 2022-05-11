@@ -144,7 +144,7 @@ public final class ExceptionGenerator extends Generator {
         return MethodSpec.methodBuilder(STATIC_BUILDER_METHOD_NAME)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .returns(builderClassName)
-                .addCode("return $T.builder();", generatedExceptionClassName)
+                .addCode("return $T.builder();", generatedImmutablesExceptionClassName)
                 .build();
     }
 
