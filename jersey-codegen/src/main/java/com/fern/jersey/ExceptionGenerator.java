@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fern.codegen.GeneratedException;
 import com.fern.codegen.GeneratorContext;
+import com.fern.codegen.stateless.generator.ApiExceptionGenerator;
 import com.fern.codegen.utils.ClassNameUtils;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.model.codegen.Generator;
@@ -38,6 +39,7 @@ public final class ExceptionGenerator extends Generator {
     private final GeneratorContext generatorContext;
     private final ErrorDefinition errorDefinition;
     private final ClassName generatedExceptionClassName;
+    private final ClassName generatedImmutablesExceptionClassName;
     private final boolean isServerException;
 
     public ExceptionGenerator(
@@ -49,6 +51,8 @@ public final class ExceptionGenerator extends Generator {
                 .getClassNameUtils()
                 .getClassNameForNamedType(errorDefinition.name(), PackageType.ERRORS);
         this.isServerException = isServerException;
+        this.generatedImmutablesExceptionClassName =
+                generatorContext.getImmutablesUtils().getImmutablesClassName(generatedExceptionClassName);
     }
 
     @Override
@@ -59,12 +63,7 @@ public final class ExceptionGenerator extends Generator {
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addAnnotation(Value.Immutable.class)
                 .addAnnotation(AnnotationSpec.builder(JsonDeserialize.class)
-                        .addMember(
-                                "as",
-                                "$T.class",
-                                generatorContext
-                                        .getImmutablesUtils()
-                                        .getImmutablesClassName(generatedExceptionClassName))
+                        .addMember("as", "$T.class", this.generatedImmutablesExceptionClassName)
                         .build())
                 .addAnnotation(generatorContext.getStagedImmutablesFile().className())
                 .superclass(getParentExceptionClassName())
@@ -87,6 +86,15 @@ public final class ExceptionGenerator extends Generator {
 
         if (isServerException && isHttpError) {
             errorExceptionTypeSpec.addMethod(getResponseMethodSpec());
+        }
+
+        if (isHttpError) {
+            errorExceptionTypeSpec.addMethod(MethodSpec.methodBuilder(ApiExceptionGenerator.GET_STATUS_CODE_METHOD_NAME)
+                    .addModifiers(Modifier.PUBLIC)
+                    .addStatement("return $L", STATUS_CODE_FIELD_NAME)
+                    .returns(ClassName.INT)
+                    .addAnnotation(Override.class)
+                    .build());
         }
 
         TypeSpec errorExceptionTypeSPec = errorExceptionTypeSpec.build();
@@ -130,8 +138,8 @@ public final class ExceptionGenerator extends Generator {
     private MethodSpec generateStaticBuilder(Map<ErrorProperty, MethodSpec> methodSpecsByProperty) {
         Optional<String> firstMandatoryFieldName = getFirstRequiredFieldName(methodSpecsByProperty);
         ClassName builderClassName = firstMandatoryFieldName.isEmpty()
-                ? generatedExceptionClassName.nestedClass("Builder")
-                : generatedExceptionClassName.nestedClass(
+                ? generatedImmutablesExceptionClassName.nestedClass("Builder")
+                : generatedImmutablesExceptionClassName.nestedClass(
                         StringUtils.capitalize(firstMandatoryFieldName.get()) + BUILD_STAGE_SUFFIX);
         return MethodSpec.methodBuilder(STATIC_BUILDER_METHOD_NAME)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)

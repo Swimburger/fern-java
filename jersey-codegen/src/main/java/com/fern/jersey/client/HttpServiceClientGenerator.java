@@ -41,6 +41,7 @@ public final class HttpServiceClientGenerator extends Generator {
 
     private final HttpService httpService;
     private final ClassName generatedServiceClassName;
+    private final List<GeneratedException> generatedExceptions;
     private final JerseyServiceGeneratorUtils jerseyServiceGeneratorUtils;
 
     public HttpServiceClientGenerator(
@@ -50,6 +51,7 @@ public final class HttpServiceClientGenerator extends Generator {
             HttpService httpService) {
         super(generatorContext, PackageType.CLIENT);
         this.httpService = httpService;
+        this.generatedExceptions = generatedExceptions;
         this.generatedServiceClassName = generatorContext
                 .getClassNameUtils()
                 .getClassNameForNamedType(httpService.name(), packageType, Optional.of(CLIENT_CLASS_NAME_SUFFIX));
@@ -99,7 +101,7 @@ public final class HttpServiceClientGenerator extends Generator {
                 > 0;
         if (shouldGenerateErrorDecoder) {
             ServiceErrorDecoderGenerator serviceErrorDecoderGenerator =
-                    new ServiceErrorDecoderGenerator(generatorContext, httpService);
+                    new ServiceErrorDecoderGenerator(generatorContext, httpService, generatedExceptions);
             maybeGeneratedErrorDecoder = Optional.of(serviceErrorDecoderGenerator.generate());
         }
         return maybeGeneratedErrorDecoder;

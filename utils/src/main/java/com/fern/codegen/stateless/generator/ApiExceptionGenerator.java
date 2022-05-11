@@ -13,7 +13,7 @@ import javax.lang.model.element.Modifier;
 public final class ApiExceptionGenerator {
 
     private static final String HTTP_API_EXCEPTION_CLASS_NAME = "HttpApiException";
-    private static final String GET_STATUS_CODE_METHOD_NAME = "getStatusCode";
+    public static final String GET_STATUS_CODE_METHOD_NAME = "getStatusCode";
 
     private static final String API_EXCEPTION_INTERFACE_CLASS_NAME = "ApiException";
     private static final String GET_ERROR_INSTANCE_ID_METHOD_NAME = "getErrorInstanceId";
@@ -43,12 +43,12 @@ public final class ApiExceptionGenerator {
 
     public static GeneratedFile generateHttpApiExceptionInterface(ClassNameUtils classNameUtils) {
         ClassName httpApiExceptionInterfaceClassname =
-                classNameUtils.getClassName(API_EXCEPTION_INTERFACE_CLASS_NAME, Optional.empty(), Optional.empty());
-        TypeSpec httpApiExceptionTypeSpec = TypeSpec.interfaceBuilder(HTTP_API_EXCEPTION_CLASS_NAME)
+                classNameUtils.getClassName(HTTP_API_EXCEPTION_CLASS_NAME, Optional.empty(), Optional.empty());
+        TypeSpec httpApiExceptionTypeSpec = TypeSpec.interfaceBuilder(httpApiExceptionInterfaceClassname)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addMethod(MethodSpec.methodBuilder(GET_STATUS_CODE_METHOD_NAME)
                         .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                        .returns(ClassNameUtils.STRING_CLASS_NAME)
+                        .returns(ClassName.INT)
                         .build())
                 .build();
         JavaFile httpApiExceptionFile = JavaFile.builder(
@@ -67,6 +67,7 @@ public final class ApiExceptionGenerator {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .superclass(ClassName.get(RemoteException.class))
                 .addMethod(MethodSpec.constructorBuilder()
+                        .addModifiers(Modifier.PUBLIC)
                         .addParameter(ClassNameUtils.STRING_CLASS_NAME, "s")
                         .addStatement("super(s)")
                         .build())

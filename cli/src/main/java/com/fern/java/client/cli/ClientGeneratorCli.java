@@ -122,7 +122,7 @@ public final class ClientGeneratorCli {
         for (GeneratedHttpServiceClient generatedHttpServiceClient : generatedHttpServiceClients) {
             resultBuilder.addClientFiles(generatedHttpServiceClient);
             generatedHttpServiceClient.generatedErrorDecoder().ifPresent(resultBuilder::addClientFiles);
-            resultBuilder.addAllClientFiles(generatedHttpServiceClient.generatedWireMessages());
+            resultBuilder.addAllModelFiles(generatedHttpServiceClient.generatedWireMessages());
             serviceClientPresent = true;
         }
         if (serviceClientPresent) {
