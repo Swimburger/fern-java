@@ -1,3 +1,223 @@
+basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/.gitignore]=[
+*/
+
+]
+
+
+basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/client/build.gradle]=[
+plugins {
+    id 'java-library'
+    id "org.inferred.processors" version "3.6.0"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api project(':api:generated-java:model')
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.12.3'
+    implementation 'io.github.openfeign:feign-jackson:11.8'
+    implementation 'io.github.openfeign:feign-core:11.8'
+    implementation 'io.github.openfeign:feign-jaxrs2:11.8'
+
+    annotationProcessor 'org.immutables:value:2.8.8'
+    compileOnly 'org.immutables:value-annotations:2.8.8'
+}
+
+]
+
+
+basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/client/src/main/java/com/blog/ClientObjectMappers.java]=[
+package com.blog;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+
+public final class ClientObjectMappers {
+  public static final ObjectMapper JSON_MAPPER = JsonMapper.builder()
+      .addModule(new Jdk8Module())
+      .build();
+
+  private ClientObjectMappers() {
+  }
+}
+
+]
+
+
+basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/client/src/main/java/com/blog/UnknownRemoteException.java]=[
+package com.blog;
+
+import java.lang.String;
+import java.rmi.RemoteException;
+
+public final class UnknownRemoteException extends RemoteException {
+  public UnknownRemoteException(String s) {
+    super(s);
+  }
+}
+
+]
+
+
+basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/client/src/main/java/com/blog/client/blog/PostsServiceClient.java]=[
+package com.blog.client.blog;
+
+import com.blog.ClientObjectMappers;
+import com.blog.UnknownRemoteException;
+import com.blog.errors.blog.PostNotFoundError;
+import com.blog.services.blog.CreatePostRequest;
+import com.blog.types.blog.BlogPost;
+import com.blog.types.blog.PostId;
+import feign.Feign;
+import feign.jackson.JacksonDecoder;
+import feign.jackson.JacksonEncoder;
+import feign.jaxrs.JAXRSContract;
+import java.lang.String;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+@Path("/posts")
+public interface PostsServiceClient {
+  @POST
+  @Path("/create")
+  void createPost(CreatePostRequest request);
+
+  @GET
+  @Path("/{postId}")
+  BlogPost getPost(@PathParam("postId") PostId postId) throws PostNotFoundError,
+      UnknownRemoteException;
+
+  static PostsServiceClient getClient(String url) {
+    return Feign.builder()
+        .contract(new JAXRSContract())
+        .decoder(new JacksonDecoder(ClientObjectMappers.JSON_MAPPER))
+        .encoder(new JacksonEncoder(ClientObjectMappers.JSON_MAPPER))
+        .errorDecoder(new PostsServiceErrorDecoder()).target(PostsServiceClient.class, url);
+  }
+}
+
+]
+
+
+basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/client/src/main/java/com/blog/client/blog/PostsServiceErrorDecoder.java]=[
+package com.blog.client.blog;
+
+import com.blog.ClientObjectMappers;
+import com.blog.UnknownRemoteException;
+import com.blog.errors.blog.PostNotFoundError;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import feign.Response;
+import feign.codec.ErrorDecoder;
+import java.io.IOException;
+import java.lang.Class;
+import java.lang.Exception;
+import java.lang.Override;
+import java.lang.String;
+import org.immutables.value.Value;
+
+final class PostsServiceErrorDecoder implements ErrorDecoder {
+  @Override
+  public Exception decode(String methodKey, Response response) {
+    if (methodKey.contains("getPost")) {
+      return decodeException(response, GetPostException.class).getException();
+    }
+    return new UnknownRemoteException("Encountered exception for unknown method: " + methodKey);
+  }
+
+  private static <T extends ExceptionRetriever> ExceptionRetriever decodeException(
+      Response response, Class<T> clazz) {
+    try {
+      return ClientObjectMappers.JSON_MAPPER.readValue(response.body().asInputStream(), clazz);
+    }
+    catch (IOException e) {
+      return () -> new UnknownRemoteException("Failed to read error body");
+    }
+  }
+
+  interface ExceptionRetriever {
+    Exception getException();
+  }
+
+  @JsonTypeInfo(
+      use = JsonTypeInfo.Id.NAME,
+      include = JsonTypeInfo.As.EXISTING_PROPERTY,
+      property = "_type",
+      visible = true,
+      defaultImpl = UnknownRemoteException.class
+  )
+  @JsonSubTypes(@JsonSubTypes.Type(value = PostNotFoundErrorValue.class, name = "notFound"))
+  interface GetPostException extends ExceptionRetriever {
+  }
+
+  @Value.Immutable
+  @JsonDeserialize(
+      as = ImmutablePostNotFoundErrorValue.class
+  )
+  interface PostNotFoundErrorValue extends GetPostException {
+    @JsonValue
+    PostNotFoundError error();
+
+    @Override
+    default Exception getException() {
+      return error();
+    }
+  }
+}
+
+]
+
+
+basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/client/src/main/java/com/blog/errors/blog/PostNotFoundError.java]=[
+package com.blog.errors.blog;
+
+import com.blog.ApiException;
+import com.blog.HttpApiException;
+import com.blog.StagedBuilderStyle;
+import com.blog.types.blog.PostId;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.lang.Exception;
+import java.lang.Override;
+import org.immutables.value.Value;
+
+@Value.Immutable
+@JsonDeserialize(
+    as = ImmutablePostNotFoundError.class
+)
+@StagedBuilderStyle
+@JsonIncludeProperties({"id"})
+public abstract class PostNotFoundError extends Exception implements ApiException, HttpApiException {
+  public static final int STATUS_CODE = 400;
+
+  public abstract PostId id();
+
+  public static ImmutablePostNotFoundError.IdBuildStage builder() {
+    return ImmutablePostNotFoundError.builder();
+  }
+
+  @Override
+  public int getStatusCode() {
+    return STATUS_CODE;
+  }
+}
+
+]
+
+
 basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/model/build.gradle]=[
 plugins {
     id 'java-library'
@@ -134,15 +354,15 @@ import org.immutables.value.Value;
     ignoreUnknown = true
 )
 public interface CreatePostRequest {
-  PostType postType();
-
   String title();
 
   Author author();
 
+  PostType postType();
+
   String content();
 
-  static ImmutableCreatePostRequest.PostTypeBuildStage builder() {
+  static ImmutableCreatePostRequest.TitleBuildStage builder() {
     return ImmutableCreatePostRequest.builder();
   }
 }
@@ -191,12 +411,12 @@ public final class Author {
     return new Author(InternalNameValue.of(value));
   }
 
-  public boolean isAnonymous() {
-    return value instanceof InternalAnonymousValue;
-  }
-
   public boolean isName() {
     return value instanceof InternalNameValue;
+  }
+
+  public boolean isAnonymous() {
+    return value instanceof InternalAnonymousValue;
   }
 
   public Optional<String> getName() {
@@ -226,30 +446,14 @@ public final class Author {
       defaultImpl = Unknown.class
   )
   @JsonSubTypes({
-      @JsonSubTypes.Type(value = InternalAnonymousValue.class, name = "anonymous"),
-      @JsonSubTypes.Type(value = InternalNameValue.class, name = "name")
+      @JsonSubTypes.Type(value = InternalNameValue.class, name = "name"),
+      @JsonSubTypes.Type(value = InternalAnonymousValue.class, name = "anonymous")
   })
   @JsonIgnoreProperties(
       ignoreUnknown = true
   )
   private interface InternalValue {
     <T> T visit(Visitor<T> visitor);
-  }
-
-  @Value.Immutable
-  @JsonTypeName("anonymous")
-  @JsonDeserialize(
-      as = ImmutableAuthor.InternalAnonymousValue.class
-  )
-  interface InternalAnonymousValue extends InternalValue {
-    @Override
-    default <T> T visit(Visitor<T> visitor) {
-      return visitor.visitAnonymous();
-    }
-
-    static InternalAnonymousValue of() {
-      return ImmutableAuthor.InternalAnonymousValue.builder().build();
-    }
   }
 
   @Value.Immutable
@@ -267,6 +471,22 @@ public final class Author {
 
     static InternalNameValue of(String value) {
       return ImmutableAuthor.InternalNameValue.builder().name(value).build();
+    }
+  }
+
+  @Value.Immutable
+  @JsonTypeName("anonymous")
+  @JsonDeserialize(
+      as = ImmutableAuthor.InternalAnonymousValue.class
+  )
+  interface InternalAnonymousValue extends InternalValue {
+    @Override
+    default <T> T visit(Visitor<T> visitor) {
+      return visitor.visitAnonymous();
+    }
+
+    static InternalAnonymousValue of() {
+      return ImmutableAuthor.InternalAnonymousValue.builder().build();
     }
   }
 
@@ -310,17 +530,17 @@ import org.immutables.value.Value;
     ignoreUnknown = true
 )
 public interface BlogPost {
+  String content();
+
+  PostType type();
+
   PostId id();
 
   String title();
 
-  PostType type();
-
   Author author();
 
-  String content();
-
-  static ImmutableBlogPost.IdBuildStage builder() {
+  static ImmutableBlogPost.ContentBuildStage builder() {
     return ImmutableBlogPost.builder();
   }
 }
@@ -442,6 +662,124 @@ public final class PostType {
 
     T visitUnknown(String unknownType);
   }
+}
+
+]
+
+
+basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/server/build.gradle]=[
+plugins {
+    id 'java-library'
+    id "org.inferred.processors" version "3.6.0"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api project(':api:generated-java:model')
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.12.3'
+    implementation 'io.github.openfeign:feign-jackson:11.8'
+    implementation 'io.github.openfeign:feign-core:11.8'
+    implementation 'io.github.openfeign:feign-jaxrs2:11.8'
+
+    annotationProcessor 'org.immutables:value:2.8.8'
+    compileOnly 'org.immutables:value-annotations:2.8.8'
+}
+
+]
+
+
+basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/server/src/main/java/com/blog/ServerObjectMappers.java]=[
+package com.blog;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+
+public final class ServerObjectMappers {
+  public static final ObjectMapper JSON_MAPPER = JsonMapper.builder()
+      .addModule(new Jdk8Module())
+      .build();
+
+  private ServerObjectMappers() {
+  }
+}
+
+]
+
+
+basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/server/src/main/java/com/blog/errors/blog/PostNotFoundError.java]=[
+package com.blog.errors.blog;
+
+import com.blog.ApiException;
+import com.blog.HttpApiException;
+import com.blog.StagedBuilderStyle;
+import com.blog.types.blog.PostId;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.lang.Override;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import org.immutables.value.Value;
+
+@Value.Immutable
+@JsonDeserialize(
+    as = ImmutablePostNotFoundError.class
+)
+@StagedBuilderStyle
+@JsonIncludeProperties({"id"})
+public abstract class PostNotFoundError extends WebApplicationException implements ApiException, HttpApiException {
+  public static final int STATUS_CODE = 400;
+
+  public abstract PostId id();
+
+  public static ImmutablePostNotFoundError.IdBuildStage builder() {
+    return ImmutablePostNotFoundError.builder();
+  }
+
+  @Override
+  public final Response getResponse() {
+    return Response.status(STATUS_CODE).entity(this).build();
+  }
+
+  @Override
+  public int getStatusCode() {
+    return STATUS_CODE;
+  }
+}
+
+]
+
+
+basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/server/src/main/java/com/blog/server/blog/PostsService.java]=[
+package com.blog.server.blog;
+
+import com.blog.errors.blog.PostNotFoundError;
+import com.blog.services.blog.CreatePostRequest;
+import com.blog.types.blog.BlogPost;
+import com.blog.types.blog.PostId;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+@Path("/posts")
+public interface PostsService {
+  @POST
+  @Path("/create")
+  void createPost(CreatePostRequest request);
+
+  @GET
+  @Path("/{postId}")
+  BlogPost getPost(@PathParam("postId") PostId postId) throws PostNotFoundError;
 }
 
 ]

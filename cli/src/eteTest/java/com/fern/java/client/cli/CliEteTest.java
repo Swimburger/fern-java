@@ -22,8 +22,8 @@ public class CliEteTest {
     @SnapshotName("basic")
     @Test
     public void test_basic() throws IOException {
-        fernGenerate("cli/src/eteTest/basic");
-        Files.walk(Paths.get("cli/src/eteTest/basic/api/generated-java/model")).forEach(path -> {
+        fernGenerate("src/eteTest/basic");
+        Files.walk(Paths.get("src/eteTest/basic/api/generated-java")).forEach(path -> {
             if (path.toFile().isDirectory()) {
                 return;
             }
