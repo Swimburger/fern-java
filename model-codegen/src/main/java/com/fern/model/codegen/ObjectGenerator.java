@@ -17,6 +17,7 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +65,7 @@ public final class ObjectGenerator extends Generator {
                 .addModifiers(OBJECT_INTERFACE_MODIFIERS)
                 .addAnnotations(getAnnotations())
                 .addSuperinterfaces(getSuperInterfaces());
-        Map<ObjectProperty, MethodSpec> methodSpecsByProperty = new LinkedHashMap<>();
+        Map<ObjectProperty, MethodSpec> methodSpecsByProperty = new HashMap<>();
         if (selfInterface.isEmpty()) {
             methodSpecsByProperty.putAll(
                     generatorContext.getImmutablesUtils().getImmutablesPropertyMethods(objectTypeDefinition));
