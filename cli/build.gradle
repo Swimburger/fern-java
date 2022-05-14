@@ -74,4 +74,5 @@ eteTest {
     }
 }
 
+rootProject.tasks.build.dependsOn eteTest
 tasks.eteTest.dependsOn ':cli:dockerTagLatest'
