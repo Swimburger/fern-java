@@ -2,6 +2,7 @@ plugins {
     id 'java-library-distribution'
     id "com.palantir.docker" version "0.33.0"
     id "org.unbroken-dome.test-sets" version "4.0.0"
+    id 'java'
 }
 
 dependencies {

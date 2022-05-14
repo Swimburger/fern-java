@@ -79,6 +79,9 @@ jobs:
       - restore_cache: { key: 'gradle-wrapper-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}' }
       - restore_cache: { key: 'unit-test-gradle-cache-v2-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}' }
       - run:
+          name: Install Fern
+          command: npm install -g fern-api@0.0.64
+      - run:
           name: Install Java
           command: |
             sudo mkdir -p /opt/java && cd /opt/java && sudo chown -R circleci:circleci .
