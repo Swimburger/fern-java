@@ -8,14 +8,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.ProcessBuilder.Redirect;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith({SnapshotExtension.class})
+@ExtendWith(SnapshotExtension.class)
 public class CliEteTest {
 
     private Expect expect;
@@ -72,10 +71,11 @@ public class CliEteTest {
                 InputStreamReader isr = new InputStreamReader(is);
                 BufferedReader br = new BufferedReader(isr);
                 String line = null;
-                while ( (line = br.readLine()) != null)
+                while ((line = br.readLine()) != null) {
                     System.out.println(line);
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to print command output", e);
             }
         }
     }
