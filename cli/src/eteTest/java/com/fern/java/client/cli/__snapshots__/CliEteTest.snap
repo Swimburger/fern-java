@@ -1,10 +1,10 @@
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/.gitignore]=[
+basic[src/eteTest/basic/api/generated-java/.gitignore]=[
 */
 
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/client/build.gradle]=[
+basic[src/eteTest/basic/api/generated-java/client/build.gradle]=[
 plugins {
     id 'java-library'
     id "org.inferred.processors" version "3.6.0"
@@ -29,7 +29,7 @@ dependencies {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/client/src/main/java/com/blog/ClientObjectMappers.java]=[
+basic[src/eteTest/basic/api/generated-java/client/src/main/java/com/blog/ClientObjectMappers.java]=[
 package com.blog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,7 +48,7 @@ public final class ClientObjectMappers {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/client/src/main/java/com/blog/UnknownRemoteException.java]=[
+basic[src/eteTest/basic/api/generated-java/client/src/main/java/com/blog/UnknownRemoteException.java]=[
 package com.blog;
 
 import java.lang.String;
@@ -63,7 +63,7 @@ public final class UnknownRemoteException extends RemoteException {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/client/src/main/java/com/blog/client/blog/PostsServiceClient.java]=[
+basic[src/eteTest/basic/api/generated-java/client/src/main/java/com/blog/client/blog/PostsServiceClient.java]=[
 package com.blog.client.blog;
 
 import com.blog.ClientObjectMappers;
@@ -110,7 +110,7 @@ public interface PostsServiceClient {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/client/src/main/java/com/blog/client/blog/PostsServiceErrorDecoder.java]=[
+basic[src/eteTest/basic/api/generated-java/client/src/main/java/com/blog/client/blog/PostsServiceErrorDecoder.java]=[
 package com.blog.client.blog;
 
 import com.blog.ClientObjectMappers;
@@ -181,7 +181,7 @@ final class PostsServiceErrorDecoder implements ErrorDecoder {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/client/src/main/java/com/blog/errors/blog/PostNotFoundError.java]=[
+basic[src/eteTest/basic/api/generated-java/client/src/main/java/com/blog/errors/blog/PostNotFoundError.java]=[
 package com.blog.errors.blog;
 
 import com.blog.ApiException;
@@ -218,7 +218,7 @@ public abstract class PostNotFoundError extends Exception implements ApiExceptio
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/model/build.gradle]=[
+basic[src/eteTest/basic/api/generated-java/model/build.gradle]=[
 plugins {
     id 'java-library'
     id "org.inferred.processors" version "3.6.0"
@@ -239,7 +239,7 @@ dependencies {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/ApiException.java]=[
+basic[src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/ApiException.java]=[
 package com.blog;
 
 public abstract interface ApiException {
@@ -248,7 +248,7 @@ public abstract interface ApiException {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/AuthHeader.java]=[
+basic[src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/AuthHeader.java]=[
 package com.blog;
 
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -279,7 +279,7 @@ public abstract class AuthHeader {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/HttpApiException.java]=[
+basic[src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/HttpApiException.java]=[
 package com.blog;
 
 public abstract interface HttpApiException {
@@ -289,7 +289,7 @@ public abstract interface HttpApiException {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/PackagePrivateStyle.java]=[
+basic[src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/PackagePrivateStyle.java]=[
 package com.blog;
 
 import java.lang.annotation.ElementType;
@@ -311,7 +311,7 @@ public @interface PackagePrivateStyle {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/StagedBuilderStyle.java]=[
+basic[src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/StagedBuilderStyle.java]=[
 package com.blog;
 
 import java.lang.annotation.ElementType;
@@ -334,7 +334,7 @@ public @interface StagedBuilderStyle {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/services/blog/CreatePostRequest.java]=[
+basic[src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/services/blog/CreatePostRequest.java]=[
 package com.blog.services.blog;
 
 import com.blog.StagedBuilderStyle;
@@ -370,7 +370,7 @@ public interface CreatePostRequest {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/types/blog/Author.java]=[
+basic[src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/types/blog/Author.java]=[
 package com.blog.types.blog;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -512,7 +512,7 @@ public final class Author {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/types/blog/BlogPost.java]=[
+basic[src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/types/blog/BlogPost.java]=[
 package com.blog.types.blog;
 
 import com.blog.StagedBuilderStyle;
@@ -548,7 +548,7 @@ public interface BlogPost {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/types/blog/PostId.java]=[
+basic[src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/types/blog/PostId.java]=[
 package com.blog.types.blog;
 
 import com.blog.StagedBuilderStyle;
@@ -574,7 +574,7 @@ public interface PostId {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/types/blog/PostType.java]=[
+basic[src/eteTest/basic/api/generated-java/model/src/main/java/com/blog/types/blog/PostType.java]=[
 package com.blog.types.blog;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -667,7 +667,7 @@ public final class PostType {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/server/build.gradle]=[
+basic[src/eteTest/basic/api/generated-java/server/build.gradle]=[
 plugins {
     id 'java-library'
     id "org.inferred.processors" version "3.6.0"
@@ -692,7 +692,7 @@ dependencies {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/server/src/main/java/com/blog/ServerObjectMappers.java]=[
+basic[src/eteTest/basic/api/generated-java/server/src/main/java/com/blog/ServerObjectMappers.java]=[
 package com.blog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -711,7 +711,7 @@ public final class ServerObjectMappers {
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/server/src/main/java/com/blog/errors/blog/PostNotFoundError.java]=[
+basic[src/eteTest/basic/api/generated-java/server/src/main/java/com/blog/errors/blog/PostNotFoundError.java]=[
 package com.blog.errors.blog;
 
 import com.blog.ApiException;
@@ -754,7 +754,7 @@ public abstract class PostNotFoundError extends WebApplicationException implemen
 ]
 
 
-basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/server/src/main/java/com/blog/server/blog/PostsService.java]=[
+basic[src/eteTest/basic/api/generated-java/server/src/main/java/com/blog/server/blog/PostsService.java]=[
 package com.blog.server.blog;
 
 import com.blog.errors.blog.PostNotFoundError;

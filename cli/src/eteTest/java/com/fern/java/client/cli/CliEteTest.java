@@ -23,13 +23,13 @@ public class CliEteTest {
     @Test
     public void test_basic() throws IOException {
         fernGenerate("src/eteTest/basic");
-        Files.walk(Paths.get("src/eteTest/basic/api/generated-java")).forEach(path -> {
+        Files.walk(Paths.get( "src/eteTest/basic/api/generated-java")).forEach(path -> {
             if (path.toFile().isDirectory()) {
                 return;
             }
             try {
                 String fileContents = Files.readString(path);
-                expect.scenario(path.toAbsolutePath().toString()).toMatchSnapshot(fileContents);
+                expect.scenario(path.toString()).toMatchSnapshot(fileContents);
             } catch (IOException e) {
                 throw new RuntimeException("Failed to read file: " + path);
             }
