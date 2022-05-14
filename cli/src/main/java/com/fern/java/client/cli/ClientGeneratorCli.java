@@ -64,6 +64,8 @@ public final class ClientGeneratorCli {
 
         ModelGeneratorResult modelGeneratorResult = addModelFiles(ir, generatorContext, resultBuilder);
         switch (fernPluginConfig.customPluginConfig().mode()) {
+            case MODEL:
+                break;
             case CLIENT:
                 addClientFiles(ir, generatorContext, modelGeneratorResult, resultBuilder);
                 break;

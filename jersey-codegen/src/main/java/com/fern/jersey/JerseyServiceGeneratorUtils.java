@@ -194,7 +194,7 @@ public final class JerseyServiceGeneratorUtils {
         }
 
         @Override
-        public Optional<ParameterSpec> visitUnknown(String s) {
+        public Optional<ParameterSpec> visitUnknown(String _unknownType) {
             return Optional.empty();
         }
     }
