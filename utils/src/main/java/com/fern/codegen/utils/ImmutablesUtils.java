@@ -26,7 +26,8 @@ public final class ImmutablesUtils {
         this.classNameUtils = classNameUtils;
     }
 
-    public Map<ObjectProperty, MethodSpec> getOrderedImmutablesPropertyMethods(ObjectTypeDefinition objectTypeDefinition) {
+    public Map<ObjectProperty, MethodSpec> getOrderedImmutablesPropertyMethods(
+            ObjectTypeDefinition objectTypeDefinition) {
         return objectTypeDefinition.properties().stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
