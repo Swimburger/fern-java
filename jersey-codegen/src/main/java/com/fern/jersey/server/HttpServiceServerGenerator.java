@@ -1,5 +1,6 @@
 package com.fern.jersey.server;
 
+import com.fern.codegen.GeneratedEndpointModel;
 import com.fern.codegen.GeneratedException;
 import com.fern.codegen.GeneratedHttpServiceServer;
 import com.fern.codegen.GeneratedInterface;
@@ -32,6 +33,7 @@ public final class HttpServiceServerGenerator extends Generator {
     public HttpServiceServerGenerator(
             GeneratorContext generatorContext,
             Map<NamedType, GeneratedInterface> generatedInterfaces,
+            List<GeneratedEndpointModel> generatedEndpointModels,
             List<GeneratedException> generatedExceptions,
             HttpService httpService) {
         super(generatorContext, PackageType.SERVER);
@@ -39,7 +41,7 @@ public final class HttpServiceServerGenerator extends Generator {
         this.generatedServiceClassName =
                 generatorContext.getClassNameUtils().getClassNameForNamedType(httpService.name(), packageType);
         this.jerseyServiceGeneratorUtils = new JerseyServiceGeneratorUtils(
-                generatorContext, generatedInterfaces, generatedExceptions, httpService);
+                generatorContext, generatedInterfaces, generatedEndpointModels, generatedExceptions, httpService);
     }
 
     @Override
@@ -67,8 +69,6 @@ public final class HttpServiceServerGenerator extends Generator {
                 .file(jerseyServiceJavaFile)
                 .className(generatedServiceClassName)
                 .httpService(httpService)
-                .addAllHttpRequests(jerseyServiceGeneratorUtils.getGeneratedHttpRequests())
-                .addAllHttpResponses(jerseyServiceGeneratorUtils.getGeneratedHttpResponses())
                 .build();
     }
 }

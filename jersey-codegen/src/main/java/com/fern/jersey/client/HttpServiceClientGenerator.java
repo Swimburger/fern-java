@@ -1,5 +1,6 @@
 package com.fern.jersey.client;
 
+import com.fern.codegen.GeneratedEndpointModel;
 import com.fern.codegen.GeneratedErrorDecoder;
 import com.fern.codegen.GeneratedException;
 import com.fern.codegen.GeneratedHttpServiceClient;
@@ -10,6 +11,7 @@ import com.fern.codegen.utils.ClassNameUtils;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.jersey.JerseyServiceGeneratorUtils;
 import com.fern.model.codegen.Generator;
+import com.fern.types.services.commons.FailedResponse;
 import com.fern.types.services.http.HttpEndpoint;
 import com.fern.types.services.http.HttpResponse;
 import com.fern.types.services.http.HttpService;
@@ -48,6 +50,7 @@ public final class HttpServiceClientGenerator extends Generator {
     public HttpServiceClientGenerator(
             GeneratorContext generatorContext,
             Map<NamedType, GeneratedInterface> generatedInterfaces,
+            List<GeneratedEndpointModel> generatedEndpointModels,
             List<GeneratedException> generatedExceptions,
             HttpService httpService) {
         super(generatorContext, PackageType.CLIENT);
@@ -57,7 +60,7 @@ public final class HttpServiceClientGenerator extends Generator {
                 .getClassNameUtils()
                 .getClassNameForNamedType(httpService.name(), packageType, Optional.of(CLIENT_CLASS_NAME_SUFFIX));
         this.jerseyServiceGeneratorUtils = new JerseyServiceGeneratorUtils(
-                generatorContext, generatedInterfaces, generatedExceptions, httpService);
+                generatorContext, generatedInterfaces, generatedEndpointModels, generatedExceptions, httpService);
     }
 
     @Override
@@ -89,8 +92,6 @@ public final class HttpServiceClientGenerator extends Generator {
                 .className(generatedServiceClassName)
                 .httpService(httpService)
                 .generatedErrorDecoder(maybeGeneratedErrorDecoder)
-                .addAllHttpRequests(jerseyServiceGeneratorUtils.getGeneratedHttpRequests())
-                .addAllHttpResponses(jerseyServiceGeneratorUtils.getGeneratedHttpResponses())
                 .build();
     }
 
@@ -98,8 +99,8 @@ public final class HttpServiceClientGenerator extends Generator {
         Optional<GeneratedErrorDecoder> maybeGeneratedErrorDecoder = Optional.empty();
         boolean shouldGenerateErrorDecoder = httpService.endpoints().stream()
                         .map(HttpEndpoint::response)
-                        .map(HttpResponse::errors)
-                        .flatMap(responseErrors -> responseErrors.possibleErrors().stream())
+                        .map(HttpResponse::failed)
+                        .flatMap(failedResponse -> failedResponse.errors().stream())
                         .count()
                 > 0;
         if (shouldGenerateErrorDecoder) {

@@ -9,7 +9,7 @@ import com.fern.codegen.utils.ClassNameUtils;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.model.codegen.Generator;
 import com.fern.types.errors.ErrorDefinition;
-import com.fern.types.errors.ErrorProperty;
+// import com.fern.types.errors.ErrorProperty;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
@@ -78,11 +78,11 @@ public final class ExceptionGenerator extends Generator {
                             .initializer("$L", errorDefinition.http().get().statusCode())
                             .build());
         }
-        Map<ErrorProperty, MethodSpec> methodSpecsByProperty =
-                generatorContext.getImmutablesUtils().getOrderedImmutablesPropertyMethods(errorDefinition);
-        errorExceptionTypeSpec.addAnnotation((getJsonIncludePropertiesAnnotationSpec(methodSpecsByProperty)));
-        errorExceptionTypeSpec.addMethods(methodSpecsByProperty.values());
-        errorExceptionTypeSpec.addMethod(generateStaticBuilder(methodSpecsByProperty));
+        // Map<ErrorProperty, MethodSpec> methodSpecsByProperty =
+        //         generatorContext.getImmutablesUtils().getOrderedImmutablesPropertyMethods(errorDefinition);
+        // errorExceptionTypeSpec.addAnnotation((getJsonIncludePropertiesAnnotationSpec(methodSpecsByProperty)));
+        // errorExceptionTypeSpec.addMethods(methodSpecsByProperty.values());
+        // errorExceptionTypeSpec.addMethod(generateStaticBuilder(methodSpecsByProperty));
 
         if (isServerException && isHttpError) {
             errorExceptionTypeSpec.addMethod(getResponseMethodSpec());
@@ -123,38 +123,38 @@ public final class ExceptionGenerator extends Generator {
         return ClassNameUtils.EXCEPTION_CLASS_NAME;
     }
 
-    private AnnotationSpec getJsonIncludePropertiesAnnotationSpec(
-            Map<ErrorProperty, MethodSpec> methodSpecsByProperty) {
-        List<String> jsonIncludeProperties = methodSpecsByProperty.values().stream()
-                .map(methodSpec -> methodSpec.name)
-                .collect(Collectors.toList());
-        String includedPropertiesFormat =
-                jsonIncludeProperties.stream().map(_unused -> "$S").collect(Collectors.joining(","));
-        return AnnotationSpec.builder(JsonIncludeProperties.class)
-                .addMember("value", "{" + includedPropertiesFormat + "}", jsonIncludeProperties.toArray())
-                .build();
-    }
-
-    private MethodSpec generateStaticBuilder(Map<ErrorProperty, MethodSpec> methodSpecsByProperty) {
-        Optional<String> firstMandatoryFieldName = getFirstRequiredFieldName(methodSpecsByProperty);
-        ClassName builderClassName = firstMandatoryFieldName.isEmpty()
-                ? generatedImmutablesExceptionClassName.nestedClass("Builder")
-                : generatedImmutablesExceptionClassName.nestedClass(
-                        StringUtils.capitalize(firstMandatoryFieldName.get()) + BUILD_STAGE_SUFFIX);
-        return MethodSpec.methodBuilder(STATIC_BUILDER_METHOD_NAME)
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .returns(builderClassName)
-                .addCode("return $T.builder();", generatedImmutablesExceptionClassName)
-                .build();
-    }
-
-    private static Optional<String> getFirstRequiredFieldName(Map<ErrorProperty, MethodSpec> methodSpecsByProperty) {
-        for (Map.Entry<ErrorProperty, MethodSpec> entry : methodSpecsByProperty.entrySet()) {
-            ErrorProperty property = entry.getKey();
-            if (property.type().isPrimitive() || property.type().isNamed()) {
-                return Optional.of(entry.getValue().name);
-            }
-        }
-        return Optional.empty();
-    }
+    // private AnnotationSpec getJsonIncludePropertiesAnnotationSpec(
+    //         Map<ErrorProperty, MethodSpec> methodSpecsByProperty) {
+    //     List<String> jsonIncludeProperties = methodSpecsByProperty.values().stream()
+    //             .map(methodSpec -> methodSpec.name)
+    //             .collect(Collectors.toList());
+    //     String includedPropertiesFormat =
+    //             jsonIncludeProperties.stream().map(_unused -> "$S").collect(Collectors.joining(","));
+    //     return AnnotationSpec.builder(JsonIncludeProperties.class)
+    //             .addMember("value", "{" + includedPropertiesFormat + "}", jsonIncludeProperties.toArray())
+    //             .build();
+    // }
+    //
+    // private MethodSpec generateStaticBuilder(Map<ErrorProperty, MethodSpec> methodSpecsByProperty) {
+    //     Optional<String> firstMandatoryFieldName = getFirstRequiredFieldName(methodSpecsByProperty);
+    //     ClassName builderClassName = firstMandatoryFieldName.isEmpty()
+    //             ? generatedImmutablesExceptionClassName.nestedClass("Builder")
+    //             : generatedImmutablesExceptionClassName.nestedClass(
+    //                     StringUtils.capitalize(firstMandatoryFieldName.get()) + BUILD_STAGE_SUFFIX);
+    //     return MethodSpec.methodBuilder(STATIC_BUILDER_METHOD_NAME)
+    //             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+    //             .returns(builderClassName)
+    //             .addCode("return $T.builder();", generatedImmutablesExceptionClassName)
+    //             .build();
+    // }
+    //
+    // private static Optional<String> getFirstRequiredFieldName(Map<ErrorProperty, MethodSpec> methodSpecsByProperty) {
+    //     for (Map.Entry<ErrorProperty, MethodSpec> entry : methodSpecsByProperty.entrySet()) {
+    //         ErrorProperty property = entry.getKey();
+    //         if (property.type().isPrimitive() || property.type().isNamed()) {
+    //             return Optional.of(entry.getValue().name);
+    //         }
+    //     }
+    //     return Optional.empty();
+    // }
 }

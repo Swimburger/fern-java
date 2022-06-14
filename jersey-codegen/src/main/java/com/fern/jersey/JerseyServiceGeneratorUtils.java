@@ -1,11 +1,16 @@
 package com.fern.jersey;
 
+import com.fern.codegen.GeneratedEndpointModel;
 import com.fern.codegen.GeneratedException;
-import com.fern.codegen.GeneratedHttpRequest;
-import com.fern.codegen.GeneratedHttpResponse;
 import com.fern.codegen.GeneratedInterface;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.IGeneratedFile;
+import com.fern.codegen.payload.GeneratedFilePayload;
+import com.fern.codegen.payload.Payload;
+import com.fern.codegen.payload.TypeNamePayload;
+import com.fern.codegen.payload.VoidPayload;
+import com.fern.model.codegen.services.payloads.RequestResponseGenerator;
+import com.fern.model.codegen.services.payloads.RequestResponseGeneratorResult;
 import com.fern.types.services.commons.ResponseError;
 import com.fern.types.services.http.HttpAuth;
 import com.fern.types.services.http.HttpEndpoint;
@@ -20,6 +25,7 @@ import com.fern.types.types.NamedType;
 import com.fern.types.types.Type;
 import com.fern.types.types.TypeReference;
 import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeName;
@@ -48,13 +54,13 @@ public final class JerseyServiceGeneratorUtils {
     private final HttpService httpService;
     private final Map<NamedType, GeneratedInterface> generatedInterfaces;
     private final Map<NamedType, GeneratedException> generatedExceptionsByType;
+    private final Map<HttpEndpoint, GeneratedEndpointModel> generatedEndpointModels;
     private final HttpAuthToParameterSpec httpAuthToParameterSpec = new HttpAuthToParameterSpec();
-    private final List<GeneratedHttpRequest> generatedHttpRequests = new ArrayList<>();
-    private final List<GeneratedHttpResponse> generatedHttpResponses = new ArrayList<>();
 
     public JerseyServiceGeneratorUtils(
             GeneratorContext generatorContext,
             Map<NamedType, GeneratedInterface> generatedInterfaces,
+            List<GeneratedEndpointModel> generatedEndpointModels,
             List<GeneratedException> generatedExceptions,
             HttpService httpService) {
         this.generatorContext = generatorContext;
@@ -64,15 +70,9 @@ public final class JerseyServiceGeneratorUtils {
                         generatedException ->
                                 generatedException.errorDefinition().name(),
                         Function.identity()));
+        this.generatedEndpointModels = generatedEndpointModels.stream()
+                .collect(Collectors.toMap(GeneratedEndpointModel::httpEndpoint, Function.identity()));
         this.httpService = httpService;
-    }
-
-    public List<GeneratedHttpRequest> getGeneratedHttpRequests() {
-        return generatedHttpRequests;
-    }
-
-    public List<GeneratedHttpResponse> getGeneratedHttpResponses() {
-        return generatedHttpResponses;
     }
 
     public MethodSpec getHttpEndpointMethodSpec(HttpEndpoint httpEndpoint, boolean throwsUnknownException) {
@@ -83,49 +83,29 @@ public final class JerseyServiceGeneratorUtils {
                         .build())
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
         httpEndpoint.auth().visit(httpAuthToParameterSpec).ifPresent(endpointMethodBuilder::addParameter);
-        httpEndpoint.headers().stream().map(this::getHeaderParameterSpec).forEach(endpointMethodBuilder::addParameter);
-        httpEndpoint.parameters().stream().map(this::getPathParameterSpec).forEach(endpointMethodBuilder::addParameter);
+        httpEndpoint.headers().stream()
+                .map(this::getHeaderParameterSpec).forEach(endpointMethodBuilder::addParameter);
+        httpEndpoint.pathParameters().stream()
+                .map(this::getPathParameterSpec).forEach(endpointMethodBuilder::addParameter);
         httpEndpoint.queryParameters().stream()
                 .map(this::getQueryParameterSpec)
                 .forEach(endpointMethodBuilder::addParameter);
-
-        createHttpRequest(httpEndpoint.request(), httpEndpoint).ifPresent(requestGeneratorResult -> {
-            endpointMethodBuilder.addParameter(ParameterSpec.builder(requestGeneratorResult.typeName(), "request")
+        GeneratedEndpointModel generatedEndpointModel = generatedEndpointModels.get(httpEndpoint);
+        getPayloadTypeName(generatedEndpointModel.generatedHttpRequest()).ifPresent(typeName -> {
+            endpointMethodBuilder.addParameter(ParameterSpec.builder(typeName, "request")
                     .build());
-            if (requestGeneratorResult.generatedFile().isPresent()) {
-                IGeneratedFile generatedFile =
-                        requestGeneratorResult.generatedFile().get();
-                GeneratedHttpRequest generatedHttpRequest = GeneratedHttpRequest.builder()
-                        .file(generatedFile.file())
-                        .className(generatedFile.className())
-                        .httpRequest(httpEndpoint.request())
-                        .build();
-                generatedHttpRequests.add(generatedHttpRequest);
-            }
         });
-        createHttpResponse(httpEndpoint.response(), httpEndpoint).ifPresent(responseGeneratorResult -> {
-            endpointMethodBuilder.returns(responseGeneratorResult.typeName());
-            if (responseGeneratorResult.generatedFile().isPresent()) {
-                IGeneratedFile generatedFile =
-                        responseGeneratorResult.generatedFile().get();
-                GeneratedHttpResponse generatedHttpResponse = GeneratedHttpResponse.builder()
-                        .file(generatedFile.file())
-                        .className(generatedFile.className())
-                        .httpResponse(httpEndpoint.response())
-                        .build();
-                generatedHttpResponses.add(generatedHttpResponse);
-            }
-        });
-        boolean exceptionsAdded = false;
-        for (ResponseError responseError : httpEndpoint.response().errors().possibleErrors()) {
-            GeneratedException generatedException = generatedExceptionsByType.get(responseError.error());
-            endpointMethodBuilder.addException(generatedException.className());
-            exceptionsAdded = true;
-        }
-        if (exceptionsAdded && throwsUnknownException) {
-            endpointMethodBuilder.addException(
-                    generatorContext.getUnknownRemoteExceptionFile().className());
-        }
+        getPayloadTypeName(generatedEndpointModel.generatedHttpResponse()).ifPresent(endpointMethodBuilder::returns);
+        // boolean exceptionsAdded = false;
+        // for (ResponseError responseError : httpEndpoint.response().errors().possibleErrors()) {
+        //     GeneratedException generatedException = generatedExceptionsByType.get(responseError.error());
+        //     endpointMethodBuilder.addException(generatedException.className());
+        //     exceptionsAdded = true;
+        // }
+        // if (exceptionsAdded && throwsUnknownException) {
+        //     endpointMethodBuilder.addException(
+        //             generatorContext.getUnknownRemoteExceptionFile().className());
+        // }
         return endpointMethodBuilder.build();
     }
 
@@ -150,30 +130,16 @@ public final class JerseyServiceGeneratorUtils {
                 .build();
     }
 
-    private Optional<RequestResponseGeneratorResult> createHttpRequest(
-            HttpRequest httpRequest, HttpEndpoint httpEndpoint) {
-        if (isVoid(httpRequest.type())) {
+    private Optional<TypeName> getPayloadTypeName(Payload payload) {
+        if (payload instanceof VoidPayload) {
             return Optional.empty();
+        } else if (payload instanceof GeneratedFilePayload) {
+            return Optional.of(((GeneratedFilePayload) payload).generatedFile().className());
+        } else if (payload instanceof TypeNamePayload) {
+            return Optional.of(((TypeNamePayload) payload).typeName());
         }
-        RequestResponseGenerator requestResponseGenerator = new RequestResponseGenerator(
-                generatorContext, generatedInterfaces, httpService, httpEndpoint, httpRequest.type(), true);
-        return Optional.of(requestResponseGenerator.generate());
-    }
-
-    private Optional<RequestResponseGeneratorResult> createHttpResponse(
-            HttpResponse httpResponse, HttpEndpoint httpEndpoint) {
-        if (isVoid(httpResponse.ok())) {
-            return Optional.empty();
-        }
-        RequestResponseGenerator requestResponseGenerator = new RequestResponseGenerator(
-                generatorContext, generatedInterfaces, httpService, httpEndpoint, httpResponse.ok(), false);
-        return Optional.of(requestResponseGenerator.generate());
-    }
-
-    private static boolean isVoid(Type type) {
-        return type.getAlias()
-                .map(aliasTypeDefinition -> aliasTypeDefinition.aliasOf().isVoid())
-                .orElse(false);
+        throw new IllegalStateException("Encountered unknown payload type: "
+                + payload.getClass().getSimpleName());
     }
 
     private final class HttpAuthToParameterSpec implements HttpAuth.Visitor<Optional<ParameterSpec>> {

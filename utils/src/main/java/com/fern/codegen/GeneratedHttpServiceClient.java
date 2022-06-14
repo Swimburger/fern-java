@@ -12,10 +12,6 @@ public interface GeneratedHttpServiceClient extends IGeneratedFile {
 
     HttpService httpService();
 
-    List<GeneratedHttpRequest> httpRequests();
-
-    List<GeneratedHttpResponse> httpResponses();
-
     Optional<GeneratedErrorDecoder> generatedErrorDecoder();
 
     static ImmutableGeneratedHttpServiceClient.FileBuildStage builder() {

@@ -11,10 +11,6 @@ public interface GeneratedHttpServiceServer extends IGeneratedFile {
 
     HttpService httpService();
 
-    List<GeneratedHttpRequest> httpRequests();
-
-    List<GeneratedHttpResponse> httpResponses();
-
     static ImmutableGeneratedHttpServiceServer.FileBuildStage builder() {
         return ImmutableGeneratedHttpServiceServer.builder();
     }

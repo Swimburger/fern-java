@@ -85,13 +85,16 @@ public final class ClientGeneratorCli {
             IntermediateRepresentation ir,
             GeneratorContext generatorContext,
             ImmutableCodeGenerationResult.Builder resultBuilder) {
-        ModelGenerator modelGenerator = new ModelGenerator(ir.types(), generatorContext);
+        ModelGenerator modelGenerator = new ModelGenerator(
+                ir.services().http(), ir.types(), ir.errors(), generatorContext);
         ModelGeneratorResult modelGeneratorResult = modelGenerator.generate();
         resultBuilder.addAllModelFiles(modelGeneratorResult.aliases());
         resultBuilder.addAllModelFiles(modelGeneratorResult.enums());
         resultBuilder.addAllModelFiles(modelGeneratorResult.interfaces().values());
         resultBuilder.addAllModelFiles(modelGeneratorResult.objects());
         resultBuilder.addAllModelFiles(modelGeneratorResult.unions());
+        resultBuilder.addAllModelFiles(modelGeneratorResult.errors());
+        resultBuilder.addAllModelFiles(modelGeneratorResult.endpointModelFiles());
         resultBuilder.addModelFiles(generatorContext.getStagedImmutablesFile());
         resultBuilder.addModelFiles(generatorContext.getPackagePrivateImmutablesFile());
         resultBuilder.addModelFiles(generatorContext.getAuthHeaderFile());
@@ -116,7 +119,11 @@ public final class ClientGeneratorCli {
         List<GeneratedHttpServiceClient> generatedHttpServiceClients = ir.services().http().stream()
                 .map(httpService -> {
                     HttpServiceClientGenerator httpServiceClientGenerator = new HttpServiceClientGenerator(
-                            generatorContext, modelGeneratorResult.interfaces(), generatedExceptions, httpService);
+                            generatorContext,
+                            modelGeneratorResult.interfaces(),
+                            modelGeneratorResult.endpointModels().get(httpService),
+                            generatedExceptions,
+                            httpService);
                     return httpServiceClientGenerator.generate();
                 })
                 .collect(Collectors.toList());
@@ -124,8 +131,6 @@ public final class ClientGeneratorCli {
         for (GeneratedHttpServiceClient generatedHttpServiceClient : generatedHttpServiceClients) {
             resultBuilder.addClientFiles(generatedHttpServiceClient);
             generatedHttpServiceClient.generatedErrorDecoder().ifPresent(resultBuilder::addClientFiles);
-            resultBuilder.addAllModelFiles(generatedHttpServiceClient.httpRequests());
-            resultBuilder.addAllModelFiles(generatedHttpServiceClient.httpResponses());
             serviceClientPresent = true;
         }
         if (serviceClientPresent) {
@@ -150,7 +155,11 @@ public final class ClientGeneratorCli {
         List<GeneratedHttpServiceServer> generatedHttpServiceServers = ir.services().http().stream()
                 .map(httpService -> {
                     HttpServiceServerGenerator httpServiceServerGenerator = new HttpServiceServerGenerator(
-                            generatorContext, modelGeneratorResult.interfaces(), generatedExceptions, httpService);
+                            generatorContext,
+                            modelGeneratorResult.interfaces(),
+                            modelGeneratorResult.endpointModels().get(httpService),
+                            generatedExceptions,
+                            httpService);
                     return httpServiceServerGenerator.generate();
                 })
                 .collect(Collectors.toList());
