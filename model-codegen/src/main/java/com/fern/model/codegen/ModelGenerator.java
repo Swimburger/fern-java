@@ -76,15 +76,17 @@ public final class ModelGenerator {
                         +  generatedFile.className());
             }
         });
-        List<GeneratedError> generatedErrors = errorDefinitions.stream().map(errorDefinition -> {
-            ErrorGenerator errorGenerator = new ErrorGenerator(errorDefinition, generatorContext, generatedInterfaces);
-            return errorGenerator.generate();
-        }).collect(Collectors.toList());
-        modelGeneratorResultBuilder.addAllErrors(generatedErrors);
+        Map<NamedType, GeneratedError> generatedErrors = errorDefinitions.stream()
+                .collect(Collectors.toMap(ErrorDefinition::name, errorDefinition -> {
+                    ErrorGenerator errorGenerator =
+                            new ErrorGenerator(errorDefinition, generatorContext, generatedInterfaces);
+                    return errorGenerator.generate();
+                }));
+        modelGeneratorResultBuilder.putAllErrors(generatedErrors);
 
         httpServices.forEach(httpService -> {
             List<GeneratedEndpointModel> generatedEndpointModels =
-                    getGeneratedEndpointModels(httpService, generatedInterfaces);
+                    getGeneratedEndpointModels(httpService, generatedInterfaces, generatedErrors);
             modelGeneratorResultBuilder.putEndpointModels(httpService, generatedEndpointModels);
         });
 
@@ -114,7 +116,9 @@ public final class ModelGenerator {
     }
 
     private List<GeneratedEndpointModel> getGeneratedEndpointModels(
-            HttpService httpService, Map<NamedType, GeneratedInterface> generatedInterfaces) {
+            HttpService httpService,
+            Map<NamedType, GeneratedInterface> generatedInterfaces,
+            Map<NamedType, GeneratedError> generatedErrors) {
         return httpService.endpoints().stream().map(httpEndpoint -> {
             ImmutableGeneratedEndpointModel.Builder generatedEndpointModel = GeneratedEndpointModel.builder();
             if (!isVoid(httpEndpoint.request().type())) {
@@ -165,7 +169,8 @@ public final class ModelGenerator {
                         httpService,
                         httpEndpoint,
                         httpEndpoint.response().failed(),
-                        generatorContext);
+                        generatorContext,
+                        generatedErrors);
                 generatedEndpointModel.errorFile(failedResponseGenerator.generate());
             }
             return generatedEndpointModel.build();

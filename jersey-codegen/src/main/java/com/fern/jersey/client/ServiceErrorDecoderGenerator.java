@@ -1,12 +1,7 @@
 package com.fern.jersey.client;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fern.codegen.GeneratedEndpointModel;
+import com.fern.codegen.GeneratedEndpointError;
 import com.fern.codegen.GeneratedErrorDecoder;
-import com.fern.codegen.GeneratedException;
 import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.stateless.generator.ObjectMapperGenerator;
@@ -16,11 +11,6 @@ import com.fern.model.codegen.Generator;
 import com.fern.model.codegen.services.payloads.FailedResponseGenerator;
 import com.fern.types.services.http.HttpEndpoint;
 import com.fern.types.services.http.HttpService;
-import com.fern.types.types.NamedType;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-import com.palantir.common.streams.KeyedStream;
-import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.JavaFile;
@@ -31,14 +21,9 @@ import com.squareup.javapoet.TypeVariableName;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
-import org.immutables.value.Value;
 
 public final class ServiceErrorDecoderGenerator extends Generator {
 
@@ -56,12 +41,12 @@ public final class ServiceErrorDecoderGenerator extends Generator {
 
     private final HttpService httpService;
     private final ClassName errorDecoderClassName;
-    private final Map<HttpEndpoint, Optional<GeneratedFile>> generatedEndpointErrorFiles;
+    private final Map<HttpEndpoint, Optional<GeneratedEndpointError>> generatedEndpointErrorFiles;
 
     public ServiceErrorDecoderGenerator(
             GeneratorContext generatorContext,
             HttpService httpService,
-            List<GeneratedEndpointModel> generatedEndpointModels) {
+            Map<HttpEndpoint, Optional<GeneratedEndpointError>> generatedEndpointErrorFiles) {
         super(generatorContext, PackageType.CLIENT);
         this.httpService = httpService;
         this.errorDecoderClassName = generatorContext
@@ -70,8 +55,7 @@ public final class ServiceErrorDecoderGenerator extends Generator {
                         httpService.name().name() + ERROR_DECODER_CLASSNAME_SUFFIX,
                         Optional.of(PackageType.CLIENT),
                         Optional.of(httpService.name().fernFilepath()));
-        this.generatedEndpointErrorFiles = generatedEndpointModels.stream()
-                .collect(Collectors.toMap(GeneratedEndpointModel::httpEndpoint, GeneratedEndpointModel::errorFile));
+        this.generatedEndpointErrorFiles = generatedEndpointErrorFiles;
     }
 
     @Override
@@ -100,7 +84,7 @@ public final class ServiceErrorDecoderGenerator extends Generator {
         CodeBlock.Builder codeBlockBuilder = CodeBlock.builder();
         boolean ifStatementStarted = false;
         for (HttpEndpoint httpEndpoint : httpService.endpoints()) {
-            Optional<GeneratedFile> maybeGeneratedEndpointErrorFile = generatedEndpointErrorFiles.get(httpEndpoint);
+            Optional<GeneratedEndpointError> maybeGeneratedEndpointErrorFile = generatedEndpointErrorFiles.get(httpEndpoint);
             if (maybeGeneratedEndpointErrorFile == null
                     || maybeGeneratedEndpointErrorFile.isEmpty()) {
                 continue;

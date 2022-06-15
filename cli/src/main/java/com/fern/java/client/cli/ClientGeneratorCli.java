@@ -1,11 +1,9 @@
 package com.fern.java.client.cli;
 
-import com.fern.codegen.GeneratedException;
 import com.fern.codegen.GeneratedHttpServiceClient;
 import com.fern.codegen.GeneratedHttpServiceServer;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ObjectMappers;
-import com.fern.jersey.ExceptionGenerator;
 import com.fern.jersey.client.HttpServiceClientGenerator;
 import com.fern.jersey.server.HttpServiceServerGenerator;
 import com.fern.model.codegen.ModelGenerator;
@@ -96,7 +94,7 @@ public final class ClientGeneratorCli {
         resultBuilder.addAllModelFiles(modelGeneratorResult.interfaces().values());
         resultBuilder.addAllModelFiles(modelGeneratorResult.objects());
         resultBuilder.addAllModelFiles(modelGeneratorResult.unions());
-        resultBuilder.addAllModelFiles(modelGeneratorResult.errors());
+        resultBuilder.addAllModelFiles(modelGeneratorResult.errors().values());
         resultBuilder.addAllModelFiles(modelGeneratorResult.endpointModelFiles());
         resultBuilder.addModelFiles(generatorContext.getStagedImmutablesFile());
         resultBuilder.addModelFiles(generatorContext.getPackagePrivateImmutablesFile());
@@ -111,21 +109,12 @@ public final class ClientGeneratorCli {
             GeneratorContext generatorContext,
             ModelGeneratorResult modelGeneratorResult,
             ImmutableCodeGenerationResult.Builder resultBuilder) {
-        List<GeneratedException> generatedExceptions = ir.errors().stream()
-                .map(errorDefinition -> {
-                    ExceptionGenerator exceptionGenerator =
-                            new ExceptionGenerator(generatorContext, errorDefinition, false);
-                    return exceptionGenerator.generate();
-                })
-                .collect(Collectors.toList());
-        resultBuilder.addAllClientFiles(generatedExceptions);
         List<GeneratedHttpServiceClient> generatedHttpServiceClients = ir.services().http().stream()
                 .map(httpService -> {
                     HttpServiceClientGenerator httpServiceClientGenerator = new HttpServiceClientGenerator(
                             generatorContext,
-                            modelGeneratorResult.interfaces(),
                             modelGeneratorResult.endpointModels().get(httpService),
-                            generatedExceptions,
+                            modelGeneratorResult.errors(),
                             httpService);
                     return httpServiceClientGenerator.generate();
                 })
@@ -147,21 +136,12 @@ public final class ClientGeneratorCli {
             GeneratorContext generatorContext,
             ModelGeneratorResult modelGeneratorResult,
             ImmutableCodeGenerationResult.Builder resultBuilder) {
-        List<GeneratedException> generatedExceptions = ir.errors().stream()
-                .map(errorDefinition -> {
-                    ExceptionGenerator exceptionGenerator =
-                            new ExceptionGenerator(generatorContext, errorDefinition, true);
-                    return exceptionGenerator.generate();
-                })
-                .collect(Collectors.toList());
-        resultBuilder.addAllServerFiles(generatedExceptions);
         List<GeneratedHttpServiceServer> generatedHttpServiceServers = ir.services().http().stream()
                 .map(httpService -> {
                     HttpServiceServerGenerator httpServiceServerGenerator = new HttpServiceServerGenerator(
                             generatorContext,
-                            modelGeneratorResult.interfaces(),
+                            modelGeneratorResult.errors(),
                             modelGeneratorResult.endpointModels().get(httpService),
-                            generatedExceptions,
                             httpService);
                     return httpServiceServerGenerator.generate();
                 })

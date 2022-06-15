@@ -7,12 +7,15 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fern.codegen.GeneratedEndpointError;
+import com.fern.codegen.GeneratedError;
 import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.stateless.generator.ApiExceptionGenerator;
 import com.fern.codegen.utils.ClassNameUtils;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.codegen.utils.KeyWordUtils;
+import com.fern.codegen.utils.MethodNameUtils;
 import com.fern.model.codegen.Generator;
 import com.fern.types.errors.ErrorDefinition;
 import com.fern.types.services.commons.FailedResponse;
@@ -55,6 +58,7 @@ public class FailedResponseGenerator extends Generator {
     private static final String VALUE_FIELD_NAME = "value";
 
     private final FailedResponse failedResponse;
+    private final Map<NamedType, GeneratedError> generatedErrors;
     private final ClassName generatedEndpointErrorClassName;
     private final Map<ResponseError, ClassName> internalValueClassNames;
     private final ClassName internalValueInterfaceClassName;
@@ -63,9 +67,11 @@ public class FailedResponseGenerator extends Generator {
             HttpService httpService,
             HttpEndpoint httpEndpoint,
             FailedResponse failedResponse,
-            GeneratorContext generatorContext) {
+            GeneratorContext generatorContext,
+            Map<NamedType, GeneratedError> generatedErrors) {
         super(generatorContext, PackageType.SERVICES);
         this.failedResponse = failedResponse;
+        this.generatedErrors = generatedErrors;
         this.generatedEndpointErrorClassName = generatorContext.getClassNameUtils()
                 .getClassNameForNamedType(
                         NamedType.builder()
@@ -84,7 +90,8 @@ public class FailedResponseGenerator extends Generator {
     }
 
     @Override
-    public GeneratedFile generate() {
+    public GeneratedEndpointError generate() {
+        Map<ResponseError, MethodSpec> responseErrorToMethodSpec = getStaticBuilderMethods();
         TypeSpec endpointErrorTypeSpec = TypeSpec.classBuilder(generatedEndpointErrorClassName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .superclass(WebApplicationException.class)
@@ -96,15 +103,16 @@ public class FailedResponseGenerator extends Generator {
                 .addMethod(getInternalValueMethod())
                 .addMethod(getResponseMethodSpec())
                 .addMethod(getNestedErrorMethodSpec())
-                .addMethods(getStaticBuilderMethods())
+                .addMethods(responseErrorToMethodSpec.values())
                 .addType(getInternalValueInterface())
                 .addTypes(getInternalValueTypeSpecs().values())
                 .build();
         JavaFile aliasFile = JavaFile.builder(generatedEndpointErrorClassName.packageName(), endpointErrorTypeSpec)
                 .build();
-        return GeneratedFile.builder()
+        return GeneratedEndpointError.builder()
                 .file(aliasFile)
                 .className(generatedEndpointErrorClassName)
+                .putAllConstructorsByResponseError(responseErrorToMethodSpec)
                 .build();
     }
 
@@ -149,37 +157,27 @@ public class FailedResponseGenerator extends Generator {
                 .build();
     }
 
-    private List<MethodSpec> getStaticBuilderMethods() {
+    private Map<ResponseError, MethodSpec> getStaticBuilderMethods() {
         return failedResponse.errors().stream()
-                .map(errorResponse -> {
-                    String keyWordCompatibleName =
-                            KeyWordUtils.getKeyWordCompatibleName(errorResponse.discriminantValue());
-                    MethodSpec.Builder staticBuilder = MethodSpec.methodBuilder(keyWordCompatibleName)
-                            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                            .returns(generatedEndpointErrorClassName);
-                    // static builders for void types should have no parameters
-                    if (!errorResponse.error().isVoid()) {
+                .collect(Collectors.toMap(
+                    Function.identity(),
+                    errorResponse -> {
+                        String methodName =
+                                MethodNameUtils.getCompatibleMethodName(errorResponse.discriminantValue());
+                        MethodSpec.Builder staticBuilder = MethodSpec.methodBuilder(methodName)
+                                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                                .returns(generatedEndpointErrorClassName);
+                        // static builders for void types should have no parameters
+                        GeneratedError generatedError = generatedErrors.get(errorResponse.error());
                         return staticBuilder
-                                .addParameter(
-                                        generatorContext
-                                                .getClassNameUtils()
-                                                .getTypeNameFromTypeReference(true, errorResponse.error()),
-                                        "value")
+                                .addParameter(generatedError.className(), "value")
                                 .addStatement(
                                         "return new $T($T.of(value))",
                                         generatedEndpointErrorClassName,
                                         internalValueClassNames.get(errorResponse))
                                 .build();
-                    } else {
-                        return staticBuilder
-                                .addStatement(
-                                        "return new $T($T.of())",
-                                        generatedEndpointErrorClassName,
-                                        internalValueClassNames.get(errorResponse))
-                                .build();
                     }
-                })
-                .collect(Collectors.toList());
+                ));
     }
 
     /*
@@ -254,37 +252,21 @@ public class FailedResponseGenerator extends Generator {
                             .build())
                     .addSuperinterface(internalValueInterfaceClassName);
 
-            // No immutables properties for nested void types
-            if (!responseError.error().isVoid()) {
-                MethodSpec internalValueImmutablesProperty = getInternalValueImmutablesProperty(responseError);
-                typeSpecBuilder
-                        .addMethod(internalValueImmutablesProperty)
-                        .addMethod(MethodSpec.methodBuilder("of")
-                                .addModifiers(Modifier.STATIC, Modifier.PUBLIC)
-                                .returns(internalValueClassName)
-                                .addParameter(
-                                        generatorContext
-                                                .getClassNameUtils()
-                                                .getTypeNameFromTypeReference(true, responseError.error()),
-                                        "value")
-                                .addStatement(
-                                        "return Immutable$L.$L.builder().$L(value).build()",
-                                        generatedEndpointErrorClassName.simpleName(),
-                                        internalValueClassName.simpleName(),
-                                        internalValueImmutablesProperty.name)
-                                .build());
-            } else {
-                typeSpecBuilder
-                        .addMethod(MethodSpec.methodBuilder("of")
-                                .addModifiers(Modifier.STATIC, Modifier.PUBLIC)
-                                .returns(internalValueClassName)
-                                .addStatement(
-                                        "return Immutable$L.$L.builder().build()",
-                                        generatedEndpointErrorClassName.simpleName(),
-                                        internalValueClassName.simpleName())
-                                .build());
-            }
+            MethodSpec internalValueImmutablesProperty = getInternalValueImmutablesProperty(responseError);
+            GeneratedError generatedError = generatedErrors.get(responseError.error());
             return typeSpecBuilder
+                    .addMethod(internalValueImmutablesProperty)
+                    .addMethod(MethodSpec.methodBuilder("of")
+                            .addModifiers(Modifier.STATIC, Modifier.PUBLIC)
+                            .returns(internalValueClassName)
+                            .addParameter(
+                                    generatedError.className(), "value")
+                            .addStatement(
+                                    "return Immutable$L.$L.builder().$L(value).build()",
+                                    generatedEndpointErrorClassName.simpleName(),
+                                    internalValueClassName.simpleName(),
+                                    internalValueImmutablesProperty.name)
+                            .build())
                     .addMethod(MethodSpec.methodBuilder(GET_STATUS_CODE_METHOD_NAME)
                             .returns(ClassName.INT)
                             .addAnnotation(Override.class)
@@ -303,13 +285,13 @@ public class FailedResponseGenerator extends Generator {
     }
 
     private MethodSpec getInternalValueImmutablesProperty(ResponseError responseError) {
-        TypeName returnTypeName =
-                generatorContext.getClassNameUtils().getTypeNameFromTypeReference(true, responseError.error());
+        GeneratedError generatedError = generatedErrors.get(responseError.error());
         MethodSpec internalValueImmutablesProperty = generatorContext
                 .getImmutablesUtils()
-                .getKeyWordCompatibleImmutablesPropertyMethod(responseError.discriminantValue(), returnTypeName);
+                .getKeyWordCompatibleImmutablesPropertyMethod(
+                        responseError.discriminantValue(), generatedError.className());
         // Add @JsonValue annotation on object type reference because properties are collapsed one level
-        if (isTypeReferenceAnObject(responseError.error())) {
+        if (generatedError.errorDefinition().type().isObject()) {
             return MethodSpec.methodBuilder(internalValueImmutablesProperty.name)
                     .addModifiers(internalValueImmutablesProperty.modifiers)
                     .addAnnotations(internalValueImmutablesProperty.annotations)
@@ -318,19 +300,5 @@ public class FailedResponseGenerator extends Generator {
                     .build();
         }
         return internalValueImmutablesProperty;
-    }
-
-    private boolean isTypeReferenceAnObject(TypeReference typeReference) {
-        Optional<NamedType> maybeNamedType = typeReference.getNamed();
-        if (maybeNamedType.isPresent()) {
-            ErrorDefinition errorDefinition = generatorContext.getErrorDefinitionsByName().get(maybeNamedType.get());
-            if (errorDefinition.type().isObject()) {
-                return true;
-            } else if (errorDefinition.type().isAlias()) {
-                return isTypeReferenceAnObject(
-                        errorDefinition.type().getAlias().get().aliasOf());
-            }
-        }
-        return false;
     }
 }

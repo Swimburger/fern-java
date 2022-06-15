@@ -1,9 +1,7 @@
 package com.fern.jersey.server;
 
-import com.fern.codegen.GeneratedException;
 import com.fern.codegen.GeneratedHttpServiceServer;
 import com.fern.codegen.GeneratorContext;
-import com.fern.jersey.ExceptionGenerator;
 import com.fern.model.codegen.ModelGenerator;
 import com.fern.model.codegen.ModelGeneratorResult;
 import com.fern.types.errors.ErrorDefinition;
@@ -110,9 +108,8 @@ public final class HttpServiceServerGeneratorTest {
         ModelGeneratorResult modelGeneratorResult = modelGenerator.generate();
         HttpServiceServerGenerator httpServiceServerGenerator = new HttpServiceServerGenerator(
                 GENERATOR_CONTEXT,
-                Collections.emptyMap(),
+                modelGeneratorResult.errors(),
                 modelGeneratorResult.endpointModels().get(testHttpService),
-                Collections.emptyList(),
                 testHttpService);
         GeneratedHttpServiceServer generatedHttpServiceClient = httpServiceServerGenerator.generate();
         System.out.println(generatedHttpServiceClient.file().toString());
@@ -163,7 +160,7 @@ public final class HttpServiceServerGeneratorTest {
                                         .discriminant("_type")
                                         .addErrors(ResponseError.builder()
                                                 .discriminantValue("notFound")
-                                                .error(TypeReference.named(personIdNotFound.name()))
+                                                .error(personIdNotFound.name())
                                                 .build())
                                         .build())
                                 .build())
@@ -206,14 +203,10 @@ public final class HttpServiceServerGeneratorTest {
                 Collections.emptyList(),
                 GENERATOR_CONTEXT);
         ModelGeneratorResult modelGeneratorResult = modelGenerator.generate();
-        ExceptionGenerator personIdNotFoundClientExceptionGenerator =
-                new ExceptionGenerator(GENERATOR_CONTEXT, personIdNotFound, false);
-        GeneratedException personIdNotFoundException = personIdNotFoundClientExceptionGenerator.generate();
         HttpServiceServerGenerator httpServiceServerGenerator = new HttpServiceServerGenerator(
                 GENERATOR_CONTEXT,
-                Collections.emptyMap(),
+                modelGeneratorResult.errors(),
                 modelGeneratorResult.endpointModels().get(testHttpService),
-                Collections.singletonList(personIdNotFoundException),
                 testHttpService);
         GeneratedHttpServiceServer generatedHttpServiceServer = httpServiceServerGenerator.generate();
         System.out.println(generatedHttpServiceServer.file().toString());

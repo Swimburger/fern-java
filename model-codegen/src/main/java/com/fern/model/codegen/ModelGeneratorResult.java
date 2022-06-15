@@ -33,7 +33,7 @@ public interface ModelGeneratorResult {
 
     List<GeneratedUnion> unions();
 
-    List<GeneratedError> errors();
+    Map<NamedType, GeneratedError> errors();
 
     Map<HttpService, List<GeneratedEndpointModel>> endpointModels();
 

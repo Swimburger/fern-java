@@ -14,7 +14,7 @@ public interface GeneratedEndpointModel {
 
     Payload generatedHttpRequest();
 
-    Optional<GeneratedFile> errorFile();
+    Optional<GeneratedEndpointError> errorFile();
 
     static ImmutableGeneratedEndpointModel.Builder builder() {
         return ImmutableGeneratedEndpointModel.builder();
