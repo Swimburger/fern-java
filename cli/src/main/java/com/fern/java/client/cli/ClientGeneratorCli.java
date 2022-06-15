@@ -10,6 +10,7 @@ import com.fern.jersey.client.HttpServiceClientGenerator;
 import com.fern.jersey.server.HttpServiceServerGenerator;
 import com.fern.model.codegen.ModelGenerator;
 import com.fern.model.codegen.ModelGeneratorResult;
+import com.fern.types.errors.ErrorDefinition;
 import com.fern.types.ir.IntermediateRepresentation;
 import com.fern.types.types.NamedType;
 import com.fern.types.types.TypeDefinition;
@@ -59,8 +60,10 @@ public final class ClientGeneratorCli {
         ImmutableCodeGenerationResult.Builder resultBuilder = CodeGenerationResult.builder();
         Map<NamedType, TypeDefinition> typeDefinitionsByName =
                 ir.types().stream().collect(Collectors.toUnmodifiableMap(TypeDefinition::name, Function.identity()));
-        GeneratorContext generatorContext =
-                new GeneratorContext(fernPluginConfig.customPluginConfig().packagePrefix(), typeDefinitionsByName);
+        Map<NamedType, ErrorDefinition> errorDefinitionsByName =
+                ir.errors().stream().collect(Collectors.toUnmodifiableMap(ErrorDefinition::name, Function.identity()));
+        GeneratorContext generatorContext = new GeneratorContext(
+                fernPluginConfig.customPluginConfig().packagePrefix(), typeDefinitionsByName, errorDefinitionsByName);
 
         ModelGeneratorResult modelGeneratorResult = addModelFiles(ir, generatorContext, resultBuilder);
         switch (fernPluginConfig.customPluginConfig().mode()) {

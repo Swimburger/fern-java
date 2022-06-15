@@ -61,7 +61,8 @@ public class UnionGeneratorTest {
                 .build();
         GeneratorContext generatorContext = new GeneratorContext(
                 Optional.of(TestConstants.PACKAGE_PREFIX),
-                Collections.singletonMap(variableValueTypeDefinition.name(), variableValueTypeDefinition));
+                Collections.singletonMap(variableValueTypeDefinition.name(), variableValueTypeDefinition),
+                Collections.emptyMap());
         UnionGenerator unionGenerator = new UnionGenerator(
                 variableValueTypeDefinition.name(),
                 PackageType.TYPES,
@@ -96,7 +97,8 @@ public class UnionGeneratorTest {
                 .shape(Type.union(unionTypeDefinition))
                 .build();
         GeneratorContext generatorContext = new GeneratorContext(Optional.of(TestConstants.PACKAGE_PREFIX),
-                Collections.singletonMap(variableValueTypeDefinition.name(), variableValueTypeDefinition));
+                Collections.singletonMap(variableValueTypeDefinition.name(), variableValueTypeDefinition),
+                Collections.emptyMap());
         UnionGenerator unionGenerator = new UnionGenerator(
                 variableValueTypeDefinition.name(),
                 PackageType.TYPES,

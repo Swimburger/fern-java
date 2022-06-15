@@ -36,6 +36,7 @@ public final class HttpServiceServerGeneratorTest {
     private static final String PACKAGE_PREFIX = "com";
     private static final GeneratorContext GENERATOR_CONTEXT = new GeneratorContext(
             Optional.of(PACKAGE_PREFIX),
+            Collections.emptyMap(),
             Collections.emptyMap());
 
     @Test
