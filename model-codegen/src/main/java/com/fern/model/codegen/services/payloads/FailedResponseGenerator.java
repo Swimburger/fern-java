@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratorContext;
-import com.fern.codegen.IGeneratedFile;
 import com.fern.codegen.stateless.generator.ApiExceptionGenerator;
 import com.fern.codegen.utils.ClassNameUtils;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
@@ -21,7 +20,6 @@ import com.fern.types.services.commons.ResponseError;
 import com.fern.types.services.http.HttpEndpoint;
 import com.fern.types.services.http.HttpService;
 import com.fern.types.types.NamedType;
-import com.fern.types.types.TypeDefinition;
 import com.fern.types.types.TypeReference;
 import com.palantir.common.streams.KeyedStream;
 import com.squareup.javapoet.AnnotationSpec;
@@ -52,7 +50,7 @@ public class FailedResponseGenerator extends Generator {
 
     private static final String GET_INTERNAL_VALUE_METHOD_NAME = "getInternalValue";
     private static final String GET_STATUS_CODE_METHOD_NAME = "getStatusCode";
-    private static final String GET_NESTED_ERROR_METHOD_NAME = "getNestedError";
+    public static final String GET_NESTED_ERROR_METHOD_NAME = "getNestedError";
 
     private static final String VALUE_FIELD_NAME = "value";
 
