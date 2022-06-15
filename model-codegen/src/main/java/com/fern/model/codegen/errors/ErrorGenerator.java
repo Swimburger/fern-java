@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.lang.model.element.Modifier;
 
-public class ErrorGenerator extends Generator {
+public final class ErrorGenerator extends Generator {
 
     private static final String ERROR_SUFFIX = "Error";
     private static final String STATUS_CODE_FIELD_NAME = "STATUS_CODE";

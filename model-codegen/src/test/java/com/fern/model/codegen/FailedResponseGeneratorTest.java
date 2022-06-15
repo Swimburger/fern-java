@@ -4,10 +4,7 @@ import static org.mockito.Mockito.when;
 
 import com.fern.codegen.GeneratedEndpointError;
 import com.fern.codegen.GeneratedError;
-import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratorContext;
-import com.fern.codegen.stateless.generator.ImmutablesStyleGenerator;
-import com.fern.codegen.utils.ClassNameUtils;
 import com.fern.java.test.TestConstants;
 import com.fern.model.codegen.errors.ErrorGenerator;
 import com.fern.model.codegen.services.payloads.FailedResponseGenerator;
@@ -26,7 +23,6 @@ import com.fern.types.types.PrimitiveType;
 import com.fern.types.types.Type;
 import com.fern.types.types.TypeReference;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -71,8 +67,8 @@ public class FailedResponseGeneratorTest {
                 Collections.emptyMap(),
                 Collections.singletonMap(
                         noViewPermissionsErrorNamedType,
-                        ErrorDefinition.builder().
-                                name(noViewPermissionsErrorNamedType)
+                        ErrorDefinition.builder()
+                                .name(noViewPermissionsErrorNamedType)
                                 .type(Type._object(ObjectTypeDefinition.builder()
                                         .addProperties(ObjectProperty.builder()
                                                 .key("msg")

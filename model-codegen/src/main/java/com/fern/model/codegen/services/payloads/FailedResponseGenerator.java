@@ -37,7 +37,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.immutables.value.Value;
 
-public class FailedResponseGenerator extends Generator {
+public final class FailedResponseGenerator extends Generator {
 
     private static final String CLASSNAME_ERROR_SUFFIX = "Error";
 
