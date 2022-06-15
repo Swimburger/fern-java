@@ -42,20 +42,24 @@ public class ErrorGenerator extends Generator {
 
     @Override
     public GeneratedError generate() {
-        ClassName errorClassName = generatorContext.getClassNameUtils()
-                .getClassNameForNamedType(errorDefinition.name(), packageType,
+        ClassName errorClassName = generatorContext
+                .getClassNameUtils()
+                .getClassNameForNamedType(
+                        errorDefinition.name(),
+                        packageType,
                         errorDefinition.name().name().toLowerCase().endsWith("error")
                                 ? Optional.empty()
                                 : Optional.of(ERROR_SUFFIX));
-        IGeneratedFile generatedTypeFile = errorDefinition.type()
+        IGeneratedFile generatedTypeFile = errorDefinition
+                .type()
                 .visit(new TypeDefinitionGenerator(
                         TypeDefinition.builder()
-                            .name(NamedType.builder()
-                                    .fernFilepath(errorDefinition.name().fernFilepath())
-                                    .name(errorClassName.simpleName())
-                                    .build())
-                            .shape(errorDefinition.type())
-                            .build(),
+                                .name(NamedType.builder()
+                                        .fernFilepath(errorDefinition.name().fernFilepath())
+                                        .name(errorClassName.simpleName())
+                                        .build())
+                                .shape(errorDefinition.type())
+                                .build(),
                         generatorContext,
                         generatedInterfaces));
         TypeSpec.Builder errorTypeSpecBuilder = generatedTypeFile.file().typeSpec.toBuilder();
@@ -69,11 +73,11 @@ public class ErrorGenerator extends Generator {
                             .initializer("$L", errorDefinition.http().get().statusCode())
                             .build())
                     .addMethod(MethodSpec.methodBuilder(ApiExceptionGenerator.GET_STATUS_CODE_METHOD_NAME)
-                        .addModifiers(Modifier.PUBLIC)
-                        .addStatement("return $L", STATUS_CODE_FIELD_NAME)
-                        .returns(ClassName.INT)
-                        .addAnnotation(Override.class)
-                        .build());
+                            .addModifiers(Modifier.PUBLIC)
+                            .addStatement("return $L", STATUS_CODE_FIELD_NAME)
+                            .returns(ClassName.INT)
+                            .addAnnotation(Override.class)
+                            .build());
         }
         JavaFile errorFile = JavaFile.builder(errorClassName.packageName(), errorTypeSpecBuilder.build())
                 .build();

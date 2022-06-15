@@ -2,7 +2,6 @@ package com.fern.jersey.client;
 
 import com.fern.codegen.GeneratedEndpointError;
 import com.fern.codegen.GeneratedErrorDecoder;
-import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.stateless.generator.ObjectMapperGenerator;
 import com.fern.codegen.utils.ClassNameUtils;
@@ -84,9 +83,9 @@ public final class ServiceErrorDecoderGenerator extends Generator {
         CodeBlock.Builder codeBlockBuilder = CodeBlock.builder();
         boolean ifStatementStarted = false;
         for (HttpEndpoint httpEndpoint : httpService.endpoints()) {
-            Optional<GeneratedEndpointError> maybeGeneratedEndpointErrorFile = generatedEndpointErrorFiles.get(httpEndpoint);
-            if (maybeGeneratedEndpointErrorFile == null
-                    || maybeGeneratedEndpointErrorFile.isEmpty()) {
+            Optional<GeneratedEndpointError> maybeGeneratedEndpointErrorFile =
+                    generatedEndpointErrorFiles.get(httpEndpoint);
+            if (maybeGeneratedEndpointErrorFile == null || maybeGeneratedEndpointErrorFile.isEmpty()) {
                 continue;
             }
             codeBlockBuilder

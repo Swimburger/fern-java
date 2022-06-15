@@ -1,8 +1,6 @@
 package com.fern.codegen.utils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fern.types.errors.ErrorDefinition;
-// import com.fern.types.errors.ErrorProperty;
 import com.fern.types.types.ObjectProperty;
 import com.fern.types.types.ObjectTypeDefinition;
 import com.squareup.javapoet.AnnotationSpec;
@@ -47,7 +45,8 @@ public final class ImmutablesUtils {
     //             .collect(Collectors.toMap(
     //                     Function.identity(),
     //                     errorField -> {
-    //                         TypeName returnType = classNameUtils.getTypeNameFromTypeReference(true, errorField.type());
+    //                         TypeName returnType = classNameUtils.getTypeNameFromTypeReference(true,
+    // errorField.type());
     //                         return getKeyWordCompatibleImmutablesPropertyMethod(errorField.name(), returnType);
     //                     },
     //                     (u, v) -> {

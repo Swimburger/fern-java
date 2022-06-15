@@ -2,8 +2,7 @@ package com.fern.codegen.utils;
 
 public final class MethodNameUtils {
 
-    private MethodNameUtils() {
-    }
+    private MethodNameUtils() {}
 
     public static String getCompatibleMethodName(String name) {
         StringBuilder camelCaseNameBuilder = new StringBuilder();

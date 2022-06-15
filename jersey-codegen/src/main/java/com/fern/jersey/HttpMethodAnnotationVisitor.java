@@ -10,8 +10,7 @@ import javax.ws.rs.PUT;
 
 public final class HttpMethodAnnotationVisitor implements HttpMethod.Visitor<AnnotationSpec> {
 
-    public static final HttpMethodAnnotationVisitor
-            INSTANCE = new HttpMethodAnnotationVisitor();
+    public static final HttpMethodAnnotationVisitor INSTANCE = new HttpMethodAnnotationVisitor();
 
     @Override
     public AnnotationSpec visitGET() {

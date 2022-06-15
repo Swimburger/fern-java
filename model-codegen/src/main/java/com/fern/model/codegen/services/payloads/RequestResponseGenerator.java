@@ -6,7 +6,6 @@ import com.fern.codegen.GeneratedObject;
 import com.fern.codegen.GeneratedUnion;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
-import com.fern.model.codegen.services.payloads.RequestResponseGeneratorResult;
 import com.fern.model.codegen.types.EnumGenerator;
 import com.fern.model.codegen.types.ObjectGenerator;
 import com.fern.model.codegen.types.UnionGenerator;
@@ -75,8 +74,8 @@ public final class RequestResponseGenerator {
 
         @Override
         public RequestResponseGeneratorResult visitEnum(EnumTypeDefinition enumTypeDefinition) {
-            EnumGenerator enumGenerator = new EnumGenerator(
-                    getNamedType(), PackageType.SERVICES, enumTypeDefinition, generatorContext);
+            EnumGenerator enumGenerator =
+                    new EnumGenerator(getNamedType(), PackageType.SERVICES, enumTypeDefinition, generatorContext);
             GeneratedEnum generatedEnum = enumGenerator.generate();
             return RequestResponseGeneratorResult.builder()
                     .typeName(generatedEnum.className())
@@ -107,8 +106,8 @@ public final class RequestResponseGenerator {
 
         @Override
         public RequestResponseGeneratorResult visitUnion(UnionTypeDefinition unionTypeDefinition) {
-            UnionGenerator unionGenerator = new UnionGenerator(
-                    getNamedType(), PackageType.SERVICES, unionTypeDefinition, generatorContext);
+            UnionGenerator unionGenerator =
+                    new UnionGenerator(getNamedType(), PackageType.SERVICES, unionTypeDefinition, generatorContext);
             GeneratedUnion generatedUnion = unionGenerator.generate();
             return RequestResponseGeneratorResult.builder()
                     .typeName(generatedUnion.className())

@@ -2,7 +2,6 @@ package com.fern.codegen;
 
 import com.fern.immutables.StagedBuilderStyle;
 import com.fern.types.services.http.HttpService;
-import java.util.List;
 import java.util.Optional;
 import org.immutables.value.Value;
 

@@ -1,10 +1,6 @@
 package com.fern.model.codegen;
 
-import com.fern.codegen.GeneratedAlias;
-import com.fern.codegen.GeneratedEnum;
 import com.fern.codegen.GeneratedInterface;
-import com.fern.codegen.GeneratedObject;
-import com.fern.codegen.GeneratedUnion;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.IGeneratedFile;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;

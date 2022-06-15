@@ -69,9 +69,8 @@ public final class HttpServiceServerGenerator extends Generator {
                         .build());
         List<MethodSpec> httpEndpointMethods = httpService.endpoints().stream()
                 .map(this::getHttpEndpointMethodSpec)
-                .flatMap(httpEndpointServerMethods -> Stream.of(
-                        httpEndpointServerMethods.endpointMethod,
-                        httpEndpointServerMethods.implMethod))
+                .flatMap(httpEndpointServerMethods ->
+                        Stream.of(httpEndpointServerMethods.endpointMethod, httpEndpointServerMethods.implMethod))
                 .collect(Collectors.toList());
         TypeSpec jerseyServiceTypeSpec =
                 jerseyServiceBuilder.addMethods(httpEndpointMethods).build();
@@ -92,42 +91,55 @@ public final class HttpServiceServerGenerator extends Generator {
                         .addMember("value", "$S", httpEndpoint.path())
                         .build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
-        httpEndpoint.auth().visit(new HttpAuthToParameterSpec(generatorContext)).ifPresent(endpointMethodBuilder::addParameter);
+        httpEndpoint
+                .auth()
+                .visit(new HttpAuthToParameterSpec(generatorContext))
+                .ifPresent(endpointMethodBuilder::addParameter);
         httpEndpoint.headers().stream()
-                .map(jerseyServiceGeneratorUtils::getHeaderParameterSpec).forEach(endpointMethodBuilder::addParameter);
+                .map(jerseyServiceGeneratorUtils::getHeaderParameterSpec)
+                .forEach(endpointMethodBuilder::addParameter);
         httpEndpoint.pathParameters().stream()
-                .map(jerseyServiceGeneratorUtils::getPathParameterSpec).forEach(endpointMethodBuilder::addParameter);
+                .map(jerseyServiceGeneratorUtils::getPathParameterSpec)
+                .forEach(endpointMethodBuilder::addParameter);
         httpEndpoint.queryParameters().stream()
                 .map(jerseyServiceGeneratorUtils::getQueryParameterSpec)
                 .forEach(endpointMethodBuilder::addParameter);
         GeneratedEndpointModel generatedEndpointModel = generatedEndpointModels.get(httpEndpoint);
-        jerseyServiceGeneratorUtils.getPayloadTypeName(generatedEndpointModel.generatedHttpRequest()).ifPresent(typeName -> {
-            endpointMethodBuilder.addParameter(ParameterSpec.builder(typeName, "request")
-                    .build());
-        });
-        jerseyServiceGeneratorUtils.getPayloadTypeName(generatedEndpointModel.generatedHttpResponse()).ifPresent(endpointMethodBuilder::returns);
+        jerseyServiceGeneratorUtils
+                .getPayloadTypeName(generatedEndpointModel.generatedHttpRequest())
+                .ifPresent(typeName -> {
+                    endpointMethodBuilder.addParameter(
+                            ParameterSpec.builder(typeName, "request").build());
+                });
+        jerseyServiceGeneratorUtils
+                .getPayloadTypeName(generatedEndpointModel.generatedHttpResponse())
+                .ifPresent(endpointMethodBuilder::returns);
 
         boolean errorsPresent = httpEndpoint.response().failed().errors().size() > 0;
 
         String endpointImplMethodName = httpEndpoint.endpointId() + "Impl";
-        MethodSpec.Builder endpointImplMethodBuilder = MethodSpec.methodBuilder(endpointImplMethodName)
-                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
+        MethodSpec.Builder endpointImplMethodBuilder =
+                MethodSpec.methodBuilder(endpointImplMethodName).addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
 
         CodeBlock.Builder endpointMethodCodeBlock = CodeBlock.builder();
 
         if (errorsPresent && generatedEndpointModel.errorFile().isPresent()) {
-            GeneratedEndpointError generatedEndpointError = generatedEndpointModel.errorFile().get();
+            GeneratedEndpointError generatedEndpointError =
+                    generatedEndpointModel.errorFile().get();
             endpointMethodCodeBlock
                     .beginControlFlow("try")
                     .addStatement("$L()", endpointImplMethodName)
                     .endControlFlow();
             httpEndpoint.response().failed().errors().forEach(responseError -> {
                 GeneratedError generatedError = generatedErrors.get(responseError.error());
-                endpointMethodCodeBlock.beginControlFlow(
-                        "catch ($T e)", generatedError)
-                        .addStatement("throw new $T.$L(e)",
+                endpointMethodCodeBlock
+                        .beginControlFlow("catch ($T e)", generatedError)
+                        .addStatement(
+                                "throw new $T.$L(e)",
                                 generatedEndpointError.className(),
-                                generatedEndpointError.constructorsByResponseError().get(responseError))
+                                generatedEndpointError
+                                        .constructorsByResponseError()
+                                        .get(responseError))
                         .endControlFlow();
                 endpointImplMethodBuilder.addException(generatedError.className());
             });
@@ -135,7 +147,8 @@ public final class HttpServiceServerGenerator extends Generator {
             endpointMethodCodeBlock.addStatement("$L()", endpointMethodCodeBlock);
         }
 
-        MethodSpec endpointMethod = endpointMethodBuilder.addStatement(endpointMethodCodeBlock.build())
+        MethodSpec endpointMethod = endpointMethodBuilder
+                .addStatement(endpointMethodCodeBlock.build())
                 .build();
         MethodSpec implMethod = endpointImplMethodBuilder
                 .addParameters(endpointMethod.parameters)

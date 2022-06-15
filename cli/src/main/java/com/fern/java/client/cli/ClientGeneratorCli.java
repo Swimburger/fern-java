@@ -86,8 +86,8 @@ public final class ClientGeneratorCli {
             IntermediateRepresentation ir,
             GeneratorContext generatorContext,
             ImmutableCodeGenerationResult.Builder resultBuilder) {
-        ModelGenerator modelGenerator = new ModelGenerator(
-                ir.services().http(), ir.types(), ir.errors(), generatorContext);
+        ModelGenerator modelGenerator =
+                new ModelGenerator(ir.services().http(), ir.types(), ir.errors(), generatorContext);
         ModelGeneratorResult modelGeneratorResult = modelGenerator.generate();
         resultBuilder.addAllModelFiles(modelGeneratorResult.aliases());
         resultBuilder.addAllModelFiles(modelGeneratorResult.enums());

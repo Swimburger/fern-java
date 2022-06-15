@@ -54,7 +54,7 @@ public final class JerseyServiceGeneratorUtils {
         } else if (payload instanceof TypeNamePayload) {
             return Optional.of(((TypeNamePayload) payload).typeName());
         }
-        throw new IllegalStateException("Encountered unknown payload type: "
-                + payload.getClass().getSimpleName());
+        throw new IllegalStateException(
+                "Encountered unknown payload type: " + payload.getClass().getSimpleName());
     }
 }

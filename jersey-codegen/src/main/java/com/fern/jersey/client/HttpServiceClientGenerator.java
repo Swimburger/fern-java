@@ -106,24 +106,33 @@ public final class HttpServiceClientGenerator extends Generator {
                         .addMember("value", "$S", httpEndpoint.path())
                         .build())
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
-        httpEndpoint.auth().visit(new HttpAuthToParameterSpec(generatorContext)).ifPresent(endpointMethodBuilder::addParameter);
+        httpEndpoint
+                .auth()
+                .visit(new HttpAuthToParameterSpec(generatorContext))
+                .ifPresent(endpointMethodBuilder::addParameter);
         httpEndpoint.headers().stream()
-                .map(jerseyServiceGeneratorUtils::getHeaderParameterSpec).forEach(endpointMethodBuilder::addParameter);
+                .map(jerseyServiceGeneratorUtils::getHeaderParameterSpec)
+                .forEach(endpointMethodBuilder::addParameter);
         httpEndpoint.pathParameters().stream()
-                .map(jerseyServiceGeneratorUtils::getPathParameterSpec).forEach(endpointMethodBuilder::addParameter);
+                .map(jerseyServiceGeneratorUtils::getPathParameterSpec)
+                .forEach(endpointMethodBuilder::addParameter);
         httpEndpoint.queryParameters().stream()
                 .map(jerseyServiceGeneratorUtils::getQueryParameterSpec)
                 .forEach(endpointMethodBuilder::addParameter);
         GeneratedEndpointModel generatedEndpointModel = generatedEndpointModels.get(httpEndpoint);
-        jerseyServiceGeneratorUtils.getPayloadTypeName(generatedEndpointModel.generatedHttpRequest()).ifPresent(typeName -> {
-            endpointMethodBuilder.addParameter(ParameterSpec.builder(typeName, "request")
-                    .build());
-        });
-        jerseyServiceGeneratorUtils.getPayloadTypeName(generatedEndpointModel.generatedHttpResponse()).ifPresent(endpointMethodBuilder::returns);
+        jerseyServiceGeneratorUtils
+                .getPayloadTypeName(generatedEndpointModel.generatedHttpRequest())
+                .ifPresent(typeName -> {
+                    endpointMethodBuilder.addParameter(
+                            ParameterSpec.builder(typeName, "request").build());
+                });
+        jerseyServiceGeneratorUtils
+                .getPayloadTypeName(generatedEndpointModel.generatedHttpResponse())
+                .ifPresent(endpointMethodBuilder::returns);
 
-        List<ClassName> errorClassNames = httpEndpoint.response().failed().errors().stream().map(responseError ->
-                generatedErrors.get(responseError.error()).className()
-        ).collect(Collectors.toList());
+        List<ClassName> errorClassNames = httpEndpoint.response().failed().errors().stream()
+                .map(responseError -> generatedErrors.get(responseError.error()).className())
+                .collect(Collectors.toList());
         endpointMethodBuilder.addExceptions(errorClassNames);
         if (!errorClassNames.isEmpty()) {
             endpointMethodBuilder.addException(

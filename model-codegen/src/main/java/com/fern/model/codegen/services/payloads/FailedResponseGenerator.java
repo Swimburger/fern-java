@@ -9,30 +9,24 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fern.codegen.GeneratedEndpointError;
 import com.fern.codegen.GeneratedError;
-import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.stateless.generator.ApiExceptionGenerator;
 import com.fern.codegen.utils.ClassNameUtils;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
-import com.fern.codegen.utils.KeyWordUtils;
 import com.fern.codegen.utils.MethodNameUtils;
 import com.fern.model.codegen.Generator;
-import com.fern.types.errors.ErrorDefinition;
 import com.fern.types.services.commons.FailedResponse;
 import com.fern.types.services.commons.ResponseError;
 import com.fern.types.services.http.HttpEndpoint;
 import com.fern.types.services.http.HttpService;
 import com.fern.types.types.NamedType;
-import com.fern.types.types.TypeReference;
 import com.palantir.common.streams.KeyedStream;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -72,7 +66,8 @@ public class FailedResponseGenerator extends Generator {
         super(generatorContext, PackageType.SERVICES);
         this.failedResponse = failedResponse;
         this.generatedErrors = generatedErrors;
-        this.generatedEndpointErrorClassName = generatorContext.getClassNameUtils()
+        this.generatedEndpointErrorClassName = generatorContext
+                .getClassNameUtils()
                 .getClassNameForNamedType(
                         NamedType.builder()
                                 .fernFilepath(httpService.name().fernFilepath())
@@ -86,7 +81,8 @@ public class FailedResponseGenerator extends Generator {
                         error -> generatedEndpointErrorClassName.nestedClass(INTERNAL_CLASS_NAME_PREFIX
                                 + StringUtils.capitalize(error.discriminantValue())
                                 + INTERNAL_CLASS_NAME_SUFFIX)));
-        this.internalValueInterfaceClassName = generatedEndpointErrorClassName.nestedClass(INTERNAL_VALUE_INTERFACE_NAME);
+        this.internalValueInterfaceClassName =
+                generatedEndpointErrorClassName.nestedClass(INTERNAL_VALUE_INTERFACE_NAME);
     }
 
     @Override
@@ -144,8 +140,12 @@ public class FailedResponseGenerator extends Generator {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .returns(Response.class)
                 .addAnnotation(Override.class)
-                .addStatement("return $T.status($L.$L()).entity($L).build()", Response.class,
-                        VALUE_FIELD_NAME, GET_STATUS_CODE_METHOD_NAME, VALUE_FIELD_NAME)
+                .addStatement(
+                        "return $T.status($L.$L()).entity($L).build()",
+                        Response.class,
+                        VALUE_FIELD_NAME,
+                        GET_STATUS_CODE_METHOD_NAME,
+                        VALUE_FIELD_NAME)
                 .build();
     }
 
@@ -158,26 +158,21 @@ public class FailedResponseGenerator extends Generator {
     }
 
     private Map<ResponseError, MethodSpec> getStaticBuilderMethods() {
-        return failedResponse.errors().stream()
-                .collect(Collectors.toMap(
-                    Function.identity(),
-                    errorResponse -> {
-                        String methodName =
-                                MethodNameUtils.getCompatibleMethodName(errorResponse.discriminantValue());
-                        MethodSpec.Builder staticBuilder = MethodSpec.methodBuilder(methodName)
-                                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                                .returns(generatedEndpointErrorClassName);
-                        // static builders for void types should have no parameters
-                        GeneratedError generatedError = generatedErrors.get(errorResponse.error());
-                        return staticBuilder
-                                .addParameter(generatedError.className(), "value")
-                                .addStatement(
-                                        "return new $T($T.of(value))",
-                                        generatedEndpointErrorClassName,
-                                        internalValueClassNames.get(errorResponse))
-                                .build();
-                    }
-                ));
+        return failedResponse.errors().stream().collect(Collectors.toMap(Function.identity(), errorResponse -> {
+            String methodName = MethodNameUtils.getCompatibleMethodName(errorResponse.discriminantValue());
+            MethodSpec.Builder staticBuilder = MethodSpec.methodBuilder(methodName)
+                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                    .returns(generatedEndpointErrorClassName);
+            // static builders for void types should have no parameters
+            GeneratedError generatedError = generatedErrors.get(errorResponse.error());
+            return staticBuilder
+                    .addParameter(generatedError.className(), "value")
+                    .addStatement(
+                            "return new $T($T.of(value))",
+                            generatedEndpointErrorClassName,
+                            internalValueClassNames.get(errorResponse))
+                    .build();
+        }));
     }
 
     /*
@@ -259,8 +254,7 @@ public class FailedResponseGenerator extends Generator {
                     .addMethod(MethodSpec.methodBuilder("of")
                             .addModifiers(Modifier.STATIC, Modifier.PUBLIC)
                             .returns(internalValueClassName)
-                            .addParameter(
-                                    generatedError.className(), "value")
+                            .addParameter(generatedError.className(), "value")
                             .addStatement(
                                     "return Immutable$L.$L.builder().$L(value).build()",
                                     generatedEndpointErrorClassName.simpleName(),
@@ -270,7 +264,9 @@ public class FailedResponseGenerator extends Generator {
                     .addMethod(MethodSpec.methodBuilder(GET_STATUS_CODE_METHOD_NAME)
                             .returns(ClassName.INT)
                             .addAnnotation(Override.class)
-                            .addStatement("return $L().$L()", capitalizedDiscriminantValue,
+                            .addStatement(
+                                    "return $L().$L()",
+                                    capitalizedDiscriminantValue,
                                     ApiExceptionGenerator.GET_STATUS_CODE_METHOD_NAME)
                             .addModifiers(Modifier.DEFAULT, Modifier.PUBLIC)
                             .build())

@@ -4,13 +4,11 @@ import com.fern.codegen.GeneratedAlias;
 import com.fern.codegen.GeneratedEndpointModel;
 import com.fern.codegen.GeneratedEnum;
 import com.fern.codegen.GeneratedError;
-import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratedInterface;
 import com.fern.codegen.GeneratedObject;
 import com.fern.codegen.GeneratedUnion;
 import com.fern.codegen.IGeneratedFile;
 import com.fern.codegen.payload.GeneratedFilePayload;
-import com.fern.types.services.http.HttpEndpoint;
 import com.fern.types.services.http.HttpService;
 import com.fern.types.types.NamedType;
 import java.util.Collection;
@@ -43,18 +41,20 @@ public interface ModelGeneratorResult {
                 .flatMap(generatedEndpointModel -> {
                     Stream.Builder<IGeneratedFile> generatedFileStream = Stream.builder();
                     if (generatedEndpointModel.errorFile().isPresent()) {
-                        generatedFileStream.add(generatedEndpointModel.errorFile().get());
+                        generatedFileStream.add(
+                                generatedEndpointModel.errorFile().get());
                     }
                     if (generatedEndpointModel.generatedHttpRequest() instanceof GeneratedFilePayload) {
                         generatedFileStream.add(
                                 ((GeneratedFilePayload) generatedEndpointModel.generatedHttpRequest()).generatedFile());
                     }
                     if (generatedEndpointModel.generatedHttpResponse() instanceof GeneratedFilePayload) {
-                        generatedFileStream.add(
-                                ((GeneratedFilePayload) generatedEndpointModel.generatedHttpResponse()).generatedFile());
+                        generatedFileStream.add(((GeneratedFilePayload) generatedEndpointModel.generatedHttpResponse())
+                                .generatedFile());
                     }
                     return generatedFileStream.build();
-                }).collect(Collectors.toList());
+                })
+                .collect(Collectors.toList());
     }
 
     class Builder extends ImmutableModelGeneratorResult.Builder {}
