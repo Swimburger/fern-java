@@ -123,8 +123,9 @@ public final class ServiceErrorDecoderGenerator extends Generator {
                 .addParameter(
                         ParameterizedTypeName.get(ClassName.get(Class.class), genericReturnType),
                         DECODE_EXCEPTION_CLAZZ_PARAMETER_NAME)
-                .addParameter(ParameterizedTypeName.get(
-                        ClassName.get(Function.class), genericReturnType, ClassNameUtils.EXCEPTION_CLASS_NAME),
+                .addParameter(
+                        ParameterizedTypeName.get(
+                                ClassName.get(Function.class), genericReturnType, ClassNameUtils.EXCEPTION_CLASS_NAME),
                         DECODE_EXCEPTION_RETRIEVER_PARAMETER_NAME)
                 .beginControlFlow("try")
                 .addStatement(
@@ -134,9 +135,7 @@ public final class ServiceErrorDecoderGenerator extends Generator {
                         ObjectMapperGenerator.JSON_MAPPER_FIELD_NAME,
                         DECODE_EXCEPTION_RESPONSE_PARAMETER_NAME,
                         DECODE_EXCEPTION_CLAZZ_PARAMETER_NAME)
-                .addStatement(
-                        "return $L.apply(value)",
-                        DECODE_EXCEPTION_RETRIEVER_PARAMETER_NAME)
+                .addStatement("return $L.apply(value)", DECODE_EXCEPTION_RETRIEVER_PARAMETER_NAME)
                 .endControlFlow()
                 .beginControlFlow("catch ($T e)", ClassName.get(IOException.class))
                 .addStatement(

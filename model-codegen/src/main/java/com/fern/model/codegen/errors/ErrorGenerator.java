@@ -32,14 +32,8 @@ public final class ErrorGenerator extends Generator {
     private static final String ERROR_SUFFIX = "Error";
     private static final String STATUS_CODE_FIELD_NAME = "STATUS_CODE";
 
-    private static final Set<String> JSON_IGNORE_EXCEPTION_PROPERTIES = Set.of(
-            "stackTrace",
-            "cause",
-            "detailMessage",
-            "localizedMessage",
-            "statusCode",
-            "message",
-            "suppressed");
+    private static final Set<String> JSON_IGNORE_EXCEPTION_PROPERTIES =
+            Set.of("stackTrace", "cause", "detailMessage", "localizedMessage", "statusCode", "message", "suppressed");
 
     private final ErrorDefinition errorDefinition;
     private final GeneratorContext generatorContext;
