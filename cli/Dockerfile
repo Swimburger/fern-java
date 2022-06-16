@@ -7,5 +7,3 @@ RUN mkdir -m777 cli
 RUN mv cli-$BUILD_VERSION.tar cli/cli.tar
 
 ENTRYPOINT ["bin/sh", "init.sh"]
-# ENTRYPOINT ["tail", "-f", "/dev/null"]
-
