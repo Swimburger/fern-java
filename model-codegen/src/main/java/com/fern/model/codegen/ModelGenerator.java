@@ -121,8 +121,8 @@ public final class ModelGenerator {
             Map<NamedType, GeneratedError> generatedErrors) {
         return httpService.endpoints().stream()
                 .map(httpEndpoint -> {
-                    ImmutableGeneratedEndpointModel.Builder generatedEndpointModel = GeneratedEndpointModel.builder()
-                            .httpEndpoint(httpEndpoint);
+                    ImmutableGeneratedEndpointModel.Builder generatedEndpointModel =
+                            GeneratedEndpointModel.builder().httpEndpoint(httpEndpoint);
 
                     Payload requestPayload = generatePayload(
                             httpService,
@@ -164,25 +164,17 @@ public final class ModelGenerator {
             return VoidPayload.INSTANCE;
         }
         RequestResponseGenerator generator = new RequestResponseGenerator(
-                generatorContext,
-                generatedInterfaces,
-                httpService,
-                httpEndpoint,
-                typeSupplier.get(),
-                isRequest);
+                generatorContext, generatedInterfaces, httpService, httpEndpoint, typeSupplier.get(), isRequest);
         RequestResponseGeneratorResult result = generator.generate();
         if (result.generatedFile().isPresent()) {
             return GeneratedFilePayload.builder()
                     .generatedFile(GeneratedFile.builder()
                             .file(result.generatedFile().get().file())
-                            .className(
-                                    result.generatedFile().get().className())
+                            .className(result.generatedFile().get().className())
                             .build())
                     .build();
         }
-        return TypeNamePayload.builder()
-                .typeName(result.typeName())
-                .build();
+        return TypeNamePayload.builder().typeName(result.typeName()).build();
     }
 
     private static boolean isVoid(Type type) {

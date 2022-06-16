@@ -91,8 +91,8 @@ public final class ErrorGenerator extends Generator {
     private TypeSpec.Builder getErrorTypeSpecBuilder(IGeneratedFile generatedFile) {
         TypeSpec generatedTypeSpec = generatedFile.file().typeSpec;
 
-        TypeSpec.Builder errorTypeSpecBuilder = TypeSpec.classBuilder(generatedFile.className())
-                .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC);
+        TypeSpec.Builder errorTypeSpecBuilder =
+                TypeSpec.classBuilder(generatedFile.className()).addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC);
         generatedTypeSpec.modifiers.forEach(errorTypeSpecBuilder::addModifiers);
 
         errorTypeSpecBuilder

@@ -115,8 +115,8 @@ public final class HttpServiceServerGenerator extends Generator {
                     endpointMethodBuilder.addParameter(
                             ParameterSpec.builder(typeName, "request").build());
                 });
-        Optional<TypeName> returnPayload = jerseyServiceGeneratorUtils
-                .getPayloadTypeName(generatedEndpointModel.generatedHttpResponse());
+        Optional<TypeName> returnPayload =
+                jerseyServiceGeneratorUtils.getPayloadTypeName(generatedEndpointModel.generatedHttpResponse());
         returnPayload.ifPresent(endpointMethodBuilder::returns);
 
         boolean errorsPresent = httpEndpoint.response().failed().errors().size() > 0;
@@ -152,12 +152,12 @@ public final class HttpServiceServerGenerator extends Generator {
             endpointMethodCodeBlock.add(getImplCall(endpointImplMethodName, returnPayload, endpointMethodBuilder));
         }
 
-        MethodSpec endpointMethod = endpointMethodBuilder
-                .addCode(endpointMethodCodeBlock.build())
-                .build();
+        MethodSpec endpointMethod =
+                endpointMethodBuilder.addCode(endpointMethodCodeBlock.build()).build();
         MethodSpec implMethod = endpointImplMethodBuilder
                 .addParameters(endpointMethod.parameters.stream()
-                        .map(parameterSpec -> ParameterSpec.builder(parameterSpec.type, parameterSpec.name).build())
+                        .map(parameterSpec -> ParameterSpec.builder(parameterSpec.type, parameterSpec.name)
+                                .build())
                         .collect(Collectors.toList()))
                 .returns(endpointMethod.returnType)
                 .build();
@@ -165,13 +165,10 @@ public final class HttpServiceServerGenerator extends Generator {
     }
 
     private CodeBlock getImplCall(
-            String endpointImplMethodName,
-            Optional<TypeName> returnPayload,
-            MethodSpec.Builder endpointMethodBuilder) {
+            String endpointImplMethodName, Optional<TypeName> returnPayload, MethodSpec.Builder endpointMethodBuilder) {
         CodeBlock.Builder implCallBuilder = CodeBlock.builder();
-        String args = endpointMethodBuilder.parameters.stream()
-                .map(_unused -> "$L")
-                .collect(Collectors.joining());
+        String args =
+                endpointMethodBuilder.parameters.stream().map(_unused -> "$L").collect(Collectors.joining());
         String argNames = endpointMethodBuilder.parameters.stream()
                 .map(parameterSpec -> parameterSpec.name)
                 .collect(Collectors.joining());
