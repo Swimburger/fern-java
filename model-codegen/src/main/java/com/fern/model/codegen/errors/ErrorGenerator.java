@@ -62,7 +62,7 @@ public final class ErrorGenerator extends Generator {
                                 .build(),
                         generatorContext,
                         generatedInterfaces));
-        TypeSpec.Builder errorTypeSpecBuilder = generatedTypeFile.file().typeSpec.toBuilder();
+        TypeSpec.Builder errorTypeSpecBuilder = getErrorTypeSpecBuilder(generatedTypeFile);
         errorTypeSpecBuilder.superclass(ClassName.get(Exception.class));
         if (errorDefinition.http().isPresent()) {
             errorTypeSpecBuilder
@@ -86,5 +86,26 @@ public final class ErrorGenerator extends Generator {
                 .className(errorClassName)
                 .errorDefinition(errorDefinition)
                 .build();
+    }
+
+    private TypeSpec.Builder getErrorTypeSpecBuilder(IGeneratedFile generatedFile) {
+        TypeSpec generatedTypeSpec = generatedFile.file().typeSpec;
+
+        TypeSpec.Builder errorTypeSpecBuilder = TypeSpec.classBuilder(generatedFile.className())
+                .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC);
+        generatedTypeSpec.modifiers.forEach(errorTypeSpecBuilder::addModifiers);
+
+        errorTypeSpecBuilder
+                .addJavadoc(generatedTypeSpec.javadoc)
+                .addAnnotations(generatedTypeSpec.annotations)
+                .addTypeVariables(generatedTypeSpec.typeVariables)
+                .superclass(generatedTypeSpec.superclass)
+                .addSuperinterfaces(generatedTypeSpec.superinterfaces)
+                .addFields(generatedTypeSpec.fieldSpecs)
+                .addMethods(generatedTypeSpec.methodSpecs)
+                .addTypes(generatedTypeSpec.typeSpecs)
+                .addInitializerBlock(generatedTypeSpec.initializerBlock)
+                .addStaticBlock(generatedTypeSpec.staticBlock);
+        return errorTypeSpecBuilder;
     }
 }

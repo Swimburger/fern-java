@@ -19,9 +19,11 @@ import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,10 +65,12 @@ public final class HttpServiceServerGenerator extends Generator {
                         .build())
                 .addAnnotation(AnnotationSpec.builder(Produces.class)
                         .addMember("value", "$T.APPLICATION_JSON", MediaType.class)
-                        .build())
-                .addAnnotation(AnnotationSpec.builder(Path.class)
-                        .addMember("value", "$S", httpService.basePath())
                         .build());
+        if (httpService.basePath().isPresent()) {
+            jerseyServiceBuilder.addAnnotation(AnnotationSpec.builder(Path.class)
+                    .addMember("value", "$S", httpService.basePath().get())
+                    .build());
+        }
         List<MethodSpec> httpEndpointMethods = httpService.endpoints().stream()
                 .map(this::getHttpEndpointMethodSpec)
                 .flatMap(httpEndpointServerMethods ->
@@ -111,9 +115,9 @@ public final class HttpServiceServerGenerator extends Generator {
                     endpointMethodBuilder.addParameter(
                             ParameterSpec.builder(typeName, "request").build());
                 });
-        jerseyServiceGeneratorUtils
-                .getPayloadTypeName(generatedEndpointModel.generatedHttpResponse())
-                .ifPresent(endpointMethodBuilder::returns);
+        Optional<TypeName> returnPayload = jerseyServiceGeneratorUtils
+                .getPayloadTypeName(generatedEndpointModel.generatedHttpResponse());
+        returnPayload.ifPresent(endpointMethodBuilder::returns);
 
         boolean errorsPresent = httpEndpoint.response().failed().errors().size() > 0;
 
@@ -128,33 +132,55 @@ public final class HttpServiceServerGenerator extends Generator {
                     generatedEndpointModel.errorFile().get();
             endpointMethodCodeBlock
                     .beginControlFlow("try")
-                    .addStatement("$L()", endpointImplMethodName)
+                    .add(getImplCall(endpointImplMethodName, returnPayload, endpointMethodBuilder))
                     .endControlFlow();
             httpEndpoint.response().failed().errors().forEach(responseError -> {
                 GeneratedError generatedError = generatedErrors.get(responseError.error());
                 endpointMethodCodeBlock
-                        .beginControlFlow("catch ($T e)", generatedError)
+                        .beginControlFlow("catch ($T e)", generatedError.className())
                         .addStatement(
                                 "throw new $T.$L(e)",
                                 generatedEndpointError.className(),
                                 generatedEndpointError
                                         .constructorsByResponseError()
-                                        .get(responseError))
+                                        .get(responseError)
+                                        .name)
                         .endControlFlow();
                 endpointImplMethodBuilder.addException(generatedError.className());
             });
         } else {
-            endpointMethodCodeBlock.addStatement("$L()", endpointMethodCodeBlock);
+            endpointMethodCodeBlock.add(getImplCall(endpointImplMethodName, returnPayload, endpointMethodBuilder));
         }
 
         MethodSpec endpointMethod = endpointMethodBuilder
-                .addStatement(endpointMethodCodeBlock.build())
+                .addCode(endpointMethodCodeBlock.build())
                 .build();
         MethodSpec implMethod = endpointImplMethodBuilder
-                .addParameters(endpointMethod.parameters)
+                .addParameters(endpointMethod.parameters.stream()
+                        .map(parameterSpec -> ParameterSpec.builder(parameterSpec.type, parameterSpec.name).build())
+                        .collect(Collectors.toList()))
                 .returns(endpointMethod.returnType)
                 .build();
         return new HttpEndpointServerMethods(endpointMethod, implMethod);
+    }
+
+    private CodeBlock getImplCall(
+            String endpointImplMethodName,
+            Optional<TypeName> returnPayload,
+            MethodSpec.Builder endpointMethodBuilder) {
+        CodeBlock.Builder implCallBuilder = CodeBlock.builder();
+        String args = endpointMethodBuilder.parameters.stream()
+                .map(_unused -> "$L")
+                .collect(Collectors.joining());
+        String argNames = endpointMethodBuilder.parameters.stream()
+                .map(parameterSpec -> parameterSpec.name)
+                .collect(Collectors.joining());
+        if (returnPayload.isPresent()) {
+            implCallBuilder.addStatement("return " + endpointImplMethodName + "(" + args + ")", argNames);
+        } else {
+            implCallBuilder.addStatement(endpointImplMethodName + "(" + args + ")", argNames);
+        }
+        return implCallBuilder.build();
     }
 
     private static final class HttpEndpointServerMethods {

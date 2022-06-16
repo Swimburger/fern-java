@@ -12,6 +12,7 @@ import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.IGeneratedFile;
 import com.fern.codegen.ImmutableGeneratedEndpointModel;
 import com.fern.codegen.payload.GeneratedFilePayload;
+import com.fern.codegen.payload.Payload;
 import com.fern.codegen.payload.TypeNamePayload;
 import com.fern.codegen.payload.VoidPayload;
 import com.fern.model.codegen.errors.ErrorGenerator;
@@ -20,6 +21,7 @@ import com.fern.model.codegen.services.payloads.RequestResponseGenerator;
 import com.fern.model.codegen.services.payloads.RequestResponseGeneratorResult;
 import com.fern.model.codegen.types.InterfaceGenerator;
 import com.fern.types.errors.ErrorDefinition;
+import com.fern.types.services.http.HttpEndpoint;
 import com.fern.types.services.http.HttpService;
 import com.fern.types.types.NamedType;
 import com.fern.types.types.ObjectTypeDefinition;
@@ -30,6 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public final class ModelGenerator {
@@ -118,58 +121,24 @@ public final class ModelGenerator {
             Map<NamedType, GeneratedError> generatedErrors) {
         return httpService.endpoints().stream()
                 .map(httpEndpoint -> {
-                    ImmutableGeneratedEndpointModel.Builder generatedEndpointModel = GeneratedEndpointModel.builder();
-                    if (!isVoid(httpEndpoint.request().type())) {
-                        RequestResponseGenerator requestGenerator = new RequestResponseGenerator(
-                                generatorContext,
-                                generatedInterfaces,
-                                httpService,
-                                httpEndpoint,
-                                httpEndpoint.request().type(),
-                                true);
-                        RequestResponseGeneratorResult result = requestGenerator.generate();
-                        if (result.generatedFile().isPresent()) {
-                            generatedEndpointModel.generatedHttpRequest(GeneratedFilePayload.builder()
-                                    .generatedFile(GeneratedFile.builder()
-                                            .file(result.generatedFile().get().file())
-                                            .className(
-                                                    result.generatedFile().get().className())
-                                            .build())
-                                    .build());
-                        } else {
-                            generatedEndpointModel.generatedHttpRequest(TypeNamePayload.builder()
-                                    .typeName(result.typeName())
-                                    .build());
-                        }
-                    } else {
-                        generatedEndpointModel.generatedHttpRequest(VoidPayload.INSTANCE);
-                    }
+                    ImmutableGeneratedEndpointModel.Builder generatedEndpointModel = GeneratedEndpointModel.builder()
+                            .httpEndpoint(httpEndpoint);
 
-                    if (!isVoid(httpEndpoint.response().ok().type())) {
-                        RequestResponseGenerator requestGenerator = new RequestResponseGenerator(
-                                generatorContext,
-                                generatedInterfaces,
-                                httpService,
-                                httpEndpoint,
-                                httpEndpoint.request().type(),
-                                true);
-                        RequestResponseGeneratorResult result = requestGenerator.generate();
-                        if (result.generatedFile().isPresent()) {
-                            generatedEndpointModel.generatedHttpResponse(GeneratedFilePayload.builder()
-                                    .generatedFile(GeneratedFile.builder()
-                                            .file(result.generatedFile().get().file())
-                                            .className(
-                                                    result.generatedFile().get().className())
-                                            .build())
-                                    .build());
-                        } else {
-                            generatedEndpointModel.generatedHttpResponse(TypeNamePayload.builder()
-                                    .typeName(result.typeName())
-                                    .build());
-                        }
-                    } else {
-                        generatedEndpointModel.generatedHttpRequest(VoidPayload.INSTANCE);
-                    }
+                    Payload requestPayload = generatePayload(
+                            httpService,
+                            httpEndpoint,
+                            generatedInterfaces,
+                            () -> httpEndpoint.request().type(),
+                            true);
+                    generatedEndpointModel.generatedHttpRequest(requestPayload);
+
+                    Payload responsePayload = generatePayload(
+                            httpService,
+                            httpEndpoint,
+                            generatedInterfaces,
+                            () -> httpEndpoint.response().ok().type(),
+                            true);
+                    generatedEndpointModel.generatedHttpResponse(responsePayload);
 
                     if (!httpEndpoint.response().failed().errors().isEmpty()) {
                         FailedResponseGenerator failedResponseGenerator = new FailedResponseGenerator(
@@ -183,6 +152,37 @@ public final class ModelGenerator {
                     return generatedEndpointModel.build();
                 })
                 .collect(Collectors.toList());
+    }
+
+    private Payload generatePayload(
+            HttpService httpService,
+            HttpEndpoint httpEndpoint,
+            Map<NamedType, GeneratedInterface> generatedInterfaces,
+            Supplier<Type> typeSupplier,
+            boolean isRequest) {
+        if (isVoid(typeSupplier.get())) {
+            return VoidPayload.INSTANCE;
+        }
+        RequestResponseGenerator generator = new RequestResponseGenerator(
+                generatorContext,
+                generatedInterfaces,
+                httpService,
+                httpEndpoint,
+                typeSupplier.get(),
+                isRequest);
+        RequestResponseGeneratorResult result = generator.generate();
+        if (result.generatedFile().isPresent()) {
+            return GeneratedFilePayload.builder()
+                    .generatedFile(GeneratedFile.builder()
+                            .file(result.generatedFile().get().file())
+                            .className(
+                                    result.generatedFile().get().className())
+                            .build())
+                    .build();
+        }
+        return TypeNamePayload.builder()
+                .typeName(result.typeName())
+                .build();
     }
 
     private static boolean isVoid(Type type) {

@@ -202,7 +202,7 @@ public final class HttpServiceClientGeneratorTest {
         ModelGenerator modelGenerator = new ModelGenerator(
                 Collections.singletonList(testHttpService),
                 Collections.emptyList(),
-                Collections.emptyList(),
+                Collections.singletonList(personIdNotFound),
                 GENERATOR_CONTEXT);
         ModelGeneratorResult modelGeneratorResult = modelGenerator.generate();
         HttpServiceClientGenerator httpServiceClientGenerator = new HttpServiceClientGenerator(
