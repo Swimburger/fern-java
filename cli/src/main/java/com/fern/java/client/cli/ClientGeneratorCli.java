@@ -34,6 +34,7 @@ public final class ClientGeneratorCli {
     public static void main(String... args) {
         String pluginPath = args[0];
         FernPluginConfig fernPluginConfig = getPluginConfig(pluginPath);
+        createOutputDirectory(fernPluginConfig);
         IntermediateRepresentation ir = getIr(fernPluginConfig);
         generate(ir, fernPluginConfig);
     }
@@ -43,6 +44,17 @@ public final class ClientGeneratorCli {
             return ObjectMappers.CLIENT_OBJECT_MAPPER.readValue(new File(pluginPath), FernPluginConfig.class);
         } catch (IOException e) {
             throw new RuntimeException("Failed to read plugin configuration", e);
+        }
+    }
+
+    private static void createOutputDirectory(FernPluginConfig fernPluginConfig) {
+        Path path = Paths.get(fernPluginConfig.output().path());
+        if (!Files.exists(path)) {
+            try {
+                Files.createDirectories(path);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to create output directory", e);
+            }
         }
     }
 

@@ -3,10 +3,6 @@ package com.fern.java.client.cli;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fern.immutables.StagedBuilderStyle;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import org.immutables.value.Value;
 
@@ -50,18 +46,6 @@ public interface FernPluginConfig {
     @JsonDeserialize(as = ImmutableOutputConfig.class)
     interface OutputConfig {
         String path();
-
-        @Value.Check
-        default void createOutputDirectoryIfNotExists() {
-            Path path = Paths.get(path());
-            if (!Files.exists(path)) {
-                try {
-                    Files.createDirectories(path);
-                } catch (IOException e) {
-                    throw new RuntimeException("Failed to create output directory", e);
-                }
-            }
-        }
 
         static ImmutableOutputConfig.PathBuildStage builder() {
             return ImmutableOutputConfig.builder();
