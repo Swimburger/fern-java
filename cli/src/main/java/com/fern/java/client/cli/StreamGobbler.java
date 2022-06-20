@@ -5,13 +5,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-public class StreamGobbler extends Thread {
-    InputStream is;
+public final class StreamGobbler extends Thread {
+    private final InputStream is;
 
     StreamGobbler(InputStream is) {
         this.is = is;
     }
 
+    @SuppressWarnings("BanSystemOut")
     public void run() {
         try {
             InputStreamReader isr = new InputStreamReader(is);

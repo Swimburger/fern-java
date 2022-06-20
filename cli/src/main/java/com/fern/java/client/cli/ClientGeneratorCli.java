@@ -166,8 +166,7 @@ public final class ClientGeneratorCli {
             codeGenerationResult
                     .modelFiles()
                     .forEach(modelFile ->
-                            writeFile(Paths.get(outputDirectory,modelDirectory, SRC_MAIN_JAVA),
-                                    modelFile.file()));
+                            writeFile(Paths.get(outputDirectory, modelDirectory, SRC_MAIN_JAVA), modelFile.file()));
             writeFileContents(
                     Paths.get(outputDirectory, modelDirectory, BUILD_GRADLE),
                     CodeGenerationResult.getModelBuildGradle(fernPluginConfig));
@@ -178,8 +177,7 @@ public final class ClientGeneratorCli {
             codeGenerationResult
                     .clientFiles()
                     .forEach(clientFile ->
-                            writeFile(Paths.get(outputDirectory, clientDirectory, SRC_MAIN_JAVA),
-                                    clientFile.file()));
+                            writeFile(Paths.get(outputDirectory, clientDirectory, SRC_MAIN_JAVA), clientFile.file()));
             writeFileContents(
                     Paths.get(outputDirectory, clientDirectory, BUILD_GRADLE),
                     CodeGenerationResult.getClientBuildGradle(fernPluginConfig));
@@ -190,8 +188,7 @@ public final class ClientGeneratorCli {
             codeGenerationResult
                     .serverFiles()
                     .forEach(serverFiles ->
-                            writeFile(Paths.get(outputDirectory, serverDirectory, SRC_MAIN_JAVA),
-                                    serverFiles.file()));
+                            writeFile(Paths.get(outputDirectory, serverDirectory, SRC_MAIN_JAVA), serverFiles.file()));
             writeFileContents(
                     Paths.get(outputDirectory, serverDirectory, BUILD_GRADLE),
                     CodeGenerationResult.getServerBuildGradle(fernPluginConfig));
@@ -221,16 +218,17 @@ public final class ClientGeneratorCli {
         }
 
         if (fernPluginConfig.publish().isPresent()) {
-            writeFileContents(Paths.get(outputDirectory, "build.gradle"),
-                    CodeGenerationResult.getBuildDotGradle(fernPluginConfig.publish().get()));
+            writeFileContents(
+                    Paths.get(outputDirectory, "build.gradle"),
+                    CodeGenerationResult.getBuildDotGradle(
+                            fernPluginConfig.publish().get()));
             runPublish(Paths.get(outputDirectory));
         }
     }
 
     private static void runPublish(Path outputDirectory) {
         try {
-            ProcessBuilder pb = new ProcessBuilder("./gradlew", "publish")
-                    .directory(outputDirectory.toFile());
+            ProcessBuilder pb = new ProcessBuilder("./gradlew", "publish").directory(outputDirectory.toFile());
             Process process = pb.start();
             StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream());
             StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream());

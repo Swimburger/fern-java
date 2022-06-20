@@ -3,9 +3,7 @@ package com.fern.java.client.cli;
 import com.fern.codegen.IGeneratedFile;
 import com.fern.java.client.cli.CustomPluginConfig.Mode;
 import com.fern.java.client.cli.FernPluginConfig.PublishConfig;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Style.ImplementationVisibility;
 
