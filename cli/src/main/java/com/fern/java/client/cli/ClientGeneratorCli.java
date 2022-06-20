@@ -15,11 +15,9 @@ import com.fern.types.types.TypeDefinition;
 import com.squareup.javapoet.JavaFile;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -197,23 +195,23 @@ public final class ClientGeneratorCli {
 
         writeFileContents(
                 Paths.get(outputDirectory, "settings.gradle"),
-                CodeGenerationResult.getSettingsDotGradle(fernPluginConfig.customPluginConfig().mode()));
+                CodeGenerationResult.getSettingsDotGradle(
+                        fernPluginConfig.customPluginConfig().mode()));
         Path gradleResourcesFolder = Paths.get("/gradle-resources");
         try (Stream<Path> gradleResources = Files.walk(gradleResourcesFolder)) {
-                gradleResources.forEach(gradleResource -> {
-                    Path pathToCreate = Paths.get(outputDirectory)
-                            .resolve(gradleResourcesFolder.relativize(gradleResource));
-                    try {
-                        if (Files.isRegularFile(gradleResource)) {
-                            Files.move(gradleResource, pathToCreate);
-                        } else if (Files.isDirectory(gradleResource) && !Files.exists(pathToCreate)) {
-                            Files.createDirectory(pathToCreate);
-                        }
-                    } catch (IOException e) {
-                        throw new RuntimeException(
-                                "Failed to output gradle file: " + gradleResource.toAbsolutePath(), e);
+            gradleResources.forEach(gradleResource -> {
+                Path pathToCreate =
+                        Paths.get(outputDirectory).resolve(gradleResourcesFolder.relativize(gradleResource));
+                try {
+                    if (Files.isRegularFile(gradleResource)) {
+                        Files.move(gradleResource, pathToCreate);
+                    } else if (Files.isDirectory(gradleResource) && !Files.exists(pathToCreate)) {
+                        Files.createDirectory(pathToCreate);
                     }
-                });
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to output gradle file: " + gradleResource.toAbsolutePath(), e);
+                }
+            });
         } catch (IOException e) {
             throw new RuntimeException("Failed to output gradle files", e);
         }
