@@ -161,35 +161,39 @@ public final class ClientGeneratorCli {
             CodeGenerationResult codeGenerationResult, FernPluginConfig fernPluginConfig) {
         String outputDirectory = fernPluginConfig.output().path();
 
-        writeFileContents(Paths.get(outputDirectory, ".gitignore"), "*/\n");
-
         if (!codeGenerationResult.modelFiles().isEmpty()) {
+            String modelDirectory = fernPluginConfig.getModelProjectName();
             codeGenerationResult
                     .modelFiles()
                     .forEach(modelFile ->
-                            writeFile(Paths.get(outputDirectory, "model", SRC_MAIN_JAVA), modelFile.file()));
+                            writeFile(Paths.get(outputDirectory,modelDirectory, SRC_MAIN_JAVA),
+                                    modelFile.file()));
             writeFileContents(
-                    Paths.get(outputDirectory, "model", BUILD_GRADLE),
+                    Paths.get(outputDirectory, modelDirectory, BUILD_GRADLE),
                     CodeGenerationResult.getModelBuildGradle(fernPluginConfig));
         }
 
         if (!codeGenerationResult.clientFiles().isEmpty()) {
+            String clientDirectory = fernPluginConfig.getClientProjectName();
             codeGenerationResult
                     .clientFiles()
                     .forEach(clientFile ->
-                            writeFile(Paths.get(outputDirectory, "client", SRC_MAIN_JAVA), clientFile.file()));
+                            writeFile(Paths.get(outputDirectory, clientDirectory, SRC_MAIN_JAVA),
+                                    clientFile.file()));
             writeFileContents(
-                    Paths.get(outputDirectory, "client", BUILD_GRADLE),
+                    Paths.get(outputDirectory, clientDirectory, BUILD_GRADLE),
                     CodeGenerationResult.getClientBuildGradle(fernPluginConfig));
         }
 
         if (!codeGenerationResult.serverFiles().isEmpty()) {
+            String serverDirectory = fernPluginConfig.getServerProjectName();
             codeGenerationResult
                     .serverFiles()
                     .forEach(serverFiles ->
-                            writeFile(Paths.get(outputDirectory, "server", SRC_MAIN_JAVA), serverFiles.file()));
+                            writeFile(Paths.get(outputDirectory, serverDirectory, SRC_MAIN_JAVA),
+                                    serverFiles.file()));
             writeFileContents(
-                    Paths.get(outputDirectory, "server", BUILD_GRADLE),
+                    Paths.get(outputDirectory, serverDirectory, BUILD_GRADLE),
                     CodeGenerationResult.getServerBuildGradle(fernPluginConfig));
         }
 
@@ -214,6 +218,31 @@ public final class ClientGeneratorCli {
             });
         } catch (IOException e) {
             throw new RuntimeException("Failed to output gradle files", e);
+        }
+
+        if (fernPluginConfig.publish().isPresent()) {
+            writeFileContents(Paths.get(outputDirectory, "build.gradle"),
+                    CodeGenerationResult.getBuildDotGradle(fernPluginConfig.publish().get()));
+            runPublish(Paths.get(outputDirectory));
+        }
+    }
+
+    private static void runPublish(Path outputDirectory) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder("./gradlew", "publish")
+                    .directory(outputDirectory.toFile());
+            Process process = pb.start();
+            StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream());
+            StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream());
+            errorGobbler.start();
+            outputGobbler.start();
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new RuntimeException("Failed to run fern generate!");
+            }
+            process.waitFor();
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException("Failed to publish", e);
         }
     }
 
