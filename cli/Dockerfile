@@ -8,7 +8,5 @@ RUN mv cli-$BUILD_VERSION.tar cli/cli.tar \
     && unzip gradle-resources.zip -d /gradle-resources \
     && rm -rf gradle-resources.zip \
     && chmod -R 777 /gradle-resources
-#    && ./gradlew
 
 ENTRYPOINT ["bin/sh", "init.sh"]
-#ENTRYPOINT ["tail", "-f", "/dev/null"]
