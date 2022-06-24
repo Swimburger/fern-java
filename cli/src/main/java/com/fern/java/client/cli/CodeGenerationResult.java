@@ -86,10 +86,9 @@ public abstract class CodeGenerationResult {
 
     public static String getSettingsDotGradle(FernPluginConfig fernPluginConfig) {
         Mode mode = fernPluginConfig.customPluginConfig().mode();
-        String settingsGradle =
-                "rootProject.name = 'fern-generated-java'\n"
-                        + "\n"
-                        + "include '" + fernPluginConfig.getModelProjectName() + "'\n";
+        String settingsGradle = "rootProject.name = 'fern-generated-java'\n"
+                + "\n"
+                + "include '" + fernPluginConfig.getModelProjectName() + "'\n";
 
         if (mode.equals(Mode.CLIENT_AND_SERVER) || mode.equals(Mode.CLIENT)) {
             settingsGradle += "include '" + fernPluginConfig.getClientProjectName() + "'\n";
