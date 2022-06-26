@@ -39,7 +39,8 @@ public interface FernPluginConfig {
                 .generatorConfig(generatorConfig)
                 .customPluginConfig(CustomPluginConfig.builder()
                         .mode(Mode.valueOf(generatorConfig.customConfig().get("mode")))
-                        .packagePrefix(Optional.ofNullable(generatorConfig.customConfig().get("packagePrefix")))
+                        .packagePrefix(Optional.ofNullable(
+                                generatorConfig.customConfig().get("packagePrefix")))
                         .build())
                 .build();
     }
