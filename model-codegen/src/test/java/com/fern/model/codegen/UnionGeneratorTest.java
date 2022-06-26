@@ -46,10 +46,11 @@ public class UnionGeneratorTest {
                         .build())
                 .addTypes(SingleUnionType.builder()
                         .discriminantValue("mapValue")
-                        .valueType(TypeReference.container(ContainerType.list(TypeReference.named(DeclaredTypeName.builder()
-                                .fernFilepath(FernFilepath.valueOf("com/birch/trace/commons"))
-                                .name("VariableValue")
-                                .build()))))
+                        .valueType(TypeReference.container(ContainerType.list(TypeReference.named(
+                                DeclaredTypeName.builder()
+                                        .fernFilepath(FernFilepath.valueOf("com/birch/trace/commons"))
+                                        .name("VariableValue")
+                                        .build()))))
                         .build())
                 .build();
         TypeDeclaration variableValueTypeDefinition = TypeDeclaration.builder()

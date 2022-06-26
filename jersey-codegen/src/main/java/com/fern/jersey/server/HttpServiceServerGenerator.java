@@ -121,7 +121,7 @@ public final class HttpServiceServerGenerator extends Generator {
 
         boolean errorsPresent = httpEndpoint.response().failed().errors().size() > 0;
 
-        String endpointImplMethodName = httpEndpoint.endpointId() + "Impl";
+        String endpointImplMethodName = httpEndpoint.endpointId().value() + "Impl";
         MethodSpec.Builder endpointImplMethodBuilder =
                 MethodSpec.methodBuilder(endpointImplMethodName).addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
 

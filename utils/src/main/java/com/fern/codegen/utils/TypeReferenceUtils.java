@@ -52,11 +52,6 @@ class TypeReferenceUtils {
         }
 
         @Override
-        public TypeName visitUnknown() {
-            return ClassName.get(Object.class);
-        }
-
-        @Override
         public TypeName visitContainer(ContainerType containerType) {
             return containerType.visit(containerToTypeNameConverter);
         }
@@ -64,6 +59,11 @@ class TypeReferenceUtils {
         @Override
         public TypeName visitVoid() {
             throw new RuntimeException("Void types should be handled separately!");
+        }
+
+        @Override
+        public TypeName visitUnknown() {
+            return ClassName.get(Object.class);
         }
 
         @Override
