@@ -6,7 +6,9 @@ import com.fern.codegen.GeneratedInterface;
 import com.fern.codegen.GeneratedObject;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.IGeneratedFile;
+import com.fern.codegen.utils.ClassNameUtils;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
+import com.fern.java.immutables.StagedBuilderImmutablesStyle;
 import com.fern.model.codegen.Generator;
 import com.fern.types.types.DeclaredTypeName;
 import com.fern.types.types.ObjectProperty;
@@ -86,8 +88,7 @@ public final class ObjectGenerator extends Generator {
     private List<AnnotationSpec> getAnnotations() {
         List<AnnotationSpec> annotationSpecs = new ArrayList<>();
         annotationSpecs.add(AnnotationSpec.builder(Value.Immutable.class).build());
-        annotationSpecs.add(AnnotationSpec.builder(
-                        generatorContext.getStagedImmutablesFile().className())
+        annotationSpecs.add(AnnotationSpec.builder(ClassName.get(StagedBuilderImmutablesStyle.class))
                 .build());
         annotationSpecs.add(AnnotationSpec.builder(JsonDeserialize.class)
                 .addMember("as", "$T.class", generatedObjectImmutablesClassName)

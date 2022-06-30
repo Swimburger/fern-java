@@ -114,12 +114,6 @@ public final class ClientGeneratorCli {
         resultBuilder.addAllModelFiles(modelGeneratorResult.unions());
         resultBuilder.addAllModelFiles(modelGeneratorResult.errors().values());
         resultBuilder.addAllModelFiles(modelGeneratorResult.endpointModelFiles());
-        resultBuilder.addModelFiles(generatorContext.getStagedImmutablesFile());
-        resultBuilder.addModelFiles(generatorContext.getPackagePrivateImmutablesFile());
-        resultBuilder.addModelFiles(generatorContext.getAliasImmutablesStyle());
-        resultBuilder.addModelFiles(generatorContext.getAuthHeaderFile());
-        resultBuilder.addModelFiles(generatorContext.getApiExceptionFile());
-        resultBuilder.addModelFiles(generatorContext.getHttpApiExceptionFile());
         return modelGeneratorResult;
     }
 
@@ -138,15 +132,9 @@ public final class ClientGeneratorCli {
                     return httpServiceClientGenerator.generate();
                 })
                 .collect(Collectors.toList());
-        boolean serviceClientPresent = false;
         for (GeneratedHttpServiceClient generatedHttpServiceClient : generatedHttpServiceClients) {
             resultBuilder.addClientFiles(generatedHttpServiceClient);
             generatedHttpServiceClient.generatedErrorDecoder().ifPresent(resultBuilder::addClientFiles);
-            serviceClientPresent = true;
-        }
-        if (serviceClientPresent) {
-            resultBuilder.addClientFiles(generatorContext.getClientObjectMappersFile());
-            resultBuilder.addClientFiles(generatorContext.getUnknownRemoteExceptionFile());
         }
     }
 
@@ -165,13 +153,8 @@ public final class ClientGeneratorCli {
                     return httpServiceServerGenerator.generate();
                 })
                 .collect(Collectors.toList());
-        boolean serviceServerPresent = false;
         for (GeneratedHttpServiceServer generatedHttpServiceServer : generatedHttpServiceServers) {
             resultBuilder.addServerFiles(generatedHttpServiceServer);
-            serviceServerPresent = true;
-        }
-        if (serviceServerPresent) {
-            resultBuilder.addServerFiles(generatorContext.getServerObjectMappersFile());
         }
     }
 

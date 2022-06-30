@@ -6,7 +6,7 @@ plugins {
 }
 
 dependencies {
-    implementation project(':utils')
+    implementation project(':codegen-utils')
     implementation project(':model-codegen')
     implementation project(':jersey-codegen')
     implementation 'com.fasterxml.jackson.core:jackson-databind'
