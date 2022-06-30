@@ -95,6 +95,7 @@ public final class ImmutablesStyleGenerator {
                 .className(packagePrivateStyleClassName)
                 .build();
     }
+
     public static GeneratedFile generateAliasImmutablesStyle(ClassNameUtils classNameUtils) {
         ClassName aliasImmutablesStyleClassName = classNameUtils.getClassName(
                 ALIAS_STYLE_ANNOTATION_CLASS_NAME, Optional.empty(), Optional.empty(), Optional.empty());
@@ -129,7 +130,8 @@ public final class ImmutablesStyleGenerator {
                         .addMember("overshadowImplementation", "$L", Boolean.TRUE.toString())
                         .build())
                 .build();
-        JavaFile aliasImmutablesFile = JavaFile.builder(aliasImmutablesStyleClassName.packageName(), aliasImmutablesTypeSpec)
+        JavaFile aliasImmutablesFile = JavaFile.builder(
+                        aliasImmutablesStyleClassName.packageName(), aliasImmutablesTypeSpec)
                 .build();
         return GeneratedFile.builder()
                 .file(aliasImmutablesFile)
