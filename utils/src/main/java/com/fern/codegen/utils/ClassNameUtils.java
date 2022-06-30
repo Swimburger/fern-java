@@ -110,7 +110,7 @@ public final class ClassNameUtils {
         List<String> packageParts = new ArrayList<>(packagePrefixes);
         generatedClassType.map(ClassNameUtils::getGeneratedClassPackageName).ifPresent(packageParts::add);
         filepath.ifPresent(fernFilepath ->
-                packageParts.addAll(Arrays.asList(fernFilepath.value().split("/"))));
+                packageParts.addAll(fernFilepath.value()));
         return String.join(".", packageParts);
     }
 
