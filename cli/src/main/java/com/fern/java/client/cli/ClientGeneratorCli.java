@@ -40,7 +40,12 @@ public final class ClientGeneratorCli {
         String pluginPath = args[0];
         GeneratorConfig generatorConfig = getGeneratorConfig(pluginPath);
 
-        FernPluginConfig fernPluginConfig = FernPluginConfig.create(generatorConfig);
+        String version = System.getenv(ClientGeneratorCli.VERSION_ENV_NAME);
+        if (version == null) {
+            throw new RuntimeException("Failed to find VERSION environment variable!");
+        }
+
+        FernPluginConfig fernPluginConfig = FernPluginConfig.create(generatorConfig, version);
         createOutputDirectory(fernPluginConfig.generatorConfig().output());
         IntermediateRepresentation ir = getIr(fernPluginConfig.generatorConfig());
         generate(ir, fernPluginConfig);
