@@ -6,10 +6,8 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 public class ServerObjectMappers {
 
-    public static final ObjectMapper JSON_MAPPER = JsonMapper.builder()
-            .addModule(new Jdk8Module())
-            .build();
+    public static final ObjectMapper JSON_MAPPER =
+            JsonMapper.builder().addModule(new Jdk8Module()).build();
 
-    private ServerObjectMappers() {
-    }
+    private ServerObjectMappers() {}
 }

@@ -25,8 +25,8 @@ public final class ClassNameUtils {
 
     static {
         try {
-            CLIENT_OBJECT_MAPPERS_JSON_MAPPER_FIELD_NAME = ClientObjectMappers.class.getField("JSON_MAPPER")
-                    .getName();
+            CLIENT_OBJECT_MAPPERS_JSON_MAPPER_FIELD_NAME =
+                    ClientObjectMappers.class.getField("JSON_MAPPER").getName();
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }

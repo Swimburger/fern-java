@@ -137,9 +137,7 @@ public final class ServiceErrorDecoderGenerator extends Generator {
                 .endControlFlow()
                 .beginControlFlow("catch ($T e)", ClassName.get(IOException.class))
                 .addStatement(
-                        "return new $T($S)",
-                        ClassName.get(UnknownRemoteException.class),
-                        "Failed to read error body")
+                        "return new $T($S)", ClassName.get(UnknownRemoteException.class), "Failed to read error body")
                 .endControlFlow()
                 .build();
     }

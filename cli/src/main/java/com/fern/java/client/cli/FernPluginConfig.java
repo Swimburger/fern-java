@@ -18,6 +18,16 @@ public interface FernPluginConfig {
     @JsonProperty("customConfig")
     CustomPluginConfig customPluginConfig();
 
+    @Value.Derived
+    @Value.Check
+    default String getVersion() {
+        String version = System.getenv(ClientGeneratorCli.VERSION_ENV_NAME);
+        if (version == null) {
+            throw new RuntimeException("Failed to find VERSION environment variable!");
+        }
+        return version;
+    }
+
     default String getModelProjectName() {
         return getSubProjectName("model");
     }

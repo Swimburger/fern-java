@@ -32,6 +32,8 @@ public final class ClientGeneratorCli {
     private static final String SRC_MAIN_JAVA = "src/main/java";
     private static final String BUILD_GRADLE = "build.gradle";
 
+    public static final String VERSION_ENV_NAME = "VERSION";
+
     private ClientGeneratorCli() {}
 
     public static void main(String... args) {

@@ -8,7 +8,6 @@ import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameUtils;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.java.exception.UnknownRemoteException;
-import com.fern.java.jackson.ClientObjectMappers;
 import com.fern.jersey.HttpAuthToParameterSpec;
 import com.fern.jersey.HttpMethodAnnotationVisitor;
 import com.fern.jersey.HttpPathUtils;
@@ -109,10 +108,7 @@ public final class HttpServiceClientGenerator extends Generator {
         endpointMethodBuilder.addAnnotation(AnnotationSpec.builder(Path.class)
                 .addMember("value", "$S", HttpPathUtils.getJerseyCompatiblePath(httpEndpoint.path()))
                 .build());
-        httpEndpoint
-                .auth()
-                .visit(new HttpAuthToParameterSpec())
-                .ifPresent(endpointMethodBuilder::addParameter);
+        httpEndpoint.auth().visit(new HttpAuthToParameterSpec()).ifPresent(endpointMethodBuilder::addParameter);
         httpEndpoint.headers().stream()
                 .map(jerseyServiceGeneratorUtils::getHeaderParameterSpec)
                 .forEach(endpointMethodBuilder::addParameter);

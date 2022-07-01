@@ -1,6 +1,5 @@
 package com.fern.jersey;
 
-import com.fern.codegen.GeneratorContext;
 import com.fern.java.auth.AuthHeader;
 import com.fern.types.services.http.HttpAuth;
 import com.squareup.javapoet.AnnotationSpec;
@@ -17,12 +16,11 @@ public final class HttpAuthToParameterSpec implements HttpAuth.Visitor<Optional<
 
     @Override
     public Optional<ParameterSpec> visitBEARER() {
-        return Optional.of(
-                ParameterSpec.builder(ClassName.get(AuthHeader.class), "authHeader")
-                        .addAnnotation(AnnotationSpec.builder(HeaderParam.class)
-                                .addMember("value", "$S", AUTHORIZATION_HEADER_NAME)
-                                .build())
-                        .build());
+        return Optional.of(ParameterSpec.builder(ClassName.get(AuthHeader.class), "authHeader")
+                .addAnnotation(AnnotationSpec.builder(HeaderParam.class)
+                        .addMember("value", "$S", AUTHORIZATION_HEADER_NAME)
+                        .build())
+                .build());
     }
 
     @Override

@@ -13,7 +13,5 @@ import org.immutables.value.Value.Style.ImplementationVisibility;
         jdkOnly = true,
         stagedBuilder = true,
         visibility = ImplementationVisibility.PACKAGE,
-        overshadowImplementation = true
-)
-public @interface StagedBuilderImmutablesStyle {
-}
+        overshadowImplementation = true)
+public @interface StagedBuilderImmutablesStyle {}

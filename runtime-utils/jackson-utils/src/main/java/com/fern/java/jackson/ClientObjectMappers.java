@@ -12,6 +12,5 @@ public class ClientObjectMappers {
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .build();
 
-    private ClientObjectMappers() {
-    }
+    private ClientObjectMappers() {}
 }

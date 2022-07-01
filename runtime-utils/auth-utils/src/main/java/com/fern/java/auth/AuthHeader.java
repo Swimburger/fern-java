@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Style(
-        visibility = Value.Style.ImplementationVisibility.PACKAGE,
-        jdkOnly = true)
+@Value.Style(visibility = Value.Style.ImplementationVisibility.PACKAGE, jdkOnly = true)
 public abstract class AuthHeader {
 
     @Value.Parameter

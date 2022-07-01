@@ -14,7 +14,5 @@ import org.immutables.value.Value.Style.ImplementationVisibility;
         allParameters = true,
         visibility = ImplementationVisibility.PACKAGE,
         overshadowImplementation = true,
-        defaults = @Immutable(builder = false)
-)
-public @interface AliasImmutablesStyle {
-}
+        defaults = @Immutable(builder = false))
+public @interface AliasImmutablesStyle {}
