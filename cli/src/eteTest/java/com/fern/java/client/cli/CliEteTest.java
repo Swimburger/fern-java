@@ -39,12 +39,14 @@ public class CliEteTest {
                 continue;
             }
             try {
+                Path relativizedPath = basicFernProjectPath.relativize(path);
                 filesGenerated = true;
-                if (path.getFileName().toString().endsWith("jar")) {
-                    expect.scenario(path.toString()).toMatchSnapshot(path.toString());
+                if (relativizedPath.getFileName().toString().endsWith("jar")) {
+                    expect.scenario(relativizedPath.toString()).toMatchSnapshot(relativizedPath.toString());
                 } else {
                     String fileContents = Files.readString(path);
-                    expect.scenario(path.toString()).toMatchSnapshot(fileContents);
+
+                    expect.scenario(relativizedPath.toString()).toMatchSnapshot(fileContents);
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Failed to read file: " + path);
@@ -76,5 +78,10 @@ public class CliEteTest {
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException("Failed to run fern generate!", e);
         }
+    }
+
+    public static void main() {
+        Path pathOne = Paths.get("cli/src/eteTest/java");
+        Path pathTwo = Paths.get("src/eteTest/java");
     }
 }
