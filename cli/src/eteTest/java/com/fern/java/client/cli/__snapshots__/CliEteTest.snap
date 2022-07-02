@@ -13,10 +13,10 @@ repositories {
 
 dependencies {
     api project(':blog-api-model')
-    api 'io.github.fern-api:auth-utils:0.0.49-1-g1711cf4.dirty'
-    api 'io.github.fern-api:exception-utils:0.0.49-1-g1711cf4.dirty'
-    api 'io.github.fern-api:immutables-utils:0.0.49-1-g1711cf4.dirty'
-    api 'io.github.fern-api:jackson-utils:0.0.49-1-g1711cf4.dirty'
+    api 'io.github.fern-api:auth-utils:0.0.49-4-g337e4c9.dirty'
+    api 'io.github.fern-api:exception-utils:0.0.49-4-g337e4c9.dirty'
+    api 'io.github.fern-api:immutables-utils:0.0.49-4-g337e4c9.dirty'
+    api 'io.github.fern-api:jackson-utils:0.0.49-4-g337e4c9.dirty'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.12.3'
     implementation 'io.github.openfeign:feign-jackson:11.8'
@@ -133,8 +133,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
     implementation 'com.google.code.findbugs:annotations:3.0.1'
     implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
-    api 'io.github.fern-api:exception-utils:0.0.49-1-g1711cf4.dirty'
-    api 'io.github.fern-api:immutables-utils:0.0.49-1-g1711cf4.dirty'
+    api 'io.github.fern-api:exception-utils:0.0.49-4-g337e4c9.dirty'
+    api 'io.github.fern-api:immutables-utils:0.0.49-4-g337e4c9.dirty'
 
     annotationProcessor 'org.immutables:value:2.8.8'
     compileOnly 'org.immutables:value-annotations:2.8.8'
@@ -163,11 +163,11 @@ import org.immutables.value.Value;
 @JsonIgnoreProperties(
     ignoreUnknown = true,
     value = {
-        "statusCode",
-        "detailMessage",
-        "cause",
-        "localizedMessage",
         "stackTrace",
+        "cause",
+        "detailMessage",
+        "localizedMessage",
+        "statusCode",
         "message",
         "suppressed"
     }
@@ -357,12 +357,12 @@ public final class Author {
     return new Author(InternalNameValue.of(value));
   }
 
-  public boolean isAnonymous() {
-    return value instanceof InternalAnonymousValue;
-  }
-
   public boolean isName() {
     return value instanceof InternalNameValue;
+  }
+
+  public boolean isAnonymous() {
+    return value instanceof InternalAnonymousValue;
   }
 
   public Optional<String> getName() {
@@ -392,30 +392,14 @@ public final class Author {
       defaultImpl = Unknown.class
   )
   @JsonSubTypes({
-      @JsonSubTypes.Type(value = InternalAnonymousValue.class, name = "anonymous"),
-      @JsonSubTypes.Type(value = InternalNameValue.class, name = "name")
+      @JsonSubTypes.Type(value = InternalNameValue.class, name = "name"),
+      @JsonSubTypes.Type(value = InternalAnonymousValue.class, name = "anonymous")
   })
   @JsonIgnoreProperties(
       ignoreUnknown = true
   )
   private interface InternalValue {
     <T> T visit(Visitor<T> visitor);
-  }
-
-  @Value.Immutable
-  @JsonTypeName("anonymous")
-  @JsonDeserialize(
-      as = ImmutableAuthor.InternalAnonymousValue.class
-  )
-  interface InternalAnonymousValue extends InternalValue {
-    @Override
-    default <T> T visit(Visitor<T> visitor) {
-      return visitor.visitAnonymous();
-    }
-
-    static InternalAnonymousValue of() {
-      return ImmutableAuthor.InternalAnonymousValue.builder().build();
-    }
   }
 
   @Value.Immutable
@@ -433,6 +417,22 @@ public final class Author {
 
     static InternalNameValue of(String value) {
       return ImmutableAuthor.InternalNameValue.builder().name(value).build();
+    }
+  }
+
+  @Value.Immutable
+  @JsonTypeName("anonymous")
+  @JsonDeserialize(
+      as = ImmutableAuthor.InternalAnonymousValue.class
+  )
+  interface InternalAnonymousValue extends InternalValue {
+    @Override
+    default <T> T visit(Visitor<T> visitor) {
+      return visitor.visitAnonymous();
+    }
+
+    static InternalAnonymousValue of() {
+      return ImmutableAuthor.InternalAnonymousValue.builder().build();
     }
   }
 
@@ -634,10 +634,10 @@ repositories {
 
 dependencies {
     api project(':blog-api-model')
-    api 'io.github.fern-api:auth-utils:0.0.49-1-g1711cf4.dirty'
-    api 'io.github.fern-api:exception-utils:0.0.49-1-g1711cf4.dirty'
-    api 'io.github.fern-api:immutables-utils:0.0.49-1-g1711cf4.dirty'
-    api 'io.github.fern-api:jackson-utils:0.0.49-1-g1711cf4.dirty'
+    api 'io.github.fern-api:auth-utils:0.0.49-4-g337e4c9.dirty'
+    api 'io.github.fern-api:exception-utils:0.0.49-4-g337e4c9.dirty'
+    api 'io.github.fern-api:immutables-utils:0.0.49-4-g337e4c9.dirty'
+    api 'io.github.fern-api:jackson-utils:0.0.49-4-g337e4c9.dirty'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.12.3'
     implementation 'io.github.openfeign:feign-jackson:11.8'
