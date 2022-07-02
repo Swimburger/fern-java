@@ -33,8 +33,8 @@ public final class ErrorGenerator extends Generator {
 
     static {
         try {
-            GET_STATUS_CODE_METHOD_NAME = HttpException.class.getMethod("getStatusCode")
-                    .getName();
+            GET_STATUS_CODE_METHOD_NAME =
+                    HttpException.class.getMethod("getStatusCode").getName();
         } catch (NoSuchMethodException e) {
             throw new RuntimeException("Failed to find getStatusCode method name", e);
         }
