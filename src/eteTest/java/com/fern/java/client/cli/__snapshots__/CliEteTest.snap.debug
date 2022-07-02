@@ -1,0 +1,45 @@
+basic[/Users/dsinghvi/Documents/fern-java-plugins/cli/src/eteTest/basic/api/generated-java/blog-api-model/src/main/java/com/blog/errors/PostNotFoundError.java]=[
+package com.blog.errors;
+
+import com.blog.types.PostId;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fern.java.exception.HttpException;
+import com.fern.java.immutables.StagedBuilderImmutablesStyle;
+import java.lang.Exception;
+import java.lang.Override;
+import org.immutables.value.Value;
+
+@Value.Immutable
+@StagedBuilderImmutablesStyle
+@JsonDeserialize(
+    as = ImmutablePostNotFoundError.class
+)
+@JsonIgnoreProperties(
+    ignoreUnknown = true,
+    value = {
+        "suppressed",
+        "statusCode",
+        "detailMessage",
+        "cause",
+        "localizedMessage",
+        "stackTrace",
+        "message"
+    }
+)
+public abstract class PostNotFoundError extends Exception implements HttpException {
+  public static final int STATUS_CODE = 400;
+
+  public abstract PostId id();
+
+  public static ImmutablePostNotFoundError.IdBuildStage builder() {
+    return ImmutablePostNotFoundError.builder();
+  }
+
+  @Override
+  public int getStatusCode() {
+    return STATUS_CODE;
+  }
+}
+
+]
