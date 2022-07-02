@@ -3,11 +3,10 @@ package com.fern.codegen;
 import com.fern.codegen.utils.ClassNameUtils;
 import com.fern.codegen.utils.ImmutablesUtils;
 import com.fern.codegen.utils.VisitorUtils;
+import com.fern.types.DeclaredTypeName;
 import com.fern.types.ErrorDeclaration;
 import com.fern.types.ErrorName;
-import com.fern.types.DeclaredTypeName;
 import com.fern.types.FernConstants;
-import com.fern.types.IntermediateRepresentation;
 import com.fern.types.TypeDeclaration;
 import java.util.Map;
 import java.util.Optional;
@@ -34,7 +33,9 @@ public final class GeneratorContext {
         this.fernConstants = fernConstants;
     }
 
-    public FernConstants getFernConstants() { return fernConstants; }
+    public FernConstants getFernConstants() {
+        return fernConstants;
+    }
 
     public ClassNameUtils getClassNameUtils() {
         return classNameUtils;

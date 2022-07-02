@@ -16,10 +16,10 @@ import com.fern.codegen.utils.MethodNameUtils;
 import com.fern.model.codegen.Generator;
 import com.fern.types.ErrorName;
 import com.fern.types.services.FailedResponse;
-import com.fern.types.services.ResponseError;
-import com.fern.types.services.ServiceName;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpService;
+import com.fern.types.services.ResponseError;
+import com.fern.types.services.ServiceName;
 import com.palantir.common.streams.KeyedStream;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
@@ -209,7 +209,9 @@ public final class FailedResponseGenerator extends Generator {
                                 "$T.$L",
                                 ClassName.get(JsonTypeInfo.As.class),
                                 JsonTypeInfo.As.PROPERTY.name())
-                        .addMember("property", "$S",
+                        .addMember(
+                                "property",
+                                "$S",
                                 generatorContext.getFernConstants().errorDiscriminant())
                         .addMember("visible", "true")
                         .build());
