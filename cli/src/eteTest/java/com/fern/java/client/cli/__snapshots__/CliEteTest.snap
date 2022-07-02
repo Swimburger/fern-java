@@ -13,10 +13,10 @@ repositories {
 
 dependencies {
     api project(':blog-api-model')
-    api 'io.github.fern-api:auth-utils:0.0.49-6-gf58371c.dirty'
-    api 'io.github.fern-api:exception-utils:0.0.49-6-gf58371c.dirty'
-    api 'io.github.fern-api:immutables-utils:0.0.49-6-gf58371c.dirty'
-    api 'io.github.fern-api:jackson-utils:0.0.49-6-gf58371c.dirty'
+    api 'io.github.fern-api:auth-utils:0.0.49'
+    api 'io.github.fern-api:exception-utils:0.0.49'
+    api 'io.github.fern-api:immutables-utils:0.0.49'
+    api 'io.github.fern-api:jackson-utils:0.0.49'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.12.3'
     implementation 'io.github.openfeign:feign-jackson:11.8'
@@ -133,8 +133,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
     implementation 'com.google.code.findbugs:annotations:3.0.1'
     implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
-    api 'io.github.fern-api:exception-utils:0.0.49-6-gf58371c.dirty'
-    api 'io.github.fern-api:immutables-utils:0.0.49-6-gf58371c.dirty'
+    api 'io.github.fern-api:exception-utils:0.0.49'
+    api 'io.github.fern-api:immutables-utils:0.0.49'
 
     annotationProcessor 'org.immutables:value:2.8.8'
     compileOnly 'org.immutables:value-annotations:2.8.8'
@@ -634,10 +634,10 @@ repositories {
 
 dependencies {
     api project(':blog-api-model')
-    api 'io.github.fern-api:auth-utils:0.0.49-6-gf58371c.dirty'
-    api 'io.github.fern-api:exception-utils:0.0.49-6-gf58371c.dirty'
-    api 'io.github.fern-api:immutables-utils:0.0.49-6-gf58371c.dirty'
-    api 'io.github.fern-api:jackson-utils:0.0.49-6-gf58371c.dirty'
+    api 'io.github.fern-api:auth-utils:0.0.49'
+    api 'io.github.fern-api:exception-utils:0.0.49'
+    api 'io.github.fern-api:immutables-utils:0.0.49'
+    api 'io.github.fern-api:jackson-utils:0.0.49'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.12.3'
     implementation 'io.github.openfeign:feign-jackson:11.8'
