@@ -392,8 +392,8 @@ public final class Author {
       defaultImpl = Unknown.class
   )
   @JsonSubTypes({
-      @JsonSubTypes.Type(value = InternalNameValue.class, name = "name"),
-      @JsonSubTypes.Type(value = InternalAnonymousValue.class, name = "anonymous")
+      @JsonSubTypes.Type(value = InternalAnonymousValue.class, name = "anonymous"),
+      @JsonSubTypes.Type(value = InternalNameValue.class, name = "name")
   })
   @JsonIgnoreProperties(
       ignoreUnknown = true

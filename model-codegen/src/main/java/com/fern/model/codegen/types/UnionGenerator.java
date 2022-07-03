@@ -32,6 +32,7 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -83,7 +84,11 @@ public final class UnionGenerator extends Generator {
                         Function.identity(),
                         singleUnionType -> generatedUnionClassName.nestedClass(INTERNAL_CLASS_NAME_PREFIX
                                 + StringUtils.capitalize(singleUnionType.discriminantValue())
-                                + INTERNAL_CLASS_NAME_SUFFIX)));
+                                + INTERNAL_CLASS_NAME_SUFFIX),
+                        (u, v) -> {
+                            throw new IllegalStateException(String.format("Duplicate key %s", u));
+                        },
+                        LinkedHashMap::new));
         this.unknownInternalValueClassName = generatedUnionClassName.nestedClass(UNKNOWN_INTERNAL_VALUE_INTERFACE_NAME);
         this.internalValueInterfaceClassName = generatedUnionClassName.nestedClass(INTERNAL_VALUE_INTERFACE_NAME);
     }
