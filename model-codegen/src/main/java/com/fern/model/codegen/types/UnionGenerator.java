@@ -194,12 +194,18 @@ public final class UnionGenerator extends Generator {
 
     private Map<SingleUnionType, MethodSpec> getIsTypeMethods() {
         return unionTypeDeclaration.types().stream()
-                .collect(Collectors.toMap(Function.identity(), singleUnionType -> MethodSpec.methodBuilder(
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        singleUnionType -> MethodSpec.methodBuilder(
                                 IS_METHOD_NAME_PREFIX + StringUtils.capitalize(singleUnionType.discriminantValue()))
-                        .addModifiers(Modifier.PUBLIC)
-                        .returns(boolean.class)
-                        .addStatement("return value instanceof $T", internalValueClassNames.get(singleUnionType))
-                        .build()));
+                                .addModifiers(Modifier.PUBLIC)
+                                .returns(boolean.class)
+                                .addStatement("return value instanceof $T", internalValueClassNames.get(singleUnionType))
+                                .build(),
+                        (u, v) -> {
+                            throw new IllegalStateException(String.format("Duplicate key %s", u));
+                        },
+                        LinkedHashMap::new));
     }
 
     private List<MethodSpec> getSingleUnionTypeGetterMethods(

@@ -357,12 +357,12 @@ public final class Author {
     return new Author(InternalNameValue.of(value));
   }
 
-  public boolean isName() {
-    return value instanceof InternalNameValue;
-  }
-
   public boolean isAnonymous() {
     return value instanceof InternalAnonymousValue;
+  }
+
+  public boolean isName() {
+    return value instanceof InternalNameValue;
   }
 
   public Optional<String> getName() {
