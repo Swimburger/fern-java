@@ -403,6 +403,22 @@ public final class Author {
   }
 
   @Value.Immutable
+  @JsonTypeName("anonymous")
+  @JsonDeserialize(
+      as = ImmutableAuthor.InternalAnonymousValue.class
+  )
+  interface InternalAnonymousValue extends InternalValue {
+    @Override
+    default <T> T visit(Visitor<T> visitor) {
+      return visitor.visitAnonymous();
+    }
+
+    static InternalAnonymousValue of() {
+      return ImmutableAuthor.InternalAnonymousValue.builder().build();
+    }
+  }
+
+  @Value.Immutable
   @JsonTypeName("name")
   @JsonDeserialize(
       as = ImmutableAuthor.InternalNameValue.class
@@ -417,22 +433,6 @@ public final class Author {
 
     static InternalNameValue of(String value) {
       return ImmutableAuthor.InternalNameValue.builder().name(value).build();
-    }
-  }
-
-  @Value.Immutable
-  @JsonTypeName("anonymous")
-  @JsonDeserialize(
-      as = ImmutableAuthor.InternalAnonymousValue.class
-  )
-  interface InternalAnonymousValue extends InternalValue {
-    @Override
-    default <T> T visit(Visitor<T> visitor) {
-      return visitor.visitAnonymous();
-    }
-
-    static InternalAnonymousValue of() {
-      return ImmutableAuthor.InternalAnonymousValue.builder().build();
     }
   }
 
