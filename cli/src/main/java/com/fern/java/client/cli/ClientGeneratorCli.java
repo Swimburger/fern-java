@@ -22,6 +22,7 @@ import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ObjectMappers;
 import com.fern.jersey.client.HttpServiceClientGenerator;
 import com.fern.jersey.server.AbstractHttpServiceRegistryGenerator;
+import com.fern.jersey.server.ErrorExceptionMapperGenerator;
 import com.fern.jersey.server.HttpServiceServerGenerator;
 import com.fern.model.codegen.ModelGenerator;
 import com.fern.model.codegen.ModelGeneratorResult;
@@ -32,12 +33,17 @@ import com.fern.types.IntermediateRepresentation;
 import com.fern.types.TypeDeclaration;
 import com.fern.types.generators.GeneratorConfig;
 import com.fern.types.generators.GeneratorOutputConfig;
+import com.fern.types.services.HttpEndpoint;
+import com.fern.types.services.HttpService;
 import com.squareup.javapoet.JavaFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -163,23 +169,67 @@ public final class ClientGeneratorCli {
             GeneratorContext generatorContext,
             ModelGeneratorResult modelGeneratorResult,
             ImmutableCodeGenerationResult.Builder resultBuilder) {
-        List<GeneratedHttpServiceServer> generatedHttpServiceServers = ir.services().http().stream()
-                .map(httpService -> {
-                    HttpServiceServerGenerator httpServiceServerGenerator = new HttpServiceServerGenerator(
-                            generatorContext,
-                            modelGeneratorResult.errors(),
-                            modelGeneratorResult.endpointModels().get(httpService),
-                            httpService);
-                    return httpServiceServerGenerator.generate();
-                })
-                .collect(Collectors.toList());
-        for (GeneratedHttpServiceServer generatedHttpServiceServer : generatedHttpServiceServers) {
-            resultBuilder.addServerFiles(generatedHttpServiceServer);
-        }
-        GeneratedAbstractHttpServiceRegistry abstractServiceRegistry =
-                new AbstractHttpServiceRegistryGenerator(generatorContext, generatedHttpServiceServers).generate();
+        Map<HttpService, GeneratedHttpServiceServer> generatedHttpServiceServers = new LinkedHashMap<>();
+        Map<ErrorName, Map<HttpService, List<HttpEndpoint>>> errorMap = new LinkedHashMap<>();
+        ir.services().http().forEach(httpService -> {
+            httpService.endpoints().forEach(httpEndpoint -> {
+                buildErrorMap(httpService, httpEndpoint, errorMap);
+            });
+            GeneratedHttpServiceServer generatedHttpServiceServer =
+                    generateHttpServiceServer(httpService, generatorContext, modelGeneratorResult);
+            generatedHttpServiceServers.put(httpService, generatedHttpServiceServer);
+        });
+        resultBuilder.addAllServerFiles(generatedHttpServiceServers.values());
+
+        GeneratedAbstractHttpServiceRegistry abstractServiceRegistry = new AbstractHttpServiceRegistryGenerator(
+                        generatorContext, new ArrayList<>(generatedHttpServiceServers.values()))
+                .generate();
         resultBuilder.addServerFiles(abstractServiceRegistry);
         resultBuilder.addServerFiles(abstractServiceRegistry.defaultExceptionMapper());
+
+        errorMap.forEach((errorName, httpServiceListMap) -> {
+            ErrorExceptionMapperGenerator errorExceptionMapperGenerator = new ErrorExceptionMapperGenerator(
+                    generatorContext,
+                    modelGeneratorResult.errors().get(errorName),
+                    errorMap.get(errorName),
+                    generatedHttpServiceServers,
+                    modelGeneratorResult.endpointModels());
+            resultBuilder.addServerFiles(errorExceptionMapperGenerator.generate());
+        });
+    }
+
+    private static GeneratedHttpServiceServer generateHttpServiceServer(
+            HttpService httpService, GeneratorContext generatorContext, ModelGeneratorResult modelGeneratorResult) {
+        HttpServiceServerGenerator httpServiceServerGenerator = new HttpServiceServerGenerator(
+                generatorContext,
+                modelGeneratorResult.errors(),
+                modelGeneratorResult.endpointModels().get(httpService),
+                httpService);
+        return httpServiceServerGenerator.generate();
+    }
+
+    private static void buildErrorMap(
+            HttpService httpService,
+            HttpEndpoint httpEndpoint,
+            Map<ErrorName, Map<HttpService, List<HttpEndpoint>>> errorMap) {
+        httpEndpoint.response().failed().errors().forEach(responseError -> {
+            ErrorName errorName = responseError.error();
+            Map<HttpService, List<HttpEndpoint>> containingEndpoints;
+            if (errorMap.containsKey(errorName)) {
+                containingEndpoints = errorMap.get(errorName);
+            } else {
+                containingEndpoints = new HashMap<>();
+                errorMap.put(errorName, containingEndpoints);
+            }
+
+            if (containingEndpoints.containsKey(httpService)) {
+                containingEndpoints.get(httpService).add(httpEndpoint);
+            } else {
+                List<HttpEndpoint> httpEndpoints = new ArrayList<>();
+                httpEndpoints.add(httpEndpoint);
+                containingEndpoints.put(httpService, httpEndpoints);
+            }
+        });
     }
 
     private static synchronized void writeToFiles(

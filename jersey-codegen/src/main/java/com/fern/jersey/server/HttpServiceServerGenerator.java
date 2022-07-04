@@ -26,6 +26,7 @@ import com.fern.jersey.HttpPathUtils;
 import com.fern.jersey.JerseyServiceGeneratorUtils;
 import com.fern.model.codegen.Generator;
 import com.fern.types.ErrorName;
+import com.fern.types.services.EndpointId;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpService;
 import com.squareup.javapoet.AnnotationSpec;
@@ -35,10 +36,10 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 import javax.ws.rs.Consumes;
@@ -51,13 +52,13 @@ public final class HttpServiceServerGenerator extends Generator {
     private final HttpService httpService;
     private final ClassName generatedServiceClassName;
     private final JerseyServiceGeneratorUtils jerseyServiceGeneratorUtils;
-    private final Map<HttpEndpoint, GeneratedEndpointModel> generatedEndpointModels;
+    private final Map<EndpointId, GeneratedEndpointModel> generatedEndpointModels;
     private final Map<ErrorName, GeneratedError> generatedErrors;
 
     public HttpServiceServerGenerator(
             GeneratorContext generatorContext,
             Map<ErrorName, GeneratedError> generatedErrors,
-            List<GeneratedEndpointModel> generatedEndpointModels,
+            Map<EndpointId, GeneratedEndpointModel> generatedEndpointModels,
             HttpService httpService) {
         super(generatorContext, PackageType.SERVER);
         this.httpService = httpService;
@@ -65,8 +66,7 @@ public final class HttpServiceServerGenerator extends Generator {
         this.generatedServiceClassName =
                 generatorContext.getClassNameUtils().getClassNameFromServiceName(httpService.name(), packageType);
         this.jerseyServiceGeneratorUtils = new JerseyServiceGeneratorUtils(generatorContext);
-        this.generatedEndpointModels = generatedEndpointModels.stream()
-                .collect(Collectors.toMap(GeneratedEndpointModel::httpEndpoint, Function.identity()));
+        this.generatedEndpointModels = generatedEndpointModels;
     }
 
     @Override
@@ -82,11 +82,12 @@ public final class HttpServiceServerGenerator extends Generator {
         jerseyServiceBuilder.addAnnotation(AnnotationSpec.builder(Path.class)
                 .addMember("value", "$S", httpService.basePath().orElse("/"))
                 .build());
-        List<MethodSpec> httpEndpointMethods = httpService.endpoints().stream()
-                .map(this::getHttpEndpointMethodSpec)
-                .collect(Collectors.toList());
+        Map<EndpointId, MethodSpec> endpointToMethodSpec = new LinkedHashMap<>();
+        httpService.endpoints().forEach(httpEndpoint -> {
+            endpointToMethodSpec.put(httpEndpoint.endpointId(), getHttpEndpointMethodSpec(httpEndpoint));
+        });
         TypeSpec jerseyServiceTypeSpec =
-                jerseyServiceBuilder.addMethods(httpEndpointMethods).build();
+                jerseyServiceBuilder.addMethods(endpointToMethodSpec.values()).build();
         JavaFile jerseyServiceJavaFile = JavaFile.builder(
                         generatedServiceClassName.packageName(), jerseyServiceTypeSpec)
                 .build();
@@ -94,6 +95,7 @@ public final class HttpServiceServerGenerator extends Generator {
                 .file(jerseyServiceJavaFile)
                 .className(generatedServiceClassName)
                 .httpService(httpService)
+                .putAllMethodsByEndpointId(endpointToMethodSpec)
                 .build();
     }
 
@@ -115,7 +117,7 @@ public final class HttpServiceServerGenerator extends Generator {
         httpEndpoint.queryParameters().stream()
                 .map(jerseyServiceGeneratorUtils::getQueryParameterSpec)
                 .forEach(endpointMethodBuilder::addParameter);
-        GeneratedEndpointModel generatedEndpointModel = generatedEndpointModels.get(httpEndpoint);
+        GeneratedEndpointModel generatedEndpointModel = generatedEndpointModels.get(httpEndpoint.endpointId());
         jerseyServiceGeneratorUtils
                 .getPayloadTypeName(generatedEndpointModel.generatedHttpRequest())
                 .ifPresent(typeName -> {
