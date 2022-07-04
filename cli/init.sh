@@ -1,6 +1,7 @@
 configPath=$1
 
-cd cli
+cd gradle-resources && ./gradlew
+cd ../cli
 tar -xvf cli.tar
 rm -rf cli.tar
 cd ./cli-"$VERSION"
