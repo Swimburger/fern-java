@@ -132,7 +132,7 @@ public final class HttpServiceClientGenerator extends Generator {
         httpEndpoint.queryParameters().stream()
                 .map(jerseyServiceGeneratorUtils::getQueryParameterSpec)
                 .forEach(endpointMethodBuilder::addParameter);
-        GeneratedEndpointModel generatedEndpointModel = generatedEndpointModels.get(httpEndpoint);
+        GeneratedEndpointModel generatedEndpointModel = generatedEndpointModels.get(httpEndpoint.endpointId());
         jerseyServiceGeneratorUtils
                 .getPayloadTypeName(generatedEndpointModel.generatedHttpRequest())
                 .ifPresent(typeName -> {

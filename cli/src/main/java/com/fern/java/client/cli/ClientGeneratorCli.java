@@ -16,6 +16,7 @@
 package com.fern.java.client.cli;
 
 import com.fern.codegen.GeneratedAbstractHttpServiceRegistry;
+import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratedHttpServiceClient;
 import com.fern.codegen.GeneratedHttpServiceServer;
 import com.fern.codegen.GeneratorContext;
@@ -61,7 +62,7 @@ public final class ClientGeneratorCli {
         String pluginPath = args[0];
         GeneratorConfig generatorConfig = getGeneratorConfig(pluginPath);
 
-        FernPluginConfig fernPluginConfig = FernPluginConfig.create(generatorConfig, "0.0.49");
+        FernPluginConfig fernPluginConfig = FernPluginConfig.create(generatorConfig, "0.0.50");
         createOutputDirectory(fernPluginConfig.generatorConfig().output());
         IntermediateRepresentation ir = getIr(fernPluginConfig.generatorConfig());
         generate(ir, fernPluginConfig);
@@ -181,21 +182,26 @@ public final class ClientGeneratorCli {
         });
         resultBuilder.addAllServerFiles(generatedHttpServiceServers.values());
 
+        List<GeneratedFile> generatedExceptionMappers = errorMap.keySet().stream()
+                .map(errorName -> {
+                    ErrorExceptionMapperGenerator errorExceptionMapperGenerator = new ErrorExceptionMapperGenerator(
+                            generatorContext,
+                            modelGeneratorResult.errors().get(errorName),
+                            errorMap.get(errorName),
+                            generatedHttpServiceServers,
+                            modelGeneratorResult.endpointModels());
+                    return errorExceptionMapperGenerator.generate();
+                })
+                .collect(Collectors.toList());
+        resultBuilder.addAllServerFiles(generatedExceptionMappers);
+
         GeneratedAbstractHttpServiceRegistry abstractServiceRegistry = new AbstractHttpServiceRegistryGenerator(
-                        generatorContext, new ArrayList<>(generatedHttpServiceServers.values()))
+                        generatorContext,
+                        new ArrayList<>(generatedHttpServiceServers.values()),
+                        generatedExceptionMappers)
                 .generate();
         resultBuilder.addServerFiles(abstractServiceRegistry);
         resultBuilder.addServerFiles(abstractServiceRegistry.defaultExceptionMapper());
-
-        errorMap.forEach((errorName, httpServiceListMap) -> {
-            ErrorExceptionMapperGenerator errorExceptionMapperGenerator = new ErrorExceptionMapperGenerator(
-                    generatorContext,
-                    modelGeneratorResult.errors().get(errorName),
-                    errorMap.get(errorName),
-                    generatedHttpServiceServers,
-                    modelGeneratorResult.endpointModels());
-            resultBuilder.addServerFiles(errorExceptionMapperGenerator.generate());
-        });
     }
 
     private static GeneratedHttpServiceServer generateHttpServiceServer(

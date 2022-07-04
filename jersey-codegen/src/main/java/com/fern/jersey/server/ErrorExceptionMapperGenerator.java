@@ -22,10 +22,10 @@ import com.fern.codegen.GeneratedError;
 import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratedHttpServiceServer;
 import com.fern.codegen.GeneratorContext;
-import com.fern.codegen.IGeneratedFile;
 import com.fern.codegen.utils.ClassNameConstants;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.model.codegen.Generator;
+import com.fern.model.codegen.services.payloads.FailedResponseGenerator;
 import com.fern.types.services.EndpointId;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpService;
@@ -88,7 +88,7 @@ public final class ErrorExceptionMapperGenerator extends Generator {
     }
 
     @Override
-    public IGeneratedFile generate() {
+    public GeneratedFile generate() {
         TypeSpec exceptionMapperTypeSpec = TypeSpec.classBuilder(generatedExceptionMapperClassname)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addSuperinterface(
@@ -118,9 +118,10 @@ public final class ErrorExceptionMapperGenerator extends Generator {
             HttpService httpService = entry.getKey();
             GeneratedHttpServiceServer generatedHttpServiceServer = generatedHttpServers.get(httpService);
             toResponseMethodBuilder.beginControlFlow(
-                    firstServiceCondition ? "if $T.$L.contains($S)" : "else if $T.$L.contains($S)",
+                    firstServiceCondition ? "if ($T.$L($L).contains($S))" : "else if ($T.$L($L).contains($S))",
                     ClassNameConstants.RESOURCE_INFO_UTILS_CLASSNAME,
                     ClassNameConstants.RESOURCE_INFO_GET_INTERFACE_NAMES_METHOD_NAME,
+                    RESOURCE_INFO_FIELD_NAME,
                     generatedHttpServiceServer.className().simpleName());
 
             boolean firstEndpointCondition = true;
@@ -129,9 +130,10 @@ public final class ErrorExceptionMapperGenerator extends Generator {
                 MethodSpec endpointMethodSpec =
                         generatedHttpServiceServer.methodsByEndpointId().get(endpointId);
                 toResponseMethodBuilder.beginControlFlow(
-                        firstEndpointCondition ? "if $T.$L.contains($S)" : "else if $T.$L.contains($S)",
+                        firstEndpointCondition ? "if ($T.$L($L).contains($S))" : "else if ($T.$L($L).contains($S))",
                         ClassNameConstants.RESOURCE_INFO_UTILS_CLASSNAME,
                         ClassNameConstants.RESOURCE_INFO_GET_METHOD_NAME_METHOD_NAME,
+                        RESOURCE_INFO_FIELD_NAME,
                         endpointMethodSpec.name);
                 GeneratedEndpointModel generatedEndpointModel =
                         generatedEndpointModels.get(httpService).get(endpointId);
@@ -141,12 +143,13 @@ public final class ErrorExceptionMapperGenerator extends Generator {
                                 "Expected endpoint error to exist, but not found. EndpointId=" + endpointId));
 
                 toResponseMethodBuilder.addStatement(
-                        "return $T.$N($L)",
+                        "return $T.$N($L).$L()",
                         generatedEndpointError.className(),
                         generatedEndpointError
                                 .constructorsByResponseError()
                                 .get(generatedError.errorDeclaration().name()),
-                        EXCEPTION_PARAMETER_NAME);
+                        EXCEPTION_PARAMETER_NAME,
+                        FailedResponseGenerator.GET_RESPONSE_METHOD_NAME);
 
                 toResponseMethodBuilder.endControlFlow();
                 firstEndpointCondition = false;

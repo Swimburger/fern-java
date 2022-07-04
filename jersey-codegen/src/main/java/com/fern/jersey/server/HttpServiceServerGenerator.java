@@ -71,8 +71,8 @@ public final class HttpServiceServerGenerator extends Generator {
 
     @Override
     public GeneratedHttpServiceServer generate() {
-        TypeSpec.Builder jerseyServiceBuilder = TypeSpec.classBuilder(generatedServiceClassName)
-                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+        TypeSpec.Builder jerseyServiceBuilder = TypeSpec.interfaceBuilder(generatedServiceClassName)
+                .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(AnnotationSpec.builder(Consumes.class)
                         .addMember("value", "$T.APPLICATION_JSON", MediaType.class)
                         .build())
@@ -106,7 +106,7 @@ public final class HttpServiceServerGenerator extends Generator {
                 .addAnnotation(AnnotationSpec.builder(Path.class)
                         .addMember("value", "$S", HttpPathUtils.getJerseyCompatiblePath(httpEndpoint.path()))
                         .build())
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
         httpEndpoint.auth().visit(new HttpAuthToParameterSpec()).ifPresent(endpointMethodBuilder::addParameter);
         httpEndpoint.headers().stream()
                 .map(jerseyServiceGeneratorUtils::getHeaderParameterSpec)

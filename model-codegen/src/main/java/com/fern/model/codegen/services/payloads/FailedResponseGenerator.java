@@ -62,6 +62,7 @@ public final class FailedResponseGenerator extends Generator {
     private static final String GET_INTERNAL_VALUE_METHOD_NAME = "getInternalValue";
     private static final String GET_STATUS_CODE_METHOD_NAME = "getStatusCode";
     public static final String GET_NESTED_ERROR_METHOD_NAME = "getNestedError";
+    public static final String GET_RESPONSE_METHOD_NAME = "getResponse";
 
     private static final String VALUE_FIELD_NAME = "value";
 
@@ -150,7 +151,7 @@ public final class FailedResponseGenerator extends Generator {
     }
 
     private MethodSpec getResponseMethodSpec() {
-        return MethodSpec.methodBuilder("getResponse")
+        return MethodSpec.methodBuilder(GET_RESPONSE_METHOD_NAME)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .returns(Response.class)
                 .addAnnotation(Override.class)
