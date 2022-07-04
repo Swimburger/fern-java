@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11-jdk-alpine
+FROM gradle:7.4.2-jdk11-alpine
 
 ARG BUILD_VERSION
 ENV VERSION=$BUILD_VERSION
