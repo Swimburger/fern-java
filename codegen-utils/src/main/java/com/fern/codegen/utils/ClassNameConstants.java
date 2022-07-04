@@ -22,8 +22,16 @@ import com.fern.java.jersey.ResourceInfoUtils;
 import com.squareup.javapoet.ClassName;
 import java.util.Optional;
 import javax.ws.rs.container.ResourceInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ClassNameConstants {
+
+    // Loggers
+    public static final ClassName LOGGER_CLASS_NAME = ClassName.get(Logger.class);
+    public static final ClassName LOGGER_FACTORY_CLASS_NAME = ClassName.get(LoggerFactory.class);
+    public static final String LOGGER_FIELD_NAME = "log";
+    public static final String GET_LOGGER_METHOD_NAME = getMethodName(LoggerFactory.class, "getLogger", Class.class);
 
     // Common Java Classes
     public static final ClassName STRING_CLASS_NAME = ClassName.get(String.class);
