@@ -7,7 +7,6 @@ RUN mkdir -m777 cli  \
     && mv cli-$BUILD_VERSION.tar cli/cli.tar \
     && unzip gradle-resources.zip -d /gradle-resources \
     && rm -rf gradle-resources.zip \
-    && chmod -R 777 /gradle-resources \
-    && cd gradle-resources && ./gradlew
+    && chmod -R 777 /gradle-resources
 
 ENTRYPOINT ["bin/sh", "init.sh"]
