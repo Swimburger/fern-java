@@ -16,6 +16,7 @@
 
 package com.fern.codegen.utils;
 
+import com.fern.java.exception.HttpException;
 import com.fern.java.immutables.AliasImmutablesStyle;
 import com.fern.java.jackson.ClientObjectMappers;
 import com.fern.java.jersey.ResourceInfoUtils;
@@ -43,6 +44,10 @@ public final class ClassNameConstants {
             getMethodName(ResourceInfoUtils.class, "getInterfaceNames", ResourceInfo.class);
     public static final String RESOURCE_INFO_GET_METHOD_NAME_METHOD_NAME =
             getMethodName(ResourceInfoUtils.class, "getMethodName", ResourceInfo.class);
+
+    public static final ClassName HTTP_EXCEPTION_CLASSNAME = ClassName.get(HttpException.class);
+    public static final String HTTP_EXCEPTION_ERROR_INSTANCE_ID_METHOD_NAME =
+            getMethodName(HttpException.class, "getErrorInstanceId");
 
     public static final ClassName ALIAS_IMMUTABLES_STYLE_CLASSNAME = ClassName.get(AliasImmutablesStyle.class);
 
