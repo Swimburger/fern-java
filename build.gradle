@@ -63,6 +63,9 @@ allprojects {
         options.errorprone.disable 'StrictUnusedVariable'
         options.errorprone.disable 'PreferSafeLoggableExceptions'
     }
+
+    sourceCompatibility = 11
+
 }
 
 artifactory {
