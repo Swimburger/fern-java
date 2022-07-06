@@ -24,7 +24,7 @@ import com.types.ErrorType;
 import com.types.ExampleId;
 import com.types.ExampleObject;
 
-public final class ExampleResource implements ExampleService  {
+public final class ExampleResource implements ExampleService {
     @Override
     public ExampleObject getExampleObject() {
         return ExampleObject.builder()
@@ -42,9 +42,7 @@ public final class ExampleResource implements ExampleService  {
             case UNAUTHORIZED:
                 throw UnauthorizedError.builder().build();
             case GENERIC:
-                throw GenericMessageError.builder()
-                        .msg("my message")
-                        .build();
+                throw GenericMessageError.builder().msg("my message").build();
             case UNKNOWN:
                 throw new RuntimeException("Encountered unknown errorType: " + errorType);
         }
