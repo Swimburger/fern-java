@@ -67,8 +67,8 @@ public final class HttpServiceSpringServerGenerator extends Generator {
                 .addAnnotation(AnnotationSpec.builder(RequestMapping.class)
                         .addMember("path", "$S",
                                 httpService.basePath().orElse("/"))
-                        .addMember("consumes", "application/json")
-                        .addMember("produces", "application/json")
+                        .addMember("consumes", "$S", "application/json")
+                        .addMember("produces", "$S", "application/json")
                         .build());
         Map<EndpointId, MethodSpec> endpointToMethodSpec = new LinkedHashMap<>();
         httpService.endpoints().forEach(httpEndpoint -> {

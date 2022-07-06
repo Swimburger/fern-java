@@ -122,16 +122,11 @@ public final class ClientGeneratorCli {
                 addClientFiles(ir, generatorContext, modelGeneratorResult, resultBuilder);
                 break;
             case SERVER:
-                if (fernPluginConfig.customPluginConfig().serverFrameworks().contains(ServerFramework.JERSEY)) {
-                    addJerseyServerFiles(ir, generatorContext, modelGeneratorResult, resultBuilder);
-                }
-                if (fernPluginConfig.customPluginConfig().serverFrameworks().contains(ServerFramework.SPRING)) {
-                    addSpringServerFiles(ir, generatorContext, modelGeneratorResult, resultBuilder);
-                }
+                addServerFiles(fernPluginConfig, ir, generatorContext, modelGeneratorResult, resultBuilder);
                 break;
             case CLIENT_AND_SERVER:
                 addClientFiles(ir, generatorContext, modelGeneratorResult, resultBuilder);
-                addJerseyServerFiles(ir, generatorContext, modelGeneratorResult, resultBuilder);
+                addServerFiles(fernPluginConfig, ir, generatorContext, modelGeneratorResult, resultBuilder);
                 break;
         }
         CodeGenerationResult codeGenerationResult = resultBuilder.build();
@@ -173,6 +168,20 @@ public final class ClientGeneratorCli {
         for (GeneratedHttpServiceClient generatedHttpServiceClient : generatedHttpServiceClients) {
             resultBuilder.addClientFiles(generatedHttpServiceClient);
             generatedHttpServiceClient.generatedErrorDecoder().ifPresent(resultBuilder::addClientFiles);
+        }
+    }
+
+    private static void addServerFiles(
+            FernPluginConfig fernPluginConfig,
+            IntermediateRepresentation ir,
+            GeneratorContext generatorContext,
+            ModelGeneratorResult modelGeneratorResult,
+            ImmutableCodeGenerationResult.Builder resultBuilder) {
+        if (fernPluginConfig.customPluginConfig().getServerFrameworkEnums().contains(ServerFramework.JERSEY)) {
+            addJerseyServerFiles(ir, generatorContext, modelGeneratorResult, resultBuilder);
+        }
+        if (fernPluginConfig.customPluginConfig().getServerFrameworkEnums().contains(ServerFramework.SPRING)) {
+            addSpringServerFiles(ir, generatorContext, modelGeneratorResult, resultBuilder);
         }
     }
 

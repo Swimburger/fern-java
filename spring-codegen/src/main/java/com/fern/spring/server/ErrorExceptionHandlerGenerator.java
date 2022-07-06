@@ -26,6 +26,7 @@ import com.fern.types.services.EndpointId;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpService;
 import com.squareup.javapoet.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.HandlerMethod;
@@ -75,7 +76,7 @@ public final class ErrorExceptionHandlerGenerator extends Generator {
     public GeneratedFile generate() {
         TypeSpec exceptionMapperTypeSpec = TypeSpec.classBuilder(generatedExceptionMapperClassname)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addSuperinterface(ClassName.get(ResponseEntityExceptionHandler.class))
+                .superclass(ClassName.get(ResponseEntityExceptionHandler.class))
                 .addField(FieldSpec.builder(
                                 ClassNameConstants.LOGGER_CLASS_NAME,
                                 ClassNameConstants.LOGGER_FIELD_NAME,
@@ -147,7 +148,7 @@ public final class ErrorExceptionHandlerGenerator extends Generator {
                                 "Expected endpoint error to exist, but not found. EndpointId=" + endpointId));
 
                 toResponseMethodBuilder.addStatement(
-                        "return new $T<>($L.$L($L), $T.valueOf($L.$L()))",
+                        "return new $T<>($T.$L($L), $T.valueOf($L.$L()))",
                         ResponseEntity.class,
                         generatedEndpointError.className(),
                         generatedEndpointError
@@ -155,6 +156,7 @@ public final class ErrorExceptionHandlerGenerator extends Generator {
                                 .get(generatedError.errorDeclaration().name())
                                 .name,
                         EXCEPTION_PARAMETER_NAME,
+                        HttpStatus.class,
                         EXCEPTION_PARAMETER_NAME,
                         ErrorGenerator.GET_STATUS_CODE_METHOD_NAME);
 

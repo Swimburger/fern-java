@@ -28,6 +28,7 @@ import org.immutables.value.Value.Immutable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.lang.model.element.Modifier;
 import java.util.Optional;
@@ -67,7 +68,7 @@ public final class DefaultExceptionHandlerGenerator extends Generator {
         TypeSpec defaultResponseBodyClass = generateDefaultResponseBodyNestedClass();
         TypeSpec defaultExceptionMapperTypeSpec = TypeSpec.classBuilder(defaultExceptionMapperClassName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addSuperinterface(ParameterizedTypeName.get(ResponseEntity.class, Object.class))
+                .superclass(ResponseEntityExceptionHandler.class)
                 .addField(FieldSpec.builder(
                                 ClassNameConstants.LOGGER_CLASS_NAME,
                                 ClassNameConstants.LOGGER_FIELD_NAME,
@@ -82,6 +83,7 @@ public final class DefaultExceptionHandlerGenerator extends Generator {
                         .build())
                 .addMethod(MethodSpec.methodBuilder("handleException")
                         .addModifiers(Modifier.PUBLIC)
+                        .addParameter(Exception.class, "e")
                         .addAnnotation(AnnotationSpec.builder(ExceptionHandler.class)
                                 .addMember("value", "$T.class", Exception.class)
                                 .build())
@@ -98,8 +100,8 @@ public final class DefaultExceptionHandlerGenerator extends Generator {
                                 BODY_LOCAL_VAR_NAME,
                                 ERROR_INSTANCE_ID_METHOD_NAME)
                         .addStatement(
-                                "return new ResponseEntity<>($L, $T.$N)",
-                                BODY_LOCAL_VAR_NAME, HttpStatus.class, HttpStatus.INTERNAL_SERVER_ERROR)
+                                "return new ResponseEntity<>($L, $T.INTERNAL_SERVER_ERROR)",
+                                BODY_LOCAL_VAR_NAME, HttpStatus.class)
                         .returns(ParameterizedTypeName.get(ResponseEntity.class, Object.class))
                         .build())
                 .addType(defaultResponseBodyClass)

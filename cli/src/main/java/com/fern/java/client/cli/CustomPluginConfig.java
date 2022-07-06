@@ -19,8 +19,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fern.immutables.StagedBuilderStyle;
 import org.immutables.value.Value;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Value.Immutable
 @StagedBuilderStyle
@@ -29,8 +31,17 @@ public interface CustomPluginConfig {
 
     Optional<String> packagePrefix();
 
-    default List<ServerFramework> serverFrameworks() {
-        return List.of(ServerFramework.SPRING);
+    @Value.Default
+    default String serverFrameworks() {
+        return "spring";
+    }
+
+    @Value.Default
+    default List<ServerFramework> getServerFrameworkEnums() {
+        return Arrays.stream(serverFrameworks().split(","))
+                .map(String::toUpperCase)
+                .map(ServerFramework::valueOf)
+                .collect(Collectors.toList());
     }
 
     Mode mode();

@@ -147,6 +147,7 @@ public abstract class CodeGenerationResult {
                     + "    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'\n"
                     + "    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.12.3'\n"
                     + "    implementation 'org.springframework:spring-web:5.3.19'\n"
+                    + "    implementation 'org.springframework:spring-webmvc:5.3.19'\n"
                     + "\n"
                     + "    annotationProcessor 'org.immutables:value:2.8.8'\n"
                     + "    compileOnly 'org.immutables:value-annotations:2.8.8'\n"
@@ -164,7 +165,7 @@ public abstract class CodeGenerationResult {
             settingsGradle += "include '" + fernPluginConfig.getClientProjectName() + "'\n";
         }
         if (mode.equals(Mode.CLIENT_AND_SERVER) || mode.equals(Mode.SERVER)) {
-            for (ServerFramework serverFramework : fernPluginConfig.customPluginConfig().serverFrameworks()) {
+            for (ServerFramework serverFramework : fernPluginConfig.customPluginConfig().getServerFrameworkEnums()) {
                 settingsGradle += "include '" + fernPluginConfig.getServerProjectName(serverFramework) + "'\n";
             }
         }
