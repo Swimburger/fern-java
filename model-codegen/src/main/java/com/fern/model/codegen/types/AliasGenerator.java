@@ -181,8 +181,8 @@ public final class AliasGenerator extends Generator {
         }
 
         @Override
-        public CodeBlock visitUnknown(String s) {
-            throw new RuntimeException("Encountered unknown primitive type: " + s);
+        public CodeBlock visitUnknown(String unknown) {
+            throw new RuntimeException("Encountered unknown primitive type: " + unknown);
         }
     }
 }
