@@ -130,8 +130,7 @@ public final class AliasGenerator extends Generator {
             toStringMethodCodeBlock =
                     aliasTypeDeclaration.aliasOf().getPrimitive().get().visit(ToStringMethodSpecVisitor.INSTANCE);
         } else {
-            toStringMethodCodeBlock =
-                    CodeBlock.of("return $L().$L()", IMMUTABLES_VALUE_PROPERTY_NAME, "toString");
+            toStringMethodCodeBlock = CodeBlock.of("return $L().$L()", IMMUTABLES_VALUE_PROPERTY_NAME, "toString");
         }
         return MethodSpec.methodBuilder("toString")
                 .addModifiers(Modifier.PUBLIC)
