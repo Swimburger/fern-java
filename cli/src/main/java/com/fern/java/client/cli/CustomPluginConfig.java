@@ -31,14 +31,10 @@ public interface CustomPluginConfig {
 
     Optional<String> packagePrefix();
 
-    @Value.Default
-    default String serverFrameworks() {
-        return "spring";
-    }
+    Optional<String> serverFrameworks();
 
-    @Value.Default
     default List<ServerFramework> getServerFrameworkEnums() {
-        return Arrays.stream(serverFrameworks().split(","))
+        return Arrays.stream(serverFrameworks().orElse("spring").split(","))
                 .map(String::toUpperCase)
                 .map(ServerFramework::valueOf)
                 .collect(Collectors.toList());

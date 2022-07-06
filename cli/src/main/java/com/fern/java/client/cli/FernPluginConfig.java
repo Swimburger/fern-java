@@ -60,6 +60,8 @@ public interface FernPluginConfig {
                                 generatorConfig.customConfig().get("mode").toUpperCase()))
                         .packagePrefix(Optional.ofNullable(
                                 generatorConfig.customConfig().get("packagePrefix")))
+                        .serverFrameworks(Optional.ofNullable(
+                                generatorConfig.customConfig().get("serverFrameworks")))
                         .build())
                 .version(version)
                 .build();
