@@ -15,12 +15,7 @@
  */
 package com.fern.model.codegen.services.payloads;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fern.codegen.GeneratedEndpointError;
 import com.fern.codegen.GeneratedError;
@@ -30,26 +25,17 @@ import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.codegen.utils.MethodNameUtils;
 import com.fern.model.codegen.Generator;
 import com.fern.types.ErrorName;
-import com.fern.types.services.FailedResponse;
-import com.fern.types.services.HttpEndpoint;
-import com.fern.types.services.HttpService;
-import com.fern.types.services.ResponseError;
-import com.fern.types.services.ServiceName;
+import com.fern.types.services.*;
 import com.palantir.common.streams.KeyedStream;
-import com.squareup.javapoet.AnnotationSpec;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.FieldSpec;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
+import org.apache.commons.lang3.StringUtils;
+import org.immutables.value.Value;
+
+import javax.lang.model.element.Modifier;
+import javax.ws.rs.core.Response;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.lang.model.element.Modifier;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import org.apache.commons.lang3.StringUtils;
-import org.immutables.value.Value;
 
 public final class FailedResponseGenerator extends Generator {
 
@@ -105,7 +91,6 @@ public final class FailedResponseGenerator extends Generator {
         Map<ErrorName, MethodSpec> errorNameToMethodSpec = getStaticBuilderMethods();
         TypeSpec endpointErrorTypeSpec = TypeSpec.classBuilder(generatedEndpointErrorClassName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .superclass(WebApplicationException.class)
                 .addAnnotation(Value.Enclosing.class)
                 .addField(FieldSpec.builder(internalValueInterfaceClassName, VALUE_FIELD_NAME)
                         .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
@@ -301,15 +286,11 @@ public final class FailedResponseGenerator extends Generator {
                 .getImmutablesUtils()
                 .getKeyWordCompatibleImmutablesPropertyMethod(
                         responseError.discriminantValue(), generatedError.className());
-        // Add @JsonValue annotation on object type reference because properties are collapsed one level
-        if (generatedError.errorDeclaration().type().isObject()) {
-            return MethodSpec.methodBuilder(internalValueImmutablesProperty.name)
-                    .addModifiers(internalValueImmutablesProperty.modifiers)
-                    .addAnnotations(internalValueImmutablesProperty.annotations)
-                    .addAnnotation(JsonValue.class)
-                    .returns(internalValueImmutablesProperty.returnType)
-                    .build();
-        }
-        return internalValueImmutablesProperty;
+        return MethodSpec.methodBuilder(internalValueImmutablesProperty.name)
+                .addModifiers(internalValueImmutablesProperty.modifiers)
+                .addAnnotations(internalValueImmutablesProperty.annotations)
+                .addAnnotation(JsonValue.class)
+                .returns(internalValueImmutablesProperty.returnType)
+                .build();
     }
 }
