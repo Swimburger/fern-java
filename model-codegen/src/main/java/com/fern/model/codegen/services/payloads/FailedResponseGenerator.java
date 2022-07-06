@@ -15,7 +15,12 @@
  */
 package com.fern.model.codegen.services.payloads;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fern.codegen.GeneratedEndpointError;
 import com.fern.codegen.GeneratedError;
@@ -25,17 +30,25 @@ import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.codegen.utils.MethodNameUtils;
 import com.fern.model.codegen.Generator;
 import com.fern.types.ErrorName;
-import com.fern.types.services.*;
+import com.fern.types.services.FailedResponse;
+import com.fern.types.services.HttpEndpoint;
+import com.fern.types.services.HttpService;
+import com.fern.types.services.ResponseError;
+import com.fern.types.services.ServiceName;
 import com.palantir.common.streams.KeyedStream;
-import com.squareup.javapoet.*;
-import org.apache.commons.lang3.StringUtils;
-import org.immutables.value.Value;
-
-import javax.lang.model.element.Modifier;
-import javax.ws.rs.core.Response;
+import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeSpec;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.lang.model.element.Modifier;
+import javax.ws.rs.core.Response;
+import org.apache.commons.lang3.StringUtils;
+import org.immutables.value.Value;
 
 public final class FailedResponseGenerator extends Generator {
 
