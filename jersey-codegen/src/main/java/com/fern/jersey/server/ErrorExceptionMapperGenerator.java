@@ -171,7 +171,8 @@ public final class ErrorExceptionMapperGenerator extends Generator {
                         generatedEndpointError.className(),
                         generatedEndpointError
                                 .constructorsByResponseError()
-                                .get(generatedError.errorDeclaration().name()).name,
+                                .get(generatedError.errorDeclaration().name())
+                                .name,
                         EXCEPTION_PARAMETER_NAME);
 
                 toResponseMethodBuilder.endControlFlow();
