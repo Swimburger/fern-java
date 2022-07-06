@@ -28,15 +28,20 @@ import com.fern.types.ErrorName;
 import com.fern.types.services.EndpointId;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpService;
-import com.squareup.javapoet.*;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import javax.lang.model.element.Modifier;
+import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.TypeName;
+import com.squareup.javapoet.TypeSpec;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.lang.model.element.Modifier;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 public final class HttpServiceSpringServerGenerator extends Generator {
 
@@ -65,8 +70,7 @@ public final class HttpServiceSpringServerGenerator extends Generator {
         TypeSpec.Builder jerseyServiceBuilder = TypeSpec.interfaceBuilder(generatedServiceClassName)
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(AnnotationSpec.builder(RequestMapping.class)
-                        .addMember("path", "$S",
-                                httpService.basePath().orElse("/"))
+                        .addMember("path", "$S", httpService.basePath().orElse("/"))
                         .addMember("consumes", "$S", "application/json")
                         .addMember("produces", "$S", "application/json")
                         .build());
@@ -92,8 +96,7 @@ public final class HttpServiceSpringServerGenerator extends Generator {
                         httpEndpoint.endpointId().value())
                 .addAnnotation(httpEndpoint.method().visit(new SpringHttpMethodAnnotationVisitor(httpEndpoint)))
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
-        httpEndpoint.auth().visit(HttpAuthParameterSpecVisitor.INSTANCE)
-                .ifPresent(endpointMethodBuilder::addParameter);
+        httpEndpoint.auth().visit(HttpAuthParameterSpecVisitor.INSTANCE).ifPresent(endpointMethodBuilder::addParameter);
         httpService.headers().stream()
                 .map(springServiceGeneratorUtils::getHeaderParameterSpec)
                 .forEach(endpointMethodBuilder::addParameter);

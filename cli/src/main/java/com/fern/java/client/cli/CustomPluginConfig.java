@@ -17,12 +17,11 @@ package com.fern.java.client.cli;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fern.immutables.StagedBuilderStyle;
-import org.immutables.value.Value;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @StagedBuilderStyle

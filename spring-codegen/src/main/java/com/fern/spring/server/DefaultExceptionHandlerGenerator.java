@@ -23,16 +23,22 @@ import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameConstants;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.model.codegen.Generator;
-import com.squareup.javapoet.*;
+import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeSpec;
+import java.util.Optional;
+import java.util.UUID;
+import javax.lang.model.element.Modifier;
 import org.immutables.value.Value.Immutable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-import javax.lang.model.element.Modifier;
-import java.util.Optional;
-import java.util.UUID;
 
 public final class DefaultExceptionHandlerGenerator extends Generator {
 
@@ -69,6 +75,7 @@ public final class DefaultExceptionHandlerGenerator extends Generator {
         TypeSpec defaultExceptionMapperTypeSpec = TypeSpec.classBuilder(defaultExceptionMapperClassName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .superclass(ResponseEntityExceptionHandler.class)
+                .addAnnotation(ControllerAdvice.class)
                 .addField(FieldSpec.builder(
                                 ClassNameConstants.LOGGER_CLASS_NAME,
                                 ClassNameConstants.LOGGER_FIELD_NAME,
@@ -101,7 +108,8 @@ public final class DefaultExceptionHandlerGenerator extends Generator {
                                 ERROR_INSTANCE_ID_METHOD_NAME)
                         .addStatement(
                                 "return new ResponseEntity<>($L, $T.INTERNAL_SERVER_ERROR)",
-                                BODY_LOCAL_VAR_NAME, HttpStatus.class)
+                                BODY_LOCAL_VAR_NAME,
+                                HttpStatus.class)
                         .returns(ParameterizedTypeName.get(ResponseEntity.class, Object.class))
                         .build())
                 .addType(defaultResponseBodyClass)

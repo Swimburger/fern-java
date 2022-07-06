@@ -16,7 +16,12 @@
 
 package com.fern.spring.server;
 
-import com.fern.codegen.*;
+import com.fern.codegen.GeneratedEndpointError;
+import com.fern.codegen.GeneratedEndpointModel;
+import com.fern.codegen.GeneratedError;
+import com.fern.codegen.GeneratedFile;
+import com.fern.codegen.GeneratedHttpServiceServer;
+import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameConstants;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.java.spring.HandlerMethodUtils;
@@ -25,17 +30,23 @@ import com.fern.model.codegen.errors.ErrorGenerator;
 import com.fern.types.services.EndpointId;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpService;
-import com.squareup.javapoet.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-import javax.lang.model.element.Modifier;
+import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeSpec;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.lang.model.element.Modifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 public final class ErrorExceptionHandlerGenerator extends Generator {
 
@@ -77,6 +88,7 @@ public final class ErrorExceptionHandlerGenerator extends Generator {
         TypeSpec exceptionMapperTypeSpec = TypeSpec.classBuilder(generatedExceptionMapperClassname)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .superclass(ClassName.get(ResponseEntityExceptionHandler.class))
+                .addAnnotation(ControllerAdvice.class)
                 .addField(FieldSpec.builder(
                                 ClassNameConstants.LOGGER_CLASS_NAME,
                                 ClassNameConstants.LOGGER_FIELD_NAME,

@@ -16,16 +16,14 @@
 
 package com.fern.java.spring;
 
-import org.springframework.web.method.HandlerMethod;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.web.method.HandlerMethod;
 
 public final class HandlerMethodUtils {
 
-    private HandlerMethodUtils() {
-    }
+    private HandlerMethodUtils() {}
 
     public static List<String> getInterfaceNames(HandlerMethod handlerMethod) {
         return Arrays.stream(handlerMethod.getMethod().getDeclaringClass().getInterfaces())

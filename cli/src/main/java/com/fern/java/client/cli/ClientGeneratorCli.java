@@ -229,32 +229,32 @@ public final class ClientGeneratorCli {
             GeneratorContext generatorContext,
             ModelGeneratorResult modelGeneratorResult,
             ImmutableCodeGenerationResult.Builder resultBuilder) {
-         Map<HttpService, GeneratedHttpServiceServer> generatedHttpServiceServers = new LinkedHashMap<>();
-         Map<ErrorName, Map<HttpService, List<HttpEndpoint>>> errorMap = new LinkedHashMap<>();
-         ir.services().http().forEach(httpService -> {
-             httpService.endpoints().forEach(httpEndpoint -> {
-                 buildErrorMap(httpService, httpEndpoint, errorMap);
-             });
-             GeneratedHttpServiceServer generatedHttpServiceServer =
-                     generateSpringHttpServiceServer(httpService, generatorContext, modelGeneratorResult);
-             generatedHttpServiceServers.put(httpService, generatedHttpServiceServer);
-         });
-         resultBuilder.addAllSpringServerFiles(generatedHttpServiceServers.values());
+        Map<HttpService, GeneratedHttpServiceServer> generatedHttpServiceServers = new LinkedHashMap<>();
+        Map<ErrorName, Map<HttpService, List<HttpEndpoint>>> errorMap = new LinkedHashMap<>();
+        ir.services().http().forEach(httpService -> {
+            httpService.endpoints().forEach(httpEndpoint -> {
+                buildErrorMap(httpService, httpEndpoint, errorMap);
+            });
+            GeneratedHttpServiceServer generatedHttpServiceServer =
+                    generateSpringHttpServiceServer(httpService, generatorContext, modelGeneratorResult);
+            generatedHttpServiceServers.put(httpService, generatedHttpServiceServer);
+        });
+        resultBuilder.addAllSpringServerFiles(generatedHttpServiceServers.values());
 
-         List<GeneratedFile> generatedExceptionHandlers = errorMap.keySet().stream()
-                 .map(errorName -> {
-                     ErrorExceptionHandlerGenerator errorExceptionHandlerGenerator = new ErrorExceptionHandlerGenerator(
-                             generatorContext,
-                             modelGeneratorResult.errors().get(errorName),
-                             errorMap.get(errorName),
-                             generatedHttpServiceServers,
-                             modelGeneratorResult.endpointModels());
-                     return errorExceptionHandlerGenerator.generate();
-                 })
-                 .collect(Collectors.toList());
-         resultBuilder.addAllSpringServerFiles(generatedExceptionHandlers);
+        List<GeneratedFile> generatedExceptionHandlers = errorMap.keySet().stream()
+                .map(errorName -> {
+                    ErrorExceptionHandlerGenerator errorExceptionHandlerGenerator = new ErrorExceptionHandlerGenerator(
+                            generatorContext,
+                            modelGeneratorResult.errors().get(errorName),
+                            errorMap.get(errorName),
+                            generatedHttpServiceServers,
+                            modelGeneratorResult.endpointModels());
+                    return errorExceptionHandlerGenerator.generate();
+                })
+                .collect(Collectors.toList());
+        resultBuilder.addAllSpringServerFiles(generatedExceptionHandlers);
 
-         resultBuilder.addSpringServerFiles(new DefaultExceptionHandlerGenerator(generatorContext).generate());
+        resultBuilder.addSpringServerFiles(new DefaultExceptionHandlerGenerator(generatorContext).generate());
     }
 
     private static GeneratedHttpServiceServer generateSpringHttpServiceServer(
@@ -266,7 +266,6 @@ public final class ClientGeneratorCli {
                 httpService);
         return httpServiceSpringServerGenerator.generate();
     }
-
 
     private static GeneratedHttpServiceServer generateJerseyHttpServiceServer(
             HttpService httpService, GeneratorContext generatorContext, ModelGeneratorResult modelGeneratorResult) {

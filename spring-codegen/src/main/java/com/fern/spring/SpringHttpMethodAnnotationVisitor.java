@@ -19,7 +19,11 @@ import com.fern.codegen.utils.server.HttpPathUtils;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpMethod;
 import com.squareup.javapoet.AnnotationSpec;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 
 public final class SpringHttpMethodAnnotationVisitor implements HttpMethod.Visitor<AnnotationSpec> {
 

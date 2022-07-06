@@ -20,10 +20,9 @@ import com.fern.java.client.cli.CustomPluginConfig.Mode;
 import com.fern.java.client.cli.CustomPluginConfig.ServerFramework;
 import com.fern.types.generators.GeneratorPublishConfig;
 import com.fern.types.generators.MavenRegistryConfig;
+import java.util.List;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Style.ImplementationVisibility;
-
-import java.util.List;
 
 @Value.Immutable
 @Value.Style(visibility = ImplementationVisibility.PACKAGE, overshadowImplementation = true)
@@ -165,7 +164,8 @@ public abstract class CodeGenerationResult {
             settingsGradle += "include '" + fernPluginConfig.getClientProjectName() + "'\n";
         }
         if (mode.equals(Mode.CLIENT_AND_SERVER) || mode.equals(Mode.SERVER)) {
-            for (ServerFramework serverFramework : fernPluginConfig.customPluginConfig().getServerFrameworkEnums()) {
+            for (ServerFramework serverFramework :
+                    fernPluginConfig.customPluginConfig().getServerFrameworkEnums()) {
                 settingsGradle += "include '" + fernPluginConfig.getServerProjectName(serverFramework) + "'\n";
             }
         }
