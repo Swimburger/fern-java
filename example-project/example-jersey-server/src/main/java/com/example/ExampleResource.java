@@ -38,11 +38,13 @@ public final class ExampleResource implements ExampleService  {
     public void throwError(ErrorType errorType) throws NotFoundError, UnauthorizedError, GenericMessageError {
         switch (errorType.getEnumValue()) {
             case NOT_FOUND:
-                throw NotFoundError.valueOf();
+                throw NotFoundError.builder().build();
             case UNAUTHORIZED:
-                throw UnauthorizedError.valueOf();
+                throw UnauthorizedError.builder().build();
             case GENERIC:
-                throw GenericMessageError.valueOf("my message");
+                throw GenericMessageError.builder()
+                        .msg("my message")
+                        .build();
             case UNKNOWN:
                 throw new RuntimeException("Encountered unknown errorType: " + errorType);
         }

@@ -15,13 +15,19 @@ errors:
   NotFoundError:
     http:
       statusCode: 404
+    type:
+      properties: {}
   UnauthorizedError:
     http:
       statusCode: 403
+    type:
+      properties: {}
   GenericMessageError:
     http:
       statusCode: 500
-    type: string
+    type:
+      properties:
+        msg: string
 services:
   http:
     ExampleService:
