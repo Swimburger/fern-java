@@ -17,8 +17,10 @@ package com.fern.java.client.cli;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fern.immutables.StagedBuilderStyle;
-import java.util.Optional;
 import org.immutables.value.Value;
+
+import java.util.List;
+import java.util.Optional;
 
 @Value.Immutable
 @StagedBuilderStyle
@@ -27,6 +29,10 @@ public interface CustomPluginConfig {
 
     Optional<String> packagePrefix();
 
+    default List<ServerFramework> serverFrameworks() {
+        return List.of(ServerFramework.SPRING);
+    }
+
     Mode mode();
 
     enum Mode {
@@ -34,6 +40,11 @@ public interface CustomPluginConfig {
         CLIENT,
         SERVER,
         CLIENT_AND_SERVER;
+    }
+
+    enum ServerFramework {
+        JERSEY,
+        SPRING
     }
 
     static ImmutableCustomPluginConfig.ModeBuildStage builder() {

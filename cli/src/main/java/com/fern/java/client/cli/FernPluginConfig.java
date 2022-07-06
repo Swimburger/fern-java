@@ -20,8 +20,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fern.immutables.StagedBuilderStyle;
 import com.fern.java.client.cli.CustomPluginConfig.Mode;
 import com.fern.types.generators.GeneratorConfig;
-import java.util.Optional;
 import org.immutables.value.Value;
+
+import java.util.Optional;
 
 @Value.Immutable
 @StagedBuilderStyle
@@ -43,8 +44,8 @@ public interface FernPluginConfig {
         return getSubProjectName("client");
     }
 
-    default String getServerProjectName() {
-        return getSubProjectName("server");
+    default String getServerProjectName(CustomPluginConfig.ServerFramework serverFramework) {
+        return getSubProjectName("server-" + serverFramework.name().toLowerCase());
     }
 
     default String getSubProjectName(String projectSuffix) {

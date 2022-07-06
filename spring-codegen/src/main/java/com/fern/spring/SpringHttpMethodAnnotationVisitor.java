@@ -13,43 +13,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fern.jersey;
+package com.fern.spring;
 
+import com.fern.codegen.utils.server.HttpPathUtils;
+import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpMethod;
 import com.squareup.javapoet.AnnotationSpec;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.PATCH;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
+import org.springframework.web.bind.annotation.*;
 
-public final class HttpMethodAnnotationVisitor implements HttpMethod.Visitor<AnnotationSpec> {
+public final class SpringHttpMethodAnnotationVisitor implements HttpMethod.Visitor<AnnotationSpec> {
 
-    public static final HttpMethodAnnotationVisitor INSTANCE = new HttpMethodAnnotationVisitor();
+    private final String path;
+
+    public SpringHttpMethodAnnotationVisitor(HttpEndpoint httpEndpoint) {
+        this.path = HttpPathUtils.getPathWithCurlyBracedPathParams(httpEndpoint.path());
+    }
 
     @Override
     public AnnotationSpec visitGET() {
-        return AnnotationSpec.builder(GET.class).build();
+        return AnnotationSpec.builder(GetMapping.class)
+                .addMember("value", "$S", path)
+                .build();
     }
 
     @Override
     public AnnotationSpec visitPOST() {
-        return AnnotationSpec.builder(POST.class).build();
+        return AnnotationSpec.builder(PostMapping.class)
+                .addMember("value", "$S", path)
+                .build();
     }
 
     @Override
     public AnnotationSpec visitPUT() {
-        return AnnotationSpec.builder(PUT.class).build();
+        return AnnotationSpec.builder(PutMapping.class)
+                .addMember("value", "$S", path)
+                .build();
     }
 
     @Override
     public AnnotationSpec visitDELETE() {
-        return AnnotationSpec.builder(DELETE.class).build();
+        return AnnotationSpec.builder(DeleteMapping.class)
+                .addMember("value", "$S", path)
+                .build();
     }
 
     @Override
     public AnnotationSpec visitPATCH() {
-        return AnnotationSpec.builder(PATCH.class).build();
+        return AnnotationSpec.builder(PatchMapping.class)
+                .addMember("value", "$S", path)
+                .build();
     }
 
     @Override

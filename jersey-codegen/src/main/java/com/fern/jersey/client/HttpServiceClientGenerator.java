@@ -15,17 +15,13 @@
  */
 package com.fern.jersey.client;
 
-import com.fern.codegen.GeneratedEndpointModel;
-import com.fern.codegen.GeneratedError;
-import com.fern.codegen.GeneratedErrorDecoder;
-import com.fern.codegen.GeneratedHttpServiceClient;
-import com.fern.codegen.GeneratorContext;
+import com.fern.codegen.*;
 import com.fern.codegen.utils.ClassNameConstants;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
+import com.fern.codegen.utils.server.HttpAuthParameterSpecVisitor;
+import com.fern.codegen.utils.server.HttpPathUtils;
 import com.fern.java.exception.UnknownRemoteException;
-import com.fern.jersey.HttpAuthToParameterSpec;
-import com.fern.jersey.HttpMethodAnnotationVisitor;
-import com.fern.jersey.HttpPathUtils;
+import com.fern.jersey.JerseyHttpMethodAnnotationVisitor;
 import com.fern.jersey.JerseyServiceGeneratorUtils;
 import com.fern.model.codegen.Generator;
 import com.fern.types.ErrorName;
@@ -34,26 +30,21 @@ import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpResponse;
 import com.fern.types.services.HttpService;
 import com.palantir.common.streams.KeyedStream;
-import com.squareup.javapoet.AnnotationSpec;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.CodeBlock;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterSpec;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 import feign.Feign;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.jaxrs.JAXRSContract;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+
 import javax.lang.model.element.Modifier;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public final class HttpServiceClientGenerator extends Generator {
 
@@ -117,12 +108,12 @@ public final class HttpServiceClientGenerator extends Generator {
     private MethodSpec getHttpEndpointMethodSpec(HttpEndpoint httpEndpoint) {
         MethodSpec.Builder endpointMethodBuilder = MethodSpec.methodBuilder(
                         httpEndpoint.endpointId().value())
-                .addAnnotation(httpEndpoint.method().visit(HttpMethodAnnotationVisitor.INSTANCE))
+                .addAnnotation(httpEndpoint.method().visit(JerseyHttpMethodAnnotationVisitor.INSTANCE))
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
         endpointMethodBuilder.addAnnotation(AnnotationSpec.builder(Path.class)
-                .addMember("value", "$S", HttpPathUtils.getJerseyCompatiblePath(httpEndpoint.path()))
+                .addMember("value", "$S", HttpPathUtils.getPathWithCurlyBracedPathParams(httpEndpoint.path()))
                 .build());
-        httpEndpoint.auth().visit(new HttpAuthToParameterSpec()).ifPresent(endpointMethodBuilder::addParameter);
+        httpEndpoint.auth().visit(new HttpAuthParameterSpecVisitor()).ifPresent(endpointMethodBuilder::addParameter);
         httpService.headers().stream()
                 .map(jerseyServiceGeneratorUtils::getHeaderParameterSpec)
                 .forEach(endpointMethodBuilder::addParameter);
