@@ -1,0 +1,41 @@
+ids:
+  - ExampleId
+types:
+  ExampleObject:
+    properties:
+      id: ExampleId
+      stringValue: string
+      doubleValue: double
+  ErrorType:
+    enum:
+      - NOT_FOUND
+      - UNAUTHORIZED
+      - GENERIC
+errors:
+  NotFoundError:
+    http:
+      statusCode: 404
+  UnauthorizedError:
+    http:
+      statusCode: 403
+  GenericMessageError:
+    http:
+      statusCode: 500
+    type: string
+services:
+  http:
+    ExampleService:
+      auth: none
+      endpoints:
+        getExampleObject:
+          response: ExampleObject
+
+        throwError:
+          request: ErrorType
+          response:
+            ok: {}
+            failed:
+              errors:
+                - NotFoundError
+                - UnauthorizedError
+                - GenericMessageError
