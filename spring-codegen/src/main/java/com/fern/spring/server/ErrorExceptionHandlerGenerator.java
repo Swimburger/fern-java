@@ -90,6 +90,9 @@ public final class ErrorExceptionHandlerGenerator extends Generator {
         TypeSpec exceptionMapperTypeSpec = TypeSpec.classBuilder(generatedExceptionMapperClassname)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .superclass(ClassName.get(ResponseEntityExceptionHandler.class))
+                .addAnnotation(AnnotationSpec.builder(Order.class)
+                        .addMember("value", "$T.HIGHEST_PRECEDENCE", Ordered.class)
+                        .build())
                 .addAnnotation(ControllerAdvice.class)
                 .addField(FieldSpec.builder(
                                 ClassNameConstants.LOGGER_CLASS_NAME,
@@ -119,9 +122,6 @@ public final class ErrorExceptionHandlerGenerator extends Generator {
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(AnnotationSpec.builder(ExceptionHandler.class)
                         .addMember("value", "$T.class", generatedError.className())
-                        .build())
-                .addAnnotation(AnnotationSpec.builder(Order.class)
-                        .addMember("value", "$T.HIGHEST_PRECEDENCE", Ordered.class)
                         .build())
                 .addParameter(generatedError.className(), EXCEPTION_PARAMETER_NAME)
                 .addParameter(HandlerMethod.class, HANDLER_METHOD_PARAMETER_NAME)
