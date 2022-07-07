@@ -26,20 +26,15 @@ import com.fern.model.codegen.services.payloads.FailedResponseGenerator;
 import com.fern.types.services.EndpointId;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpService;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.CodeBlock;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterizedTypeName;
-import com.squareup.javapoet.TypeSpec;
-import com.squareup.javapoet.TypeVariableName;
+import com.squareup.javapoet.*;
 import feign.Response;
 import feign.codec.ErrorDecoder;
+
+import javax.lang.model.element.Modifier;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import javax.lang.model.element.Modifier;
 
 public final class ServiceErrorDecoderGenerator extends Generator {
 
@@ -115,7 +110,7 @@ public final class ServiceErrorDecoderGenerator extends Generator {
                             DECODE_METHOD_RESPONSE_PARAMETER_NAME,
                             maybeGeneratedEndpointErrorFile.get().className(),
                             maybeGeneratedEndpointErrorFile.get().className(),
-                            FailedResponseGenerator.GET_NESTED_ERROR_METHOD_NAME)
+                            FailedResponseGenerator.GET_EXCEPTION_METHOD_NAME)
                     .endControlFlow();
         }
         codeBlockBuilder.addStatement(
