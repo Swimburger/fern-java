@@ -41,6 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.lang.model.element.Modifier;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -117,6 +119,9 @@ public final class ErrorExceptionHandlerGenerator extends Generator {
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(AnnotationSpec.builder(ExceptionHandler.class)
                         .addMember("value", "$T.class", generatedError.className())
+                        .build())
+                .addAnnotation(AnnotationSpec.builder(Order.class)
+                        .addMember("value", "$T.HIGHEST_PRECEDENCE", Ordered.class)
                         .build())
                 .addParameter(generatedError.className(), EXCEPTION_PARAMETER_NAME)
                 .addParameter(HandlerMethod.class, HANDLER_METHOD_PARAMETER_NAME)
