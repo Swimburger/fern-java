@@ -26,10 +26,13 @@ import com.fern.model.codegen.TypeDefinitionGenerator;
 import com.fern.types.DeclaredTypeName;
 import com.fern.types.ErrorDeclaration;
 import com.fern.types.TypeDeclaration;
-import com.squareup.javapoet.*;
-
-import javax.lang.model.element.Modifier;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeSpec;
 import java.util.Map;
+import javax.lang.model.element.Modifier;
 
 public final class ErrorGenerator extends Generator {
     public static final String GET_STATUS_CODE_METHOD_NAME = "getStatusCode";
