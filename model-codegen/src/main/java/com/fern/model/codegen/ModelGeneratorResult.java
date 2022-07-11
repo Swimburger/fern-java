@@ -15,7 +15,14 @@
  */
 package com.fern.model.codegen;
 
-import com.fern.codegen.*;
+import com.fern.codegen.GeneratedAlias;
+import com.fern.codegen.GeneratedEndpointModel;
+import com.fern.codegen.GeneratedEnum;
+import com.fern.codegen.GeneratedError;
+import com.fern.codegen.GeneratedInterface;
+import com.fern.codegen.GeneratedObject;
+import com.fern.codegen.GeneratedUnion;
+import com.fern.codegen.IGeneratedFile;
 import com.fern.types.DeclaredTypeName;
 import com.fern.types.ErrorName;
 import com.fern.types.services.EndpointId;
