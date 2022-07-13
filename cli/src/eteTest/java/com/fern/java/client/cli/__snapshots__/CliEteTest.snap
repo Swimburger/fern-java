@@ -30,6 +30,94 @@ dependencies {
 ]
 
 
+basic[api/generated-java/blog-api-client/src/main/java/com/blog/client/AuthPostsServiceClient.java]=[
+package com.blog.client;
+
+import com.blog.errors.PostNotFoundError;
+import com.blog.types.BlogPost;
+import com.blog.types.CreatePostRequest;
+import com.blog.types.PostId;
+import com.fern.java.auth.AuthHeader;
+import com.fern.java.exception.UnknownRemoteException;
+import com.fern.java.jackson.ClientObjectMappers;
+import feign.Feign;
+import feign.jackson.JacksonDecoder;
+import feign.jackson.JacksonEncoder;
+import feign.jaxrs.JAXRSContract;
+import java.lang.String;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+@Path("/posts")
+public interface AuthPostsServiceClient {
+  @POST
+  @Path("/create")
+  void createPost(@HeaderParam("Authorization") AuthHeader authHeader, CreatePostRequest request);
+
+  @GET
+  @Path("/{postId}")
+  BlogPost getPost(@HeaderParam("Authorization") AuthHeader authHeader,
+      @PathParam("postId") PostId postId) throws PostNotFoundError, UnknownRemoteException;
+
+  static AuthPostsServiceClient getClient(String url) {
+    return Feign.builder()
+        .contract(new JAXRSContract())
+        .decoder(new JacksonDecoder(ClientObjectMappers.JSON_MAPPER))
+        .encoder(new JacksonEncoder(ClientObjectMappers.JSON_MAPPER))
+        .errorDecoder(new AuthPostsServiceErrorDecoder()).target(AuthPostsServiceClient.class, url);
+  }
+}
+
+]
+
+
+basic[api/generated-java/blog-api-client/src/main/java/com/blog/client/AuthPostsServiceErrorDecoder.java]=[
+package com.blog.client;
+
+import com.blog.services.GetPostFailedResponse;
+import com.fern.java.exception.UnknownRemoteException;
+import com.fern.java.jackson.ClientObjectMappers;
+import feign.Response;
+import feign.codec.ErrorDecoder;
+import java.io.IOException;
+import java.lang.Class;
+import java.lang.Exception;
+import java.lang.Override;
+import java.lang.String;
+import java.util.function.Function;
+
+final class AuthPostsServiceErrorDecoder implements ErrorDecoder {
+  @Override
+  public Exception decode(String methodKey, Response response) {
+    if (methodKey.contains("getPost")) {
+      return decodeException(response, GetPostFailedResponse.class, GetPostFailedResponse::getException);
+    }
+    return new UnknownRemoteException("Encountered exception for unknown method: " + methodKey);
+  }
+
+  private static <T> Exception decodeException(Response response, Class<T> clazz,
+      Function<T, Exception> exceptionRetriever) {
+    try {
+      T value = ClientObjectMappers.JSON_MAPPER.readValue(response.body().asInputStream(), clazz);
+      return exceptionRetriever.apply(value);
+    }
+    catch (IOException e) {
+      return new UnknownRemoteException("Failed to read error body");
+    }
+  }
+}
+
+]
+
+
 basic[api/generated-java/blog-api-client/src/main/java/com/blog/client/PostsServiceClient.java]=[
 package com.blog.client;
 
@@ -761,7 +849,12 @@ public final class PostNotFoundErrorExceptionMapper implements ExceptionMapper<P
   @Override
   public Response toResponse(PostNotFoundError e) {
     log.info("Error handling request. ErrorInstanceId= {}", e.getErrorInstanceId(), e);
-    if (ResourceInfoUtils.getInterfaceNames(resourceInfo).contains("PostsService")) {
+    if (ResourceInfoUtils.getInterfaceNames(resourceInfo).contains("AuthPostsService")) {
+      if (ResourceInfoUtils.getMethodName(resourceInfo).contains("getPost")) {
+        return Response.status(e.getStatusCode()).entity(com.blog.services.GetPostFailedResponse.postNotFoundError(e)).build();
+      }
+    }
+    else if (ResourceInfoUtils.getInterfaceNames(resourceInfo).contains("PostsService")) {
       if (ResourceInfoUtils.getMethodName(resourceInfo).contains("getPost")) {
         return Response.status(e.getStatusCode()).entity(com.blog.services.GetPostFailedResponse.postNotFoundError(e)).build();
       }
@@ -785,10 +878,45 @@ public abstract class AbstractServiceRegistry extends ResourceConfig {
     register(PostNotFoundErrorExceptionMapper.class);
   }
 
-  public AbstractServiceRegistry(PostsService postsService) {
+  public AbstractServiceRegistry(PostsService postsService, AuthPostsService authPostsService) {
     this();
     register(postsService);
+    register(authPostsService);
   }
+}
+
+]
+
+
+basic[api/generated-java/blog-api-server-jersey/src/main/java/com/blog/server/AuthPostsService.java]=[
+package com.blog.server;
+
+import com.blog.errors.PostNotFoundError;
+import com.blog.types.BlogPost;
+import com.blog.types.CreatePostRequest;
+import com.blog.types.PostId;
+import com.fern.java.auth.AuthHeader;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+@Path("/posts")
+public interface AuthPostsService {
+  @POST
+  @Path("/create")
+  void createPost(@HeaderParam("Authorization") AuthHeader authHeader, CreatePostRequest request);
+
+  @GET
+  @Path("/{postId}")
+  BlogPost getPost(@HeaderParam("Authorization") AuthHeader authHeader,
+      @PathParam("postId") PostId postId) throws PostNotFoundError;
 }
 
 ]
@@ -934,13 +1062,51 @@ public final class PostNotFoundErrorExceptionMapper extends ResponseEntityExcept
   @ExceptionHandler(PostNotFoundError.class)
   public ResponseEntity<Object> handle(PostNotFoundError e, HandlerMethod handlerMethod) {
     log.info("Error handling request. ErrorInstanceId= {}", e.getErrorInstanceId(), e);
-    if (HandlerMethodUtils.getInterfaceNames(handlerMethod).contains("PostsService")) {
+    if (HandlerMethodUtils.getInterfaceNames(handlerMethod).contains("AuthPostsService")) {
+      if (HandlerMethodUtils.getMethodName(handlerMethod).contains("getPost")) {
+        return new ResponseEntity<>(GetPostFailedResponse.postNotFoundError(e), HttpStatus.valueOf(e.getStatusCode()));
+      }
+    }
+    else if (HandlerMethodUtils.getInterfaceNames(handlerMethod).contains("PostsService")) {
       if (HandlerMethodUtils.getMethodName(handlerMethod).contains("getPost")) {
         return new ResponseEntity<>(GetPostFailedResponse.postNotFoundError(e), HttpStatus.valueOf(e.getStatusCode()));
       }
     }
     return null;
   }
+}
+
+]
+
+
+basic[api/generated-java/blog-api-server-spring/src/main/java/com/blog/server/AuthPostsService.java]=[
+package com.blog.server;
+
+import com.blog.errors.PostNotFoundError;
+import com.blog.types.BlogPost;
+import com.blog.types.CreatePostRequest;
+import com.blog.types.PostId;
+import com.fern.java.auth.AuthHeader;
+import javax.ws.rs.HeaderParam;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@RequestMapping(
+    path = "/posts",
+    consumes = "application/json",
+    produces = "application/json"
+)
+public interface AuthPostsService {
+  @PostMapping("/create")
+  void createPost(@HeaderParam("Authorization") AuthHeader authHeader,
+      @RequestBody CreatePostRequest request);
+
+  @GetMapping("/{postId}")
+  BlogPost getPost(@HeaderParam("Authorization") AuthHeader authHeader,
+      @PathVariable("postId") PostId postId) throws PostNotFoundError;
 }
 
 ]
