@@ -180,6 +180,7 @@ public final class UnionGenerator extends Generator {
 
     private MethodSpec getHashCodeMethod() {
         return MethodSpec.methodBuilder("hashCode")
+                .addModifiers(Modifier.PUBLIC)
                 .returns(int.class)
                 .addStatement("return $T.hashCode(this.$L)", ClassName.get(Objects.class), VALUE_FIELD_NAME)
                 .addAnnotation(Override.class)

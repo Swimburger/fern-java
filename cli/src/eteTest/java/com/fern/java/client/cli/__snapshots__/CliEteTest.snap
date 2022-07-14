@@ -450,7 +450,7 @@ public final class Author {
   }
 
   @Override
-  int hashCode() {
+  public int hashCode() {
     return Objects.hashCode(this.value);
   }
 
