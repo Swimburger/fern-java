@@ -15,7 +15,7 @@
  */
 package com.fern.codegen.utils.server;
 
-import com.fern.java.auth.BearerAuthHeader;
+import com.fern.java.auth.AuthHeader;
 import com.fern.types.services.HttpAuth;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ParameterSpec;
@@ -30,7 +30,7 @@ public final class HttpAuthParameterSpecVisitor implements HttpAuth.Visitor<Opti
 
     @Override
     public Optional<ParameterSpec> visitBEARER() {
-        return Optional.of(ParameterSpec.builder(BearerAuthHeader.class, "authHeader")
+        return Optional.of(ParameterSpec.builder(AuthHeader.class, "authHeader")
                 .addAnnotation(AnnotationSpec.builder(HeaderParam.class)
                         .addMember("value", "$S", AUTHORIZATION_HEADER_NAME)
                         .build())
