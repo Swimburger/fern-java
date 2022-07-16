@@ -322,7 +322,7 @@ public final class EnumGenerator extends Generator {
                     }
                     return VisitorUtils.VisitMethodArgs.<EnumValue>builder()
                             .key(enumValue)
-                            .keyName(enumValue.name())
+                            .keyName(keyName)
                             .build();
                 })
                 .collect(Collectors.toList());

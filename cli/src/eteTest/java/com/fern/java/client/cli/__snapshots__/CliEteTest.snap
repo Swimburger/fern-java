@@ -751,11 +751,11 @@ public final class PostType {
   public <T> T visit(Visitor<T> visitor) {
     switch (value) {
       case SHORT:
-        return visitor.visitSHORT();
+        return visitor.visitShort();
       case med.med:
         return visitor.visitMedium();
       case LONG:
-        return visitor.visitLONG();
+        return visitor.visitLong();
       case UNKNOWN:
       default:
         return visitor.visitUnknown(string);
@@ -790,9 +790,9 @@ public final class PostType {
   }
 
   public interface Visitor<T> {
-    T visitLONG();
+    T visitLong();
 
-    T visitSHORT();
+    T visitShort();
 
     T visitMedium();
 
