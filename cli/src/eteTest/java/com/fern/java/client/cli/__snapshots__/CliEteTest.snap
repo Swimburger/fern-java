@@ -35,7 +35,7 @@ basic[api/generated-java/blog-api-client/src/main/java/com/blog/client/DummyServ
 package com.blog.client;
 
 import com.blog.types.DummyId;
-import com.fern.java.auth.BearerAuthHeader;
+import com.fern.java.auth.AuthHeader;
 import com.fern.java.jackson.ClientObjectMappers;
 import com.fern.java.jersey.contracts.OptionalAwareContract;
 import feign.Feign;
@@ -938,7 +938,7 @@ basic[api/generated-java/blog-api-server-jersey/src/main/java/com/blog/server/Du
 package com.blog.server;
 
 import com.blog.types.DummyId;
-import com.fern.java.auth.BearerAuthHeader;
+import com.fern.java.auth.AuthHeader;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -1118,7 +1118,7 @@ basic[api/generated-java/blog-api-server-spring/src/main/java/com/blog/server/Du
 package com.blog.server;
 
 import com.blog.types.DummyId;
-import com.fern.java.auth.BearerAuthHeader;
+import com.fern.java.auth.AuthHeader;
 import javax.ws.rs.HeaderParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

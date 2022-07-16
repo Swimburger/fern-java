@@ -26,8 +26,9 @@ public abstract class AuthHeader {
     @JsonValue
     public abstract String getToken();
 
-    public static AuthHeader of(String token) {
-        return ImmutableAuthHeader.of(token.startsWith("Bearer ") ? token.substring(7) : token);
+    public static AuthHeader of(String authHeader) {
+        String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+        return ImmutableAuthHeader.of(token);
     }
 
     @Override
