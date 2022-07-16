@@ -112,7 +112,7 @@ public final class EnumGenerator extends Generator {
         return enumTypeDeclaration.values().stream()
                 .collect(Collectors.toMap(Function.identity(), enumValue -> FieldSpec.builder(
                                 generatedEnumClassName,
-                                enumValue.value(),
+                                enumValue.name(),
                                 Modifier.PUBLIC,
                                 Modifier.STATIC,
                                 Modifier.FINAL)
@@ -120,7 +120,7 @@ public final class EnumGenerator extends Generator {
                                 "new $T($T.$L, $S)",
                                 generatedEnumClassName,
                                 valueFieldClassName,
-                                enumValue.value(),
+                                enumValue.name(),
                                 enumValue.value())
                         .build()));
     }

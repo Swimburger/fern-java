@@ -714,6 +714,8 @@ import javax.annotation.Nonnull;
 public final class PostType {
   public static final PostType SHORT = new PostType(Value.SHORT, "SHORT");
 
+  public static final PostType Medium = new PostType(Value.Medium, "med.med");
+
   public static final PostType LONG = new PostType(Value.LONG, "LONG");
 
   private final Value value;
@@ -750,6 +752,8 @@ public final class PostType {
     switch (value) {
       case SHORT:
         return visitor.visitSHORT();
+      case med.med:
+        return visitor.visitMed.med();
       case LONG:
         return visitor.visitLONG();
       case UNKNOWN:
@@ -766,6 +770,8 @@ public final class PostType {
     switch (upperCasedValue) {
       case "SHORT":
         return SHORT;
+      case "med.med":
+        return Medium;
       case "LONG":
         return LONG;
       default:
@@ -778,6 +784,8 @@ public final class PostType {
 
     SHORT,
 
+    med.med,
+
     UNKNOWN
   }
 
@@ -785,6 +793,8 @@ public final class PostType {
     T visitLONG();
 
     T visitSHORT();
+
+    T visitMed.med();
 
     T visitUnknown(String unknownType);
   }
