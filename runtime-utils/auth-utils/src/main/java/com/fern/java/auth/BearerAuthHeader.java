@@ -20,19 +20,18 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(visibility = Value.Style.ImplementationVisibility.PACKAGE, jdkOnly = true)
-public abstract class AuthHeader {
+public abstract class BearerAuthHeader {
 
     @Value.Parameter
     @JsonValue
     public abstract String getToken();
 
-    public static AuthHeader of(String authHeader) {
-        String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
-        return ImmutableAuthHeader.of(token);
-    }
-
     @Override
     public final String toString() {
         return "Bearer " + getToken();
+    }
+
+    public static BearerAuthHeader of(String token) {
+        return ImmutableBearerAuthHeader.of(token.startsWith("Bearer ") ? token.substring(7) : token);
     }
 }
