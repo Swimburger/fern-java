@@ -36,13 +36,16 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeSpec;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.lang.model.element.Modifier;
+import org.apache.commons.lang3.StringUtils;
 
 public final class EnumGenerator extends Generator {
 
@@ -61,6 +64,8 @@ public final class EnumGenerator extends Generator {
     private static final String HASHCODE_METHOD_NAME = "hashCode";
     private static final String VISIT_METHOD_NAME = "visit";
     private static final String VALUE_OF_METHOD_NAME = "valueOf";
+
+    private static final Pattern CAPITAL_SNAKE_CASE_PATTERN = Pattern.compile("^[A-Z_]*");
 
     private final DeclaredTypeName declaredTypeName;
     private final EnumTypeDeclaration enumTypeDeclaration;
@@ -295,7 +300,7 @@ public final class EnumGenerator extends Generator {
     private TypeSpec getNestedValueEnum() {
         TypeSpec.Builder nestedValueEnumBuilder =
                 TypeSpec.enumBuilder(VALUE_TYPE_NAME).addModifiers(Modifier.PUBLIC);
-        enumTypeDeclaration.values().forEach(enumValue -> nestedValueEnumBuilder.addEnumConstant(enumValue.value()));
+        enumTypeDeclaration.values().forEach(enumValue -> nestedValueEnumBuilder.addEnumConstant(enumValue.name()));
         nestedValueEnumBuilder.addEnumConstant(UNKNOWN_ENUM_CONSTANT);
         return nestedValueEnumBuilder.build();
     }
@@ -310,11 +315,23 @@ public final class EnumGenerator extends Generator {
      */
     private GeneratedVisitor<EnumValue> getVisitor() {
         List<VisitorUtils.VisitMethodArgs<EnumValue>> visitMethodArgs = enumTypeDeclaration.values().stream()
-                .map(enumValue -> VisitorUtils.VisitMethodArgs.<EnumValue>builder()
-                        .key(enumValue)
-                        .keyName(enumValue.value())
-                        .build())
+                .map(enumValue -> {
+                    String keyName = enumValue.name();
+                    if (CAPITAL_SNAKE_CASE_PATTERN.matcher(enumValue.name()).matches()) {
+                        keyName = convertCapsSnakeCaseToCamelCase(keyName);
+                    }
+                    return VisitorUtils.VisitMethodArgs.<EnumValue>builder()
+                            .key(enumValue)
+                            .keyName(enumValue.name())
+                            .build();
+                })
                 .collect(Collectors.toList());
         return generatorContext.getVisitorUtils().buildVisitorInterface(visitMethodArgs);
+    }
+
+    private static String convertCapsSnakeCaseToCamelCase(String capsSnakeCase) {
+        return Arrays.stream(capsSnakeCase.split("_"))
+                .map(capsString -> StringUtils.capitalize(capsString.toLowerCase()))
+                .collect(Collectors.joining());
     }
 }

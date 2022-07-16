@@ -753,7 +753,7 @@ public final class PostType {
       case SHORT:
         return visitor.visitSHORT();
       case med.med:
-        return visitor.visitMed.med();
+        return visitor.visitMedium();
       case LONG:
         return visitor.visitLONG();
       case UNKNOWN:
@@ -784,7 +784,7 @@ public final class PostType {
 
     SHORT,
 
-    med.med,
+    Medium,
 
     UNKNOWN
   }
@@ -794,7 +794,7 @@ public final class PostType {
 
     T visitSHORT();
 
-    T visitMed.med();
+    T visitMedium();
 
     T visitUnknown(String unknownType);
   }
