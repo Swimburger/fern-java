@@ -75,7 +75,7 @@ public class CliEteTest {
         Path apiPath = basicFernProjectPath.resolve("api");
         Path generatedJavaPath = apiPath.resolve("generated-java");
         runCommand(apiPath, new String[] {"cp", "gradlew", "generated-java/"});
-        runCommand(apiPath, new String[] {"cp", "-R", "gradle-wrapper/", "generated-java/"});
+        runCommand(apiPath, new String[] {"cp", "-R", "gradle-wrapper/.", "generated-java/"});
         runCommand(generatedJavaPath, new String[] {"./gradlew", "compileJava"});
     }
 
