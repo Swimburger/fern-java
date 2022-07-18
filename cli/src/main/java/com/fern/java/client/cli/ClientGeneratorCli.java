@@ -15,12 +15,7 @@
  */
 package com.fern.java.client.cli;
 
-import com.fern.codegen.GeneratedAbstractHttpServiceRegistry;
-import com.fern.codegen.GeneratedError;
-import com.fern.codegen.GeneratedFile;
-import com.fern.codegen.GeneratedHttpServiceClient;
-import com.fern.codegen.GeneratedHttpServiceServer;
-import com.fern.codegen.GeneratorContext;
+import com.fern.codegen.*;
 import com.fern.codegen.utils.ObjectMappers;
 import com.fern.java.client.cli.CustomPluginConfig.ServerFramework;
 import com.fern.jersey.client.HttpServiceClientGenerator;
@@ -32,32 +27,20 @@ import com.fern.model.codegen.ModelGeneratorResult;
 import com.fern.spring.server.DefaultExceptionHandlerGenerator;
 import com.fern.spring.server.ErrorExceptionHandlerGenerator;
 import com.fern.spring.server.HttpServiceSpringServerGenerator;
-import com.fern.types.DeclaredTypeName;
-import com.fern.types.ErrorDeclaration;
-import com.fern.types.ErrorName;
-import com.fern.types.IntermediateRepresentation;
-import com.fern.types.TypeDeclaration;
+import com.fern.types.*;
 import com.fern.types.generators.GeneratorConfig;
 import com.fern.types.generators.GeneratorOutputConfig;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpService;
-import com.fiddle.generator.logging.types.ErrorExitStatusUpdate;
-import com.fiddle.generator.logging.types.ExitStatusUpdate;
-import com.fiddle.generator.logging.types.GeneratorUpdate;
-import com.fiddle.generator.logging.types.InitUpdate;
-import com.fiddle.generator.logging.types.PackageCoordinate;
+import com.fiddle.generator.logging.types.*;
 import com.squareup.javapoet.JavaFile;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -350,7 +333,6 @@ public final class ClientGeneratorCli {
             writeFileContents(
                     Paths.get(outputDirectory, "build.gradle"),
                     CodeGenerationResult.getBuildDotGradle(
-                            fernPluginConfig,
                             fernPluginConfig.generatorConfig().publish().get()));
         }
     }

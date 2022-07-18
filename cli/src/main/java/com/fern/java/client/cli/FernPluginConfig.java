@@ -23,12 +23,9 @@ import com.fern.java.client.cli.CustomPluginConfig.ServerFramework;
 import com.fern.types.generators.GeneratorConfig;
 import com.fiddle.generator.logging.types.MavenCoordinate;
 import com.fiddle.generator.logging.types.PackageCoordinate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import org.immutables.value.Value;
+
+import java.util.*;
 
 @Value.Immutable
 @StagedBuilderStyle
@@ -76,10 +73,6 @@ public interface FernPluginConfig {
         return result;
     }
 
-    default String getMavenGroup() {
-        return "com." + generatorConfig().organization() + ".fern";
-    }
-
     default String getModelProjectName() {
         return getSubProjectName("model");
     }
@@ -100,7 +93,7 @@ public interface FernPluginConfig {
         return generatorConfig()
                 .publish()
                 .map(generatorPublishConfig -> PackageCoordinate.maven(MavenCoordinate.builder()
-                        .group(getMavenGroup())
+                        .group(generatorPublishConfig.registries().maven().group())
                         .artifact(projectName)
                         .version(generatorPublishConfig.version())
                         .build()));
