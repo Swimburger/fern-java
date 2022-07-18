@@ -23,9 +23,12 @@ import com.fern.java.client.cli.CustomPluginConfig.ServerFramework;
 import com.fern.types.generators.GeneratorConfig;
 import com.fiddle.generator.logging.types.MavenCoordinate;
 import com.fiddle.generator.logging.types.PackageCoordinate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import org.immutables.value.Value;
-
-import java.util.*;
 
 @Value.Immutable
 @StagedBuilderStyle
