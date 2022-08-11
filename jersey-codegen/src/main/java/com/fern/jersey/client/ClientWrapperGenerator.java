@@ -118,13 +118,15 @@ public final class ClientWrapperGenerator extends Generator {
             FernFilepath fernFilepath = httpServiceClient.httpService().name().fernFilepath();
             String methodName;
             if (fernFilepath.value().isEmpty()) {
-                methodName = httpServiceClient.httpService().name().name();
+                methodName = StringUtils.uncapitalize(
+                        httpServiceClient.httpService().name().name());
             } else {
                 methodName = fernFilepath.value().get(fernFilepath.value().size() - 1);
             }
             clientWrapperBuilder.addMethod(MethodSpec.methodBuilder(methodName)
                     .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                    .addStatement("return this.$L", fieldName)
+                    .addStatement("return this.$L.get()", fieldName)
+                    .returns(httpServiceClient.className())
                     .build());
         });
         KeyedStream.stream(clientConfig.nestedClients()).forEach((prefix, nestedClientConfig) -> {
@@ -150,8 +152,9 @@ public final class ClientWrapperGenerator extends Generator {
 
     private MethodSpec createConstructor(
             Map<String, GeneratedHttpServiceClient> supplierFields, Map<String, ClassName> nestedClientFields) {
-        MethodSpec.Builder constructorBuilder =
-                MethodSpec.constructorBuilder().addParameter(String.class, URL_PARAMETER_NAME);
+        MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(String.class, URL_PARAMETER_NAME);
         KeyedStream.stream(supplierFields).forEach((fieldName, httpClient) -> {
             constructorBuilder.addStatement(
                     "this.$L = $L(() -> $T.$L($L))",

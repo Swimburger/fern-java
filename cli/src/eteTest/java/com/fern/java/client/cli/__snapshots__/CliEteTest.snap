@@ -44,19 +44,19 @@ public final class BlogApiClient {
 
   private final Supplier<DummyServiceClient> dummyServiceClient;
 
-  BlogApiClient(String url) {
+  public BlogApiClient(String url) {
     this.postsServiceClient = memoize(() -> PostsServiceClient.getClient(url));
     this.dummyServiceClient = memoize(() -> DummyServiceClient.getClient(url));
     this.postsServiceClient = new PostsServiceClient(url);
     this.dummyServiceClient = new DummyServiceClient(url);
   }
 
-  public final void PostsService() {
-    return this.postsServiceClient;
+  public final PostsServiceClient postsService() {
+    return this.postsServiceClient.get();
   }
 
-  public final void DummyService() {
-    return this.dummyServiceClient;
+  public final DummyServiceClient dummyService() {
+    return this.dummyServiceClient.get();
   }
 
   private static <T> Supplier<T> memoize(Supplier<T> delegate) {
