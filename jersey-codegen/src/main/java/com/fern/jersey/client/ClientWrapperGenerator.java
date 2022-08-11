@@ -189,7 +189,7 @@ public final class ClientWrapperGenerator extends Generator {
                         Objects.class)
                 .endControlFlow()
                 .addStatement("return val")
-                .endControlFlow()
+                .endControlFlow("")
                 .build();
     }
 

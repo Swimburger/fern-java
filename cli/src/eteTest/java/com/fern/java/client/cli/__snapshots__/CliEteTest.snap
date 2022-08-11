@@ -65,7 +65,7 @@ public final class BlogApiClient {
         val = value.updateAndGet(cur -> cur == null ? Objects.requireNonNull(delegate.get()) : cur);
       }
       return val;
-    }
+    } ;
   }
 }
 
