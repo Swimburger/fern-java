@@ -103,7 +103,7 @@ public final class ClientGeneratorCli {
 
             loggingClient.sendUpdate(GeneratorUpdate.exitStatusUpdate(ExitStatusUpdate.successful()));
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Generator failed", e);
             loggingClient.sendUpdate(GeneratorUpdate.exitStatusUpdate(ExitStatusUpdate.error(
                     ErrorExitStatusUpdate.builder().message(e.getMessage()).build())));
         }
