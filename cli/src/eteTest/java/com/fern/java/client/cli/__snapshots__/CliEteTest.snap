@@ -47,8 +47,6 @@ public final class BlogApiClient {
   public BlogApiClient(String url) {
     this.postsServiceClient = memoize(() -> PostsServiceClient.getClient(url));
     this.dummyServiceClient = memoize(() -> DummyServiceClient.getClient(url));
-    this.postsServiceClient = new PostsServiceClient(url);
-    this.dummyServiceClient = new DummyServiceClient(url);
   }
 
   public final PostsServiceClient postsService() {

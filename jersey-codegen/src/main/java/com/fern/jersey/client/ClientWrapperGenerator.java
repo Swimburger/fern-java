@@ -164,9 +164,9 @@ public final class ClientWrapperGenerator extends Generator {
                     HttpServiceClientGenerator.GET_CLIENT_METHOD_NAME,
                     URL_PARAMETER_NAME);
         });
-        KeyedStream.stream(supplierFields).forEach((fieldName, nestedClient) -> {
+        KeyedStream.stream(nestedClientFields).forEach((fieldName, nestedClientCLassName) -> {
             constructorBuilder.addStatement(
-                    "this.$L = new $T($L)", fieldName, nestedClient.className(), URL_PARAMETER_NAME);
+                    "this.$L = new $T($L)", fieldName, nestedClientCLassName, URL_PARAMETER_NAME);
         });
         return constructorBuilder.build();
     }
