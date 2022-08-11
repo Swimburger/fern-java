@@ -78,7 +78,7 @@ public final class ClientWrapperGenerator extends Generator {
                         .value()
                         .size()))
                 .collect(Collectors.toList());
-        this.rootClientConfig = createClientConfig(clientsOrderedByDept, 0, generatedClientWrapperClassName);
+        this.rootClientConfig = createClientConfig(clientsOrderedByDept, 1, generatedClientWrapperClassName);
     }
 
     @Override
