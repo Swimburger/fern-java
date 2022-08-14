@@ -47,8 +47,8 @@ public final class BlogApiClient {
   private final Supplier<DummyServiceClient> dummyServiceClient;
 
   public BlogApiClient(String url) {
-    this.postsServiceClient = memoize(() -> PostsServiceClient.getClient(url));
-    this.dummyServiceClient = memoize(() -> DummyServiceClient.getClient(url));
+    this.postsServiceClient = memoize(() -> new PostsServiceClient(url));
+    this.dummyServiceClient = memoize(() -> new DummyServiceClient(url));
   }
 
   public final PostsServiceClient blog() {
@@ -74,7 +74,7 @@ public final class BlogApiClient {
 ]
 
 
-basic[api/generated-java/blog-api-client/src/main/java/com/fern/blog/api/blog/PostsServiceClient.java]=[
+basic[api/generated-java/blog-api-client/src/main/java/com/fern/blog/api/blog/PostsService.java]=[
 package com.fern.blog.api.blog;
 
 import com.fern.java.exception.UnknownRemoteException;
@@ -96,22 +96,79 @@ import javax.ws.rs.core.MediaType;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/posts")
-public interface PostsServiceClient {
+public interface PostsService {
   @POST
   @Path("/create")
-  void createPost(CreatePostRequest request);
+  void createPost(CreatePostRequest body);
 
   @GET
   @Path("/{postId}")
   BlogPost getPost(@PathParam("postId") PostId postId) throws PostNotFoundError,
       UnknownRemoteException;
 
-  static PostsServiceClient getClient(String url) {
+  static PostsService getClient(String url) {
     return Feign.builder()
         .contract(new OptionalAwareContract(new JAXRSContract()))
         .decoder(new JacksonDecoder(ClientObjectMappers.JSON_MAPPER))
         .encoder(new JacksonEncoder(ClientObjectMappers.JSON_MAPPER))
-        .errorDecoder(new PostsServiceErrorDecoder()).target(PostsServiceClient.class, url);
+        .errorDecoder(new PostsServiceErrorDecoder()).target(PostsService.class, url);
+  }
+}
+
+]
+
+
+basic[api/generated-java/blog-api-client/src/main/java/com/fern/blog/api/blog/PostsServiceClient.java]=[
+package com.fern.blog.api.blog;
+
+import com.fern.java.immutables.StagedBuilderImmutablesStyle;
+import java.lang.String;
+import org.immutables.value.Value;
+
+@Value.Enclosing
+public final class PostsServiceClient {
+  private final PostsService service;
+
+  PostsServiceClient(String url) {
+    this.service = PostsService.getClient(url);
+  }
+
+  public void createPost(com.fern.blog.api.blog.CreatePostRequest request) {
+    this.service.@javax.ws.rs.POST
+        @javax.ws.rs.Path("/create")
+        public abstract void createPost(com.fern.blog.api.blog.CreatePostRequest body);
+        (request.public abstract com.fern.blog.api.blog.CreatePostRequest body();
+        ());
+  }
+
+  public BlogPost getPost(com.fern.blog.api.blog.GetPostRequest request) throws PostNotFoundError {
+    this.service.@javax.ws.rs.GET
+        @javax.ws.rs.Path("/{postId}")
+        public abstract com.fern.blog.api.blog.BlogPost getPost(
+            @javax.ws.rs.PathParam("postId") com.fern.blog.api.blog.PostId postId) throws
+            com.fern.blog.api.blog.PostNotFoundError, com.fern.java.exception.UnknownRemoteException;
+        (request.public abstract com.fern.blog.api.blog.PostId postId();
+        ());
+  }
+
+  @Value.Immutable
+  @StagedBuilderImmutablesStyle
+  interface CreatePostRequest {
+    com.fern.blog.api.blog.CreatePostRequest body();
+
+    static PostsServiceClient.ImmutableCreatePostRequest.Builder builder() {
+      return PostsServiceClient.ImmutableCreatePostRequest.builder();
+    }
+  }
+
+  @Value.Immutable
+  @StagedBuilderImmutablesStyle
+  interface GetPostRequest {
+    PostId postId();
+
+    static PostsServiceClient.ImmutableGetPostRequest.Builder builder() {
+      return PostsServiceClient.ImmutableGetPostRequest.builder();
+    }
   }
 }
 
@@ -156,7 +213,7 @@ final class PostsServiceErrorDecoder implements ErrorDecoder {
 ]
 
 
-basic[api/generated-java/blog-api-client/src/main/java/com/fern/blog/api/dummy/DummyServiceClient.java]=[
+basic[api/generated-java/blog-api-client/src/main/java/com/fern/blog/api/dummy/DummyService.java]=[
 package com.fern.blog.api.dummy;
 
 import com.fern.java.auth.BearerAuthHeader;
@@ -177,17 +234,60 @@ import javax.ws.rs.core.MediaType;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Path("dummy-service")
-public interface DummyServiceClient {
+public interface DummyService {
   @POST
   @Path("get-dummy")
-  void getDummy(@HeaderParam("Authorization") BearerAuthHeader authHeader, DummyId request);
+  void getDummy(@HeaderParam("Authorization") BearerAuthHeader authHeader, DummyId body);
 
-  static DummyServiceClient getClient(String url) {
+  static DummyService getClient(String url) {
     return Feign.builder()
         .contract(new OptionalAwareContract(new JAXRSContract()))
         .decoder(new JacksonDecoder(ClientObjectMappers.JSON_MAPPER))
         .encoder(new JacksonEncoder(ClientObjectMappers.JSON_MAPPER))
-        .target(DummyServiceClient.class, url);
+        .target(DummyService.class, url);
+  }
+}
+
+]
+
+
+basic[api/generated-java/blog-api-client/src/main/java/com/fern/blog/api/dummy/DummyServiceClient.java]=[
+package com.fern.blog.api.dummy;
+
+import com.fern.java.auth.BearerAuthHeader;
+import com.fern.java.immutables.StagedBuilderImmutablesStyle;
+import java.lang.String;
+import org.immutables.value.Value;
+
+@Value.Enclosing
+public final class DummyServiceClient {
+  private final DummyService service;
+
+  DummyServiceClient(String url) {
+    this.service = DummyService.getClient(url);
+  }
+
+  public void getDummy(com.fern.blog.api.dummy.GetDummyRequest request) {
+    this.service.@javax.ws.rs.POST
+        @javax.ws.rs.Path("get-dummy")
+        public abstract void getDummy(
+            @javax.ws.rs.HeaderParam("Authorization") com.fern.java.auth.BearerAuthHeader authHeader,
+            com.fern.blog.api.dummy.DummyId body);
+        (request.public abstract com.fern.java.auth.BearerAuthHeader authHeader();
+        (), request.public abstract com.fern.blog.api.dummy.DummyId body();
+        ());
+  }
+
+  @Value.Immutable
+  @StagedBuilderImmutablesStyle
+  interface GetDummyRequest {
+    BearerAuthHeader authHeader();
+
+    DummyId body();
+
+    static DummyServiceClient.ImmutableGetDummyRequest.Builder builder() {
+      return DummyServiceClient.ImmutableGetDummyRequest.builder();
+    }
   }
 }
 
