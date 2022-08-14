@@ -134,21 +134,11 @@ public final class PostsServiceClient {
   }
 
   public void createPost(com.fern.blog.api.blog.CreatePostRequest request) {
-    this.service.@javax.ws.rs.POST
-        @javax.ws.rs.Path("/create")
-        public abstract void createPost(com.fern.blog.api.blog.CreatePostRequest body);
-        (request.public abstract com.fern.blog.api.blog.CreatePostRequest body();
-        ());
+    this.service.createPost(request.body());
   }
 
   public BlogPost getPost(com.fern.blog.api.blog.GetPostRequest request) throws PostNotFoundError {
-    this.service.@javax.ws.rs.GET
-        @javax.ws.rs.Path("/{postId}")
-        public abstract com.fern.blog.api.blog.BlogPost getPost(
-            @javax.ws.rs.PathParam("postId") com.fern.blog.api.blog.PostId postId) throws
-            com.fern.blog.api.blog.PostNotFoundError, com.fern.java.exception.UnknownRemoteException;
-        (request.public abstract com.fern.blog.api.blog.PostId postId();
-        ());
+    this.service.getPost(request.postId());
   }
 
   @Value.Immutable
@@ -268,14 +258,7 @@ public final class DummyServiceClient {
   }
 
   public void getDummy(com.fern.blog.api.dummy.GetDummyRequest request) {
-    this.service.@javax.ws.rs.POST
-        @javax.ws.rs.Path("get-dummy")
-        public abstract void getDummy(
-            @javax.ws.rs.HeaderParam("Authorization") com.fern.java.auth.BearerAuthHeader authHeader,
-            com.fern.blog.api.dummy.DummyId body);
-        (request.public abstract com.fern.java.auth.BearerAuthHeader authHeader();
-        (), request.public abstract com.fern.blog.api.dummy.DummyId body();
-        ());
+    this.service.getDummy(request.authHeader(), request.body());
   }
 
   @Value.Immutable

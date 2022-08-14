@@ -132,10 +132,10 @@ public final class HttpServiceClientGenerator extends Generator {
                     .addExceptions(errorClassNames);
 
             String args = generatedRequestInfo.methodSpecs.stream()
-                    .map(requestMethodSpec -> REQUEST_PARAMETER_NAME + "." + requestMethodSpec + "()")
+                    .map(requestMethodSpec -> REQUEST_PARAMETER_NAME + "." + requestMethodSpec.name + "()")
                     .collect(Collectors.joining(", "));
             CodeBlock methodCodeBlock = CodeBlock.builder()
-                    .addStatement("this.$L.$L(" + args + ")", SERVICE_FIELD_NAME, interfaceMethod)
+                    .addStatement("this.$L.$L(" + args + ")", SERVICE_FIELD_NAME, interfaceMethod.name)
                     .build();
 
             endpointMethodBuilder.addCode(methodCodeBlock);
