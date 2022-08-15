@@ -39,14 +39,14 @@ public final class ClassNameUtils {
         this.typeReferenceUtils = new TypeReferenceUtils(this);
     }
 
-    public ClassName getClassNameFromServiceName(ServiceName serviceName, String suffix, PackageType packageType) {
-        return getClassName(
-                serviceName.name(), Optional.of(suffix), Optional.of(serviceName.fernFilepath()), packageType);
-    }
-
     public ClassName getClassNameFromEndpointId(
             ServiceName serviceName, EndpointId endpointId, PackageType packageType) {
         return getClassName(endpointId.value(), Optional.empty(), Optional.of(serviceName.fernFilepath()), packageType);
+    }
+
+    public ClassName getClassNameFromServiceName(ServiceName serviceName, String suffix, PackageType packageType) {
+        return getClassName(
+                serviceName.name(), Optional.of(suffix), Optional.of(serviceName.fernFilepath()), packageType);
     }
 
     public ClassName getClassNameFromServiceName(ServiceName serviceName, PackageType packageType) {
