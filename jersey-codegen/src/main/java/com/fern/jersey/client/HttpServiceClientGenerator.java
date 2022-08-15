@@ -127,7 +127,7 @@ public final class HttpServiceClientGenerator extends Generator {
                     .collect(Collectors.toList());
             endpointMethodBuilder
                     .addParameter(ParameterSpec.builder(
-                                    generatedEndpointFile.generatedRequestInfo().requestClassName(),
+                                    generatedEndpointFile.className().nestedClass(REQUEST_CLASS_NAME),
                                     REQUEST_PARAMETER_NAME)
                             .build())
                     .addExceptions(errorClassNames);

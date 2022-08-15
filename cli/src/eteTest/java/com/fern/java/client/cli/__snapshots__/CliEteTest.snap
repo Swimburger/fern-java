@@ -93,11 +93,11 @@ public final class PostsServiceClient {
     this.service = PostsService.getClient(url);
   }
 
-  public void createPost(Request request) {
+  public void createPost(CreatePost.Request request) {
     this.service.createPost(request.body());
   }
 
-  public BlogPost getPost(Request request) throws PostNotFoundError {
+  public BlogPost getPost(GetPost.Request request) throws PostNotFoundError {
     this.service.getPost(request.postId());
   }
 }
@@ -238,7 +238,7 @@ public final class DummyServiceClient {
     this.service = DummyService.getClient(url);
   }
 
-  public void getDummy(Request request) {
+  public void getDummy(GetDummy.Request request) {
     this.service.getDummy(request.authHeader(), request.body());
   }
 }
