@@ -83,7 +83,6 @@ public final class HttpServiceInterfaceGenerator extends Generator {
     @Override
     public GeneratedHttpServiceInterface generate() {
         TypeSpec.Builder jerseyServiceBuilder = TypeSpec.interfaceBuilder(generatedServiceClassName)
-                .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(AnnotationSpec.builder(Consumes.class)
                         .addMember("value", "$T.APPLICATION_JSON", MediaType.class)
                         .build())

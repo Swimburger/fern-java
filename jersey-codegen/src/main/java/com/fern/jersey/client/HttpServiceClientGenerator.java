@@ -24,6 +24,7 @@ import com.fern.codegen.GeneratedHttpServiceClient;
 import com.fern.codegen.GeneratedHttpServiceInterface;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
+import com.fern.java.exception.UnknownRemoteException;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
 import com.fern.jersey.JerseyServiceGeneratorUtils;
 import com.fern.model.codegen.Generator;
@@ -38,6 +39,7 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +47,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
-import org.apache.commons.lang3.StringUtils;
 import org.immutables.value.Value;
 
 public final class HttpServiceClientGenerator extends Generator {
@@ -97,6 +98,7 @@ public final class HttpServiceClientGenerator extends Generator {
                                 Modifier.FINAL)
                         .build())
                 .addMethod(MethodSpec.constructorBuilder()
+                        .addModifiers(Modifier.PUBLIC)
                         .addParameter(String.class, "url")
                         .addStatement(
                                 "this.$L = $T.$L($L)",
@@ -118,25 +120,34 @@ public final class HttpServiceClientGenerator extends Generator {
                     MethodSpec.methodBuilder(httpEndpoint.endpointId().value()).addModifiers(Modifier.PUBLIC);
 
             GeneratedEndpointModel generatedEndpointModel = generatedEndpointModels.get(httpEndpoint.endpointId());
-            jerseyServiceGeneratorUtils
-                    .getPayloadTypeName(generatedEndpointModel.generatedHttpResponse())
-                    .ifPresent(endpointMethodBuilder::returns);
+            Optional<TypeName> returnTypeName =
+                    jerseyServiceGeneratorUtils.getPayloadTypeName(generatedEndpointModel.generatedHttpResponse());
+            returnTypeName.ifPresent(endpointMethodBuilder::returns);
             List<ClassName> errorClassNames = httpEndpoint.errors().value().stream()
                     .map(responseError ->
                             generatedErrors.get(responseError.error()).className())
                     .collect(Collectors.toList());
             endpointMethodBuilder
                     .addParameter(ParameterSpec.builder(
-                                    generatedEndpointFile.className().nestedClass(REQUEST_CLASS_NAME),
+                                    generatedEndpointFile.generatedRequestInfo().requestClassName(),
                                     REQUEST_PARAMETER_NAME)
                             .build())
-                    .addExceptions(errorClassNames);
+                    .addExceptions(errorClassNames)
+                    .addException(ClassName.get(UnknownRemoteException.class));
             String args = generatedEndpointFile.generatedRequestInfo().propertyMethodSpecs().stream()
                     .map(requestMethodSpec -> REQUEST_PARAMETER_NAME + "." + requestMethodSpec.name + "()")
                     .collect(Collectors.joining(", "));
-            CodeBlock methodCodeBlock = CodeBlock.builder()
-                    .addStatement("this.$L.$L(" + args + ")", SERVICE_FIELD_NAME, interfaceMethod.name)
-                    .build();
+
+            CodeBlock methodCodeBlock;
+            if (returnTypeName.isPresent()) {
+                methodCodeBlock = CodeBlock.builder()
+                        .addStatement("return this.$L.$L(" + args + ")", SERVICE_FIELD_NAME, interfaceMethod.name)
+                        .build();
+            } else {
+                methodCodeBlock = CodeBlock.builder()
+                        .addStatement("this.$L.$L(" + args + ")", SERVICE_FIELD_NAME, interfaceMethod.name)
+                        .build();
+            }
 
             endpointMethodBuilder.addCode(methodCodeBlock);
             serviceClientBuilder.addMethod(endpointMethodBuilder.build());
@@ -186,8 +197,6 @@ public final class HttpServiceClientGenerator extends Generator {
                         Optional.empty(),
                         Optional.of(httpService.name().fernFilepath()),
                         PackageType.CLIENT);
-        ClassName immutablesRequestClassName =
-                generatorContext.getImmutablesUtils().getImmutablesClassName(requestClassName);
         List<ParameterSpec> endpointParameters = HttpEndpointArgumentUtils.getHttpEndpointArguments(
                 httpService, httpEndpoint, generatorContext, generatedEndpointModels);
         List<MethodSpec> parameterImmutablesMethods = endpointParameters.stream()
@@ -200,39 +209,22 @@ public final class HttpServiceClientGenerator extends Generator {
                 .addAnnotation(Value.Immutable.class)
                 .addAnnotation(StagedBuilderImmutablesStyle.class)
                 .addMethods(parameterImmutablesMethods)
-                .addMethod(generateStaticBuilder(
-                        endpointParameters, immutablesRequestClassName, immutablesEndpointClassName))
+                .addMethod(generateStaticBuilder(immutablesEndpointClassName))
                 .build();
         return GeneratedRequestInfo.builder()
                 .requestTypeSpec(typeSpec)
-                .requestClassName(requestClassName)
+                .requestClassName(immutablesEndpointClassName.nestedClass(REQUEST_CLASS_NAME))
                 .addAllPropertyMethodSpecs(parameterImmutablesMethods)
                 .build();
     }
 
-    private MethodSpec generateStaticBuilder(
-            List<ParameterSpec> parameterSpecs,
-            ClassName immutablesRequestClassName,
-            ClassName immutablesEndpointClassName) {
-        Optional<ParameterSpec> firstMandatoryFieldName = getFirstRequiredFieldName(parameterSpecs);
-        ClassName builderClassName = firstMandatoryFieldName.isEmpty()
-                ? immutablesRequestClassName.nestedClass("Builder")
-                : immutablesRequestClassName.nestedClass(
-                        StringUtils.capitalize(firstMandatoryFieldName.get().name) + BUILD_STAGE_SUFFIX);
+    private MethodSpec generateStaticBuilder(ClassName immutablesEndpointClassName) {
+        ClassName builderClassName =
+                immutablesEndpointClassName.nestedClass(REQUEST_CLASS_NAME).nestedClass("Builder");
         return MethodSpec.methodBuilder(STATIC_BUILDER_METHOD_NAME)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .returns(builderClassName)
-                .addCode("return $T.$T.builder();", immutablesEndpointClassName, immutablesRequestClassName)
+                .addCode("return $T.builder();", immutablesEndpointClassName.nestedClass(REQUEST_CLASS_NAME))
                 .build();
-    }
-
-    private static Optional<ParameterSpec> getFirstRequiredFieldName(List<ParameterSpec> parameterSpecs) {
-        for (ParameterSpec parameterSpec : parameterSpecs) {
-            if (parameterSpec.type instanceof ClassName
-                    && ((ClassName) parameterSpec.type).simpleName().equals(Optional.class.getSimpleName())) {
-                return Optional.of(parameterSpec);
-            }
-        }
-        return Optional.empty();
     }
 }

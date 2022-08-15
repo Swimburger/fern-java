@@ -115,8 +115,8 @@ public final class ClassNameUtils {
 
     private String getPackage(Optional<FernFilepath> filepath, PackageType packageType) {
         List<String> packageParts = new ArrayList<>(packagePrefixes);
-        filepath.ifPresent(fernFilepath -> packageParts.addAll(fernFilepath.value()));
         packageParts.add(getPackageFromType(packageType));
+        filepath.ifPresent(fernFilepath -> packageParts.addAll(fernFilepath.value()));
         return String.join(".", packageParts);
     }
 
