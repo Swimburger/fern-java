@@ -16,6 +16,8 @@
 
 package com.fern.jersey.client;
 
+import com.fern.codegen.GeneratedEndpointClient;
+import com.fern.codegen.GeneratedEndpointClient.GeneratedRequestInfo;
 import com.fern.codegen.GeneratedEndpointModel;
 import com.fern.codegen.GeneratedError;
 import com.fern.codegen.GeneratedHttpServiceClient;
@@ -26,7 +28,6 @@ import com.fern.java.immutables.StagedBuilderImmutablesStyle;
 import com.fern.jersey.JerseyServiceGeneratorUtils;
 import com.fern.model.codegen.Generator;
 import com.fern.types.ErrorName;
-import com.fern.types.FernFilepath;
 import com.fern.types.services.EndpointId;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpService;
@@ -53,7 +54,7 @@ public final class HttpServiceClientGenerator extends Generator {
     private static final String STATIC_BUILDER_METHOD_NAME = "builder";
     private static final String SERVICE_FIELD_NAME = "service";
     private static final String CLIENT_SUFFIX = "Client";
-    private static final String REQUEST_SUFFIX = "Request";
+    private static final String REQUEST_CLASS_NAME = "Request";
 
     private static final String REQUEST_PARAMETER_NAME = "request";
 
@@ -89,7 +90,6 @@ public final class HttpServiceClientGenerator extends Generator {
         GeneratedHttpServiceInterface generatedHttpServiceInterface = httpServiceInterfaceGenerator.generate();
         TypeSpec.Builder serviceClientBuilder = TypeSpec.classBuilder(generatedServiceClientClassName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addAnnotation(AnnotationSpec.builder(Value.Enclosing.class).build())
                 .addField(FieldSpec.builder(
                                 generatedHttpServiceInterface.className(),
                                 SERVICE_FIELD_NAME,
@@ -106,10 +106,13 @@ public final class HttpServiceClientGenerator extends Generator {
                                 "url")
                         .build());
 
-        List<TypeSpec> nestedTypeSpecs = new ArrayList<>();
+        List<GeneratedEndpointClient> endpointFiles = new ArrayList<>();
         for (HttpEndpoint httpEndpoint : httpService.endpoints()) {
             MethodSpec interfaceMethod =
                     generatedHttpServiceInterface.endpointMethods().get(httpEndpoint.endpointId());
+
+            GeneratedEndpointClient generatedEndpointFile = generateEndpointFile(httpEndpoint);
+            endpointFiles.add(generatedEndpointFile);
 
             MethodSpec.Builder endpointMethodBuilder =
                     MethodSpec.methodBuilder(httpEndpoint.endpointId().value()).addModifiers(Modifier.PUBLIC);
@@ -118,22 +121,17 @@ public final class HttpServiceClientGenerator extends Generator {
             jerseyServiceGeneratorUtils
                     .getPayloadTypeName(generatedEndpointModel.generatedHttpResponse())
                     .ifPresent(endpointMethodBuilder::returns);
-
             List<ClassName> errorClassNames = httpEndpoint.errors().value().stream()
                     .map(responseError ->
                             generatedErrors.get(responseError.error()).className())
                     .collect(Collectors.toList());
-
-            GeneratedRequestInfo generatedRequestInfo =
-                    generateRequestType(httpEndpoint, httpService.name().fernFilepath());
-            nestedTypeSpecs.add(generatedRequestInfo.typeSpec);
-
             endpointMethodBuilder
-                    .addParameter(ParameterSpec.builder(generatedRequestInfo.requestClassName, REQUEST_PARAMETER_NAME)
+                    .addParameter(ParameterSpec.builder(
+                                    generatedEndpointFile.generatedRequestInfo().requestClassName(),
+                                    REQUEST_PARAMETER_NAME)
                             .build())
                     .addExceptions(errorClassNames);
-
-            String args = generatedRequestInfo.methodSpecs.stream()
+            String args = generatedEndpointFile.generatedRequestInfo().propertyMethodSpecs().stream()
                     .map(requestMethodSpec -> REQUEST_PARAMETER_NAME + "." + requestMethodSpec.name + "()")
                     .collect(Collectors.joining(", "));
             CodeBlock methodCodeBlock = CodeBlock.builder()
@@ -144,8 +142,6 @@ public final class HttpServiceClientGenerator extends Generator {
             serviceClientBuilder.addMethod(endpointMethodBuilder.build());
         }
 
-        serviceClientBuilder.addTypes(nestedTypeSpecs);
-
         TypeSpec serviceClientTypeSpec = serviceClientBuilder.build();
         JavaFile serviceClientJavaFile = JavaFile.builder(
                         generatedServiceClientClassName.packageName(), serviceClientTypeSpec)
@@ -154,21 +150,44 @@ public final class HttpServiceClientGenerator extends Generator {
                 .file(serviceClientJavaFile)
                 .className(generatedServiceClientClassName)
                 .serviceInterface(generatedHttpServiceInterface)
+                .addAllEndpointFiles(endpointFiles)
                 .build();
     }
 
-    private GeneratedRequestInfo generateRequestType(HttpEndpoint httpEndpoint, FernFilepath fernFilepath) {
+    private GeneratedEndpointClient generateEndpointFile(HttpEndpoint httpEndpoint) {
+        ClassName endpointClassName = generatorContext
+                .getClassNameUtils()
+                .getClassNameFromEndpointId(httpService.name(), httpEndpoint.endpointId(), PackageType.CLIENT);
+        ClassName immutablesEndpointClassName =
+                generatorContext.getImmutablesUtils().getImmutablesClassName(endpointClassName);
+        TypeSpec.Builder endpointTypeSpecBuilder = TypeSpec.classBuilder(endpointClassName)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addAnnotation(AnnotationSpec.builder(Value.Enclosing.class).build())
+                .addMethod(MethodSpec.constructorBuilder()
+                        .addModifiers(Modifier.PRIVATE)
+                        .build());
+        GeneratedRequestInfo generatedRequestInfo = generateRequestType(httpEndpoint, immutablesEndpointClassName);
+        endpointTypeSpecBuilder.addType(generatedRequestInfo.requestTypeSpec());
+        TypeSpec endpointTypeSpec = endpointTypeSpecBuilder.build();
+        JavaFile endpointJavaFile = JavaFile.builder(endpointClassName.packageName(), endpointTypeSpec)
+                .build();
+        return GeneratedEndpointClient.builder()
+                .file(endpointJavaFile)
+                .className(endpointClassName)
+                .generatedRequestInfo(generatedRequestInfo)
+                .build();
+    }
+
+    private GeneratedRequestInfo generateRequestType(HttpEndpoint httpEndpoint, ClassName immutablesEndpointClassName) {
         ClassName requestClassName = generatorContext
                 .getClassNameUtils()
                 .getClassName(
-                        StringUtils.capitalize(httpEndpoint.endpointId().value()),
-                        Optional.of(REQUEST_SUFFIX),
-                        Optional.of(fernFilepath),
+                        REQUEST_CLASS_NAME,
+                        Optional.empty(),
+                        Optional.of(httpService.name().fernFilepath()),
                         PackageType.CLIENT);
-        ClassName immutablesRequestClassName = generatedServiceClientClassName.nestedClass(generatorContext
-                .getImmutablesUtils()
-                .getImmutablesClassName(requestClassName)
-                .simpleName());
+        ClassName immutablesRequestClassName =
+                generatorContext.getImmutablesUtils().getImmutablesClassName(requestClassName);
         List<ParameterSpec> endpointParameters = HttpEndpointArgumentUtils.getHttpEndpointArguments(
                 httpService, httpEndpoint, generatorContext, generatedEndpointModels);
         List<MethodSpec> parameterImmutablesMethods = endpointParameters.stream()
@@ -181,16 +200,20 @@ public final class HttpServiceClientGenerator extends Generator {
                 .addAnnotation(Value.Immutable.class)
                 .addAnnotation(StagedBuilderImmutablesStyle.class)
                 .addMethods(parameterImmutablesMethods)
-                .addMethod(generateStaticBuilder(endpointParameters, immutablesRequestClassName))
+                .addMethod(generateStaticBuilder(
+                        endpointParameters, immutablesRequestClassName, immutablesEndpointClassName))
                 .build();
-        GeneratedRequestInfo generatedRequestInfo = new GeneratedRequestInfo();
-        generatedRequestInfo.requestClassName = requestClassName;
-        generatedRequestInfo.typeSpec = typeSpec;
-        generatedRequestInfo.methodSpecs = parameterImmutablesMethods;
-        return generatedRequestInfo;
+        return GeneratedRequestInfo.builder()
+                .requestTypeSpec(typeSpec)
+                .requestClassName(requestClassName)
+                .addAllPropertyMethodSpecs(parameterImmutablesMethods)
+                .build();
     }
 
-    private MethodSpec generateStaticBuilder(List<ParameterSpec> parameterSpecs, ClassName immutablesRequestClassName) {
+    private MethodSpec generateStaticBuilder(
+            List<ParameterSpec> parameterSpecs,
+            ClassName immutablesRequestClassName,
+            ClassName immutablesEndpointClassName) {
         Optional<ParameterSpec> firstMandatoryFieldName = getFirstRequiredFieldName(parameterSpecs);
         ClassName builderClassName = firstMandatoryFieldName.isEmpty()
                 ? immutablesRequestClassName.nestedClass("Builder")
@@ -199,7 +222,7 @@ public final class HttpServiceClientGenerator extends Generator {
         return MethodSpec.methodBuilder(STATIC_BUILDER_METHOD_NAME)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .returns(builderClassName)
-                .addCode("return $T.builder();", immutablesRequestClassName)
+                .addCode("return $T.$T.builder();", immutablesEndpointClassName, immutablesRequestClassName)
                 .build();
     }
 
@@ -211,12 +234,5 @@ public final class HttpServiceClientGenerator extends Generator {
             }
         }
         return Optional.empty();
-    }
-
-    private class GeneratedRequestInfo {
-        private TypeSpec typeSpec;
-        private ClassName requestClassName;
-
-        private List<MethodSpec> methodSpecs;
     }
 }

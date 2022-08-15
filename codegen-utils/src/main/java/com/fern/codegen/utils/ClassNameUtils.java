@@ -19,6 +19,7 @@ import com.fern.types.DeclaredTypeName;
 import com.fern.types.ErrorName;
 import com.fern.types.FernFilepath;
 import com.fern.types.TypeReference;
+import com.fern.types.services.EndpointId;
 import com.fern.types.services.ServiceName;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
@@ -41,6 +42,11 @@ public final class ClassNameUtils {
     public ClassName getClassNameFromServiceName(ServiceName serviceName, String suffix, PackageType packageType) {
         return getClassName(
                 serviceName.name(), Optional.of(suffix), Optional.of(serviceName.fernFilepath()), packageType);
+    }
+
+    public ClassName getClassNameFromEndpointId(
+            ServiceName serviceName, EndpointId endpointId, PackageType packageType) {
+        return getClassName(endpointId.value(), Optional.empty(), Optional.of(serviceName.fernFilepath()), packageType);
     }
 
     public ClassName getClassNameFromServiceName(ServiceName serviceName, PackageType packageType) {

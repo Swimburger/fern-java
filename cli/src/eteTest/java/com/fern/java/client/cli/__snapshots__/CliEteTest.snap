@@ -83,13 +83,9 @@ basic[api/generated-java/basic-client/src/main/java/com/fern/basic/blog/client/P
 package com.fern.basic.blog.client;
 
 import com.fern.basic.blog.model.BlogPost;
-import com.fern.basic.blog.model.PostId;
 import com.fern.basic.blog.model.PostNotFoundError;
-import com.fern.java.immutables.StagedBuilderImmutablesStyle;
 import java.lang.String;
-import org.immutables.value.Value;
 
-@Value.Enclosing
 public final class PostsServiceClient {
   private final PostsService service;
 
@@ -97,33 +93,12 @@ public final class PostsServiceClient {
     this.service = PostsService.getClient(url);
   }
 
-  public void createPost(com.fern.basic.blog.client.CreatePostRequest request) {
+  public void createPost(Request request) {
     this.service.createPost(request.body());
   }
 
-  public BlogPost getPost(com.fern.basic.blog.client.GetPostRequest request) throws
-      PostNotFoundError {
+  public BlogPost getPost(Request request) throws PostNotFoundError {
     this.service.getPost(request.postId());
-  }
-
-  @Value.Immutable
-  @StagedBuilderImmutablesStyle
-  interface CreatePostRequest {
-    com.fern.basic.blog.model.CreatePostRequest body();
-
-    static PostsServiceClient.ImmutableCreatePostRequest.Builder builder() {
-      return PostsServiceClient.ImmutableCreatePostRequest.builder();
-    }
-  }
-
-  @Value.Immutable
-  @StagedBuilderImmutablesStyle
-  interface GetPostRequest {
-    PostId postId();
-
-    static PostsServiceClient.ImmutableGetPostRequest.Builder builder() {
-      return PostsServiceClient.ImmutableGetPostRequest.builder();
-    }
   }
 }
 
@@ -254,13 +229,8 @@ public interface DummyService {
 basic[api/generated-java/basic-client/src/main/java/com/fern/basic/dummy/client/DummyServiceClient.java]=[
 package com.fern.basic.dummy.client;
 
-import com.fern.basic.dummy.model.DummyId;
-import com.fern.java.auth.BearerAuthHeader;
-import com.fern.java.immutables.StagedBuilderImmutablesStyle;
 import java.lang.String;
-import org.immutables.value.Value;
 
-@Value.Enclosing
 public final class DummyServiceClient {
   private final DummyService service;
 
@@ -268,20 +238,8 @@ public final class DummyServiceClient {
     this.service = DummyService.getClient(url);
   }
 
-  public void getDummy(com.fern.basic.dummy.client.GetDummyRequest request) {
+  public void getDummy(Request request) {
     this.service.getDummy(request.authHeader(), request.body());
-  }
-
-  @Value.Immutable
-  @StagedBuilderImmutablesStyle
-  interface GetDummyRequest {
-    BearerAuthHeader authHeader();
-
-    DummyId body();
-
-    static DummyServiceClient.ImmutableGetDummyRequest.Builder builder() {
-      return DummyServiceClient.ImmutableGetDummyRequest.builder();
-    }
   }
 }
 
