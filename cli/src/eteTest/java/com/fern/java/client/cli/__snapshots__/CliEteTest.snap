@@ -74,58 +74,6 @@ public final class BasicClient {
 ]
 
 
-basic[api/generated-java/basic-client/src/main/java/com/fern/basic/client/blog/CreatePost.java]=[
-package com.fern.basic.client.blog;
-
-import com.fern.basic.model.blog.CreatePostRequest;
-import com.fern.java.immutables.StagedBuilderImmutablesStyle;
-import org.immutables.value.Value;
-
-@Value.Enclosing
-public final class CreatePost {
-  private CreatePost() {
-  }
-
-  @Value.Immutable
-  @StagedBuilderImmutablesStyle
-  interface Request {
-    CreatePostRequest body();
-
-    static ImmutableCreatePost.Request.Builder builder() {
-      return ImmutableCreatePost.Request.builder();
-    }
-  }
-}
-
-]
-
-
-basic[api/generated-java/basic-client/src/main/java/com/fern/basic/client/blog/GetPost.java]=[
-package com.fern.basic.client.blog;
-
-import com.fern.basic.model.blog.PostId;
-import com.fern.java.immutables.StagedBuilderImmutablesStyle;
-import org.immutables.value.Value;
-
-@Value.Enclosing
-public final class GetPost {
-  private GetPost() {
-  }
-
-  @Value.Immutable
-  @StagedBuilderImmutablesStyle
-  interface Request {
-    PostId postId();
-
-    static ImmutableGetPost.Request.Builder builder() {
-      return ImmutableGetPost.Request.builder();
-    }
-  }
-}
-
-]
-
-
 basic[api/generated-java/basic-client/src/main/java/com/fern/basic/client/blog/PostsService.java]=[
 package com.fern.basic.client.blog;
 
@@ -178,6 +126,8 @@ basic[api/generated-java/basic-client/src/main/java/com/fern/basic/client/blog/P
 package com.fern.basic.client.blog;
 
 import com.fern.basic.model.blog.BlogPost;
+import com.fern.basic.model.blog.CreatePostRequest;
+import com.fern.basic.model.blog.PostId;
 import com.fern.basic.model.blog.PostNotFoundError;
 import com.fern.java.exception.UnknownRemoteException;
 import java.lang.String;
@@ -189,13 +139,12 @@ public final class PostsServiceClient {
     this.service = PostsService.getClient(url);
   }
 
-  public void createPost(ImmutableCreatePost.Request request) throws UnknownRemoteException {
-    this.service.createPost(request.body());
+  public void createPost(CreatePostRequest body) {
+    this.service.createPost(body);
   }
 
-  public BlogPost getPost(ImmutableGetPost.Request request) throws PostNotFoundError,
-      UnknownRemoteException {
-    return this.service.getPost(request.postId());
+  public BlogPost getPost(PostId postId) throws PostNotFoundError, UnknownRemoteException {
+    return this.service.getPost(postId);
   }
 }
 
@@ -283,7 +232,6 @@ interface DummyService {
 basic[api/generated-java/basic-client/src/main/java/com/fern/basic/client/dummy/DummyServiceClient.java]=[
 package com.fern.basic.client.dummy;
 
-import com.fern.java.exception.UnknownRemoteException;
 import java.lang.String;
 
 public final class DummyServiceClient {
@@ -293,7 +241,7 @@ public final class DummyServiceClient {
     this.service = DummyService.getClient(url);
   }
 
-  public void getDummy(ImmutableGetDummy.Request request) throws UnknownRemoteException {
+  public void getDummy(ImmutableGetDummy.Request request) {
     this.service.getDummy(request.authHeader(), request.body());
   }
 }

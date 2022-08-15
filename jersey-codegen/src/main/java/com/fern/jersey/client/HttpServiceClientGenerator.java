@@ -24,9 +24,7 @@ import com.fern.codegen.GeneratedHttpServiceClient;
 import com.fern.codegen.GeneratedHttpServiceInterface;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
-import com.fern.java.exception.UnknownRemoteException;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
-import com.fern.jersey.JerseyServiceGeneratorUtils;
 import com.fern.model.codegen.Generator;
 import com.fern.types.ErrorName;
 import com.fern.types.services.EndpointId;
@@ -34,7 +32,6 @@ import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpService;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -50,8 +47,6 @@ import javax.lang.model.element.Modifier;
 import org.immutables.value.Value;
 
 public final class HttpServiceClientGenerator extends Generator {
-
-    private static final String BUILD_STAGE_SUFFIX = "BuildStage";
     private static final String STATIC_BUILDER_METHOD_NAME = "builder";
     private static final String SERVICE_FIELD_NAME = "service";
     private static final String CLIENT_SUFFIX = "Client";
@@ -67,8 +62,6 @@ public final class HttpServiceClientGenerator extends Generator {
 
     private final Map<ErrorName, GeneratedError> generatedErrors;
 
-    private final JerseyServiceGeneratorUtils jerseyServiceGeneratorUtils;
-
     public HttpServiceClientGenerator(
             GeneratorContext generatorContext,
             HttpService httpService,
@@ -81,7 +74,6 @@ public final class HttpServiceClientGenerator extends Generator {
                 .getClassNameUtils()
                 .getClassNameFromServiceName(httpService.name(), CLIENT_SUFFIX, PackageType.CLIENT);
         this.generatedErrors = generatedErrors;
-        this.jerseyServiceGeneratorUtils = new JerseyServiceGeneratorUtils(generatorContext);
     }
 
     @Override
@@ -112,44 +104,18 @@ public final class HttpServiceClientGenerator extends Generator {
         for (HttpEndpoint httpEndpoint : httpService.endpoints()) {
             MethodSpec interfaceMethod =
                     generatedHttpServiceInterface.endpointMethods().get(httpEndpoint.endpointId());
-
-            GeneratedEndpointClient generatedEndpointFile = generateEndpointFile(httpEndpoint);
-            endpointFiles.add(generatedEndpointFile);
-
             MethodSpec.Builder endpointMethodBuilder =
                     MethodSpec.methodBuilder(httpEndpoint.endpointId().value()).addModifiers(Modifier.PUBLIC);
-
-            GeneratedEndpointModel generatedEndpointModel = generatedEndpointModels.get(httpEndpoint.endpointId());
-            Optional<TypeName> returnTypeName =
-                    jerseyServiceGeneratorUtils.getPayloadTypeName(generatedEndpointModel.generatedHttpResponse());
-            returnTypeName.ifPresent(endpointMethodBuilder::returns);
-            List<ClassName> errorClassNames = httpEndpoint.errors().value().stream()
-                    .map(responseError ->
-                            generatedErrors.get(responseError.error()).className())
-                    .collect(Collectors.toList());
-            endpointMethodBuilder
-                    .addParameter(ParameterSpec.builder(
-                                    generatedEndpointFile.generatedRequestInfo().requestClassName(),
-                                    REQUEST_PARAMETER_NAME)
-                            .build())
-                    .addExceptions(errorClassNames)
-                    .addException(ClassName.get(UnknownRemoteException.class));
-            String args = generatedEndpointFile.generatedRequestInfo().propertyMethodSpecs().stream()
-                    .map(requestMethodSpec -> REQUEST_PARAMETER_NAME + "." + requestMethodSpec.name + "()")
-                    .collect(Collectors.joining(", "));
-
-            CodeBlock methodCodeBlock;
-            if (returnTypeName.isPresent()) {
-                methodCodeBlock = CodeBlock.builder()
-                        .addStatement("return this.$L.$L(" + args + ")", SERVICE_FIELD_NAME, interfaceMethod.name)
-                        .build();
+            if (interfaceMethod.parameters.size() <= 1) {
+                generateCallWithNoWrappedRequest(interfaceMethod, endpointMethodBuilder);
             } else {
-                methodCodeBlock = CodeBlock.builder()
-                        .addStatement("this.$L.$L(" + args + ")", SERVICE_FIELD_NAME, interfaceMethod.name)
-                        .build();
+                GeneratedEndpointClient generatedEndpointFile =
+                        generateCallWithWrappedRequest(httpEndpoint, interfaceMethod, endpointMethodBuilder);
+                endpointFiles.add(generatedEndpointFile);
             }
 
-            endpointMethodBuilder.addCode(methodCodeBlock);
+            endpointMethodBuilder.addExceptions(interfaceMethod.exceptions);
+            endpointMethodBuilder.returns(interfaceMethod.returnType);
             serviceClientBuilder.addMethod(endpointMethodBuilder.build());
         }
 
@@ -163,6 +129,42 @@ public final class HttpServiceClientGenerator extends Generator {
                 .serviceInterface(generatedHttpServiceInterface)
                 .addAllEndpointFiles(endpointFiles)
                 .build();
+    }
+
+    private void generateCallWithNoWrappedRequest(
+            MethodSpec interfaceMethod, MethodSpec.Builder endpointMethodBuilder) {
+        List<ParameterSpec> parametersWithoutAnnotations = interfaceMethod.parameters.stream()
+                .map(interfaceParameter -> ParameterSpec.builder(interfaceParameter.type, interfaceParameter.name)
+                        .build())
+                .collect(Collectors.toList());
+        endpointMethodBuilder.addParameters(parametersWithoutAnnotations);
+        String joinedParameters = interfaceMethod.parameters.stream()
+                .map(parameterSpec -> parameterSpec.name)
+                .collect(Collectors.joining(", "));
+        String codeBlockFormat = "this.$L.$L(" + joinedParameters + ")";
+        if (interfaceMethod.returnType.equals(TypeName.VOID)) {
+            endpointMethodBuilder.addStatement(codeBlockFormat, SERVICE_FIELD_NAME, interfaceMethod.name);
+        } else {
+            endpointMethodBuilder.addStatement("return " + codeBlockFormat, SERVICE_FIELD_NAME, interfaceMethod.name);
+        }
+    }
+
+    private GeneratedEndpointClient generateCallWithWrappedRequest(
+            HttpEndpoint httpEndpoint, MethodSpec interfaceMethod, MethodSpec.Builder endpointMethodBuilder) {
+        GeneratedEndpointClient generatedEndpointFile = generateEndpointFile(httpEndpoint);
+        endpointMethodBuilder.addParameter(ParameterSpec.builder(
+                        generatedEndpointFile.generatedRequestInfo().requestClassName(), REQUEST_PARAMETER_NAME)
+                .build());
+        String args = generatedEndpointFile.generatedRequestInfo().propertyMethodSpecs().stream()
+                .map(requestMethodSpec -> REQUEST_PARAMETER_NAME + "." + requestMethodSpec.name + "()")
+                .collect(Collectors.joining(", "));
+        String codeBlockFormat = "this.$L.$L(" + args + ")";
+        if (interfaceMethod.returnType.equals(TypeName.VOID)) {
+            endpointMethodBuilder.addStatement(codeBlockFormat, SERVICE_FIELD_NAME, interfaceMethod.name);
+        } else {
+            endpointMethodBuilder.addStatement("return " + codeBlockFormat, SERVICE_FIELD_NAME, interfaceMethod.name);
+        }
+        return generatedEndpointFile;
     }
 
     private GeneratedEndpointClient generateEndpointFile(HttpEndpoint httpEndpoint) {
