@@ -17,12 +17,11 @@ package com.fern.codegen.utils.server;
 
 import com.fern.java.auth.BasicAuthHeader;
 import com.fern.java.auth.BearerAuthHeader;
-import com.fern.types.services.HttpAuth;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ParameterSpec;
 import java.util.Optional;
 
-public final class HttpAuthParameterSpecVisitor implements HttpAuth.Visitor<Optional<ParameterSpec>> {
+public final class HttpAuthParameterSpecVisitor {
 
     private static final String AUTHORIZATION_HEADER_NAME = "Authorization";
 
@@ -32,7 +31,6 @@ public final class HttpAuthParameterSpecVisitor implements HttpAuth.Visitor<Opti
         this.headerAnnotationClazz = headerAnnotationClazz;
     }
 
-    @Override
     public Optional<ParameterSpec> visitBasic() {
         return Optional.of(ParameterSpec.builder(BasicAuthHeader.class, "authHeader")
                 .addAnnotation(AnnotationSpec.builder(headerAnnotationClazz)
@@ -41,7 +39,6 @@ public final class HttpAuthParameterSpecVisitor implements HttpAuth.Visitor<Opti
                 .build());
     }
 
-    @Override
     public Optional<ParameterSpec> visitBearer() {
         return Optional.of(ParameterSpec.builder(BearerAuthHeader.class, "authHeader")
                 .addAnnotation(AnnotationSpec.builder(headerAnnotationClazz)
@@ -50,12 +47,10 @@ public final class HttpAuthParameterSpecVisitor implements HttpAuth.Visitor<Opti
                 .build());
     }
 
-    @Override
     public Optional<ParameterSpec> visitNone() {
         return Optional.empty();
     }
 
-    @Override
     public Optional<ParameterSpec> visitUnknown(String _unknownType) {
         return Optional.empty();
     }

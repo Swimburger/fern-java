@@ -126,7 +126,10 @@ public final class ClientWrapperGenerator extends Generator {
                         .name()
                         .name());
             } else {
-                methodName = fernFilepath.value().get(fernFilepath.value().size() - 1);
+                methodName = fernFilepath
+                        .value()
+                        .get(fernFilepath.value().size() - 1)
+                        .originalValue();
             }
             clientWrapperBuilder.addMethod(MethodSpec.methodBuilder(methodName)
                     .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -212,7 +215,7 @@ public final class ClientWrapperGenerator extends Generator {
             if (fernFilepath.value().size() <= fernFilePathSize) {
                 clientConfigBuilder.addHttpServiceClient(generatedHttpServiceClient);
             } else {
-                String prefix = fernFilepath.value().get(fernFilePathSize);
+                String prefix = fernFilepath.value().get(fernFilePathSize).originalValue();
                 if (nestedClients.containsKey(prefix)) {
                     nestedClients.get(prefix).add(generatedHttpServiceClient);
                 } else {

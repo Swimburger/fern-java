@@ -34,9 +34,9 @@ import com.fern.model.codegen.ModelGeneratorResult;
 import com.fern.spring.server.DefaultExceptionHandlerGenerator;
 import com.fern.spring.server.ErrorExceptionHandlerGenerator;
 import com.fern.spring.server.HttpServiceSpringServerGenerator;
+import com.fern.types.DeclaredErrorName;
 import com.fern.types.DeclaredTypeName;
 import com.fern.types.ErrorDeclaration;
-import com.fern.types.ErrorName;
 import com.fern.types.IntermediateRepresentation;
 import com.fern.types.TypeDeclaration;
 import com.fern.types.generators.GeneratorConfig;
@@ -141,12 +141,10 @@ public final class ClientGeneratorCli {
         ImmutableCodeGenerationResult.Builder resultBuilder = CodeGenerationResult.builder();
         Map<DeclaredTypeName, TypeDeclaration> typeDefinitionsByName =
                 ir.types().stream().collect(Collectors.toUnmodifiableMap(TypeDeclaration::name, Function.identity()));
-        Map<ErrorName, ErrorDeclaration> errorDefinitionsByName =
+        Map<DeclaredErrorName, ErrorDeclaration> errorDefinitionsByName =
                 ir.errors().stream().collect(Collectors.toUnmodifiableMap(ErrorDeclaration::name, Function.identity()));
-        List<String> packagePrefixTokens = List.of(
-                "com",
-                fernPluginConfig.generatorConfig().organization(),
-                ir.workspaceName().orElse("api"));
+        List<String> packagePrefixTokens =
+                List.of("com", fernPluginConfig.generatorConfig().organization(), ir.apiName());
         String unreplacedPackagePrefix = String.join(".", packagePrefixTokens);
         GeneratorContext generatorContext = new GeneratorContext(
                 unreplacedPackagePrefix.replaceAll("[^a-zA-Z0-9]", "."),
@@ -216,10 +214,8 @@ public final class ClientGeneratorCli {
                     return httpServiceClientGenerator.generate();
                 })
                 .collect(Collectors.toList());
-        ClientWrapperGenerator clientWrapperGenerator = new ClientWrapperGenerator(
-                generatorContext,
-                generatedHttpServiceClients,
-                ir.workspaceName().orElse("Untitled"));
+        ClientWrapperGenerator clientWrapperGenerator =
+                new ClientWrapperGenerator(generatorContext, generatedHttpServiceClients, ir.apiName());
         GeneratedClientWrapper generatedClientWrapper = clientWrapperGenerator.generate();
         resultBuilder.addClientFiles(generatedClientWrapper);
         resultBuilder.addAllClientFiles(generatedClientWrapper.nestedClientWrappers());
@@ -254,7 +250,7 @@ public final class ClientGeneratorCli {
             ModelGeneratorResult modelGeneratorResult,
             ImmutableCodeGenerationResult.Builder resultBuilder) {
         Map<HttpService, GeneratedHttpServiceServer> generatedHttpServiceServers = new LinkedHashMap<>();
-        Map<ErrorName, Map<HttpService, List<HttpEndpoint>>> errorMap = new LinkedHashMap<>();
+        Map<DeclaredErrorName, Map<HttpService, List<HttpEndpoint>>> errorMap = new LinkedHashMap<>();
         ir.services().http().forEach(httpService -> {
             httpService.endpoints().forEach(httpEndpoint -> {
                 buildErrorMap(httpService, httpEndpoint, errorMap);
@@ -293,7 +289,7 @@ public final class ClientGeneratorCli {
             ModelGeneratorResult modelGeneratorResult,
             ImmutableCodeGenerationResult.Builder resultBuilder) {
         Map<HttpService, GeneratedHttpServiceServer> generatedHttpServiceServers = new LinkedHashMap<>();
-        Map<ErrorName, Map<HttpService, List<HttpEndpoint>>> errorMap = new LinkedHashMap<>();
+        Map<DeclaredErrorName, Map<HttpService, List<HttpEndpoint>>> errorMap = new LinkedHashMap<>();
         ir.services().http().forEach(httpService -> {
             httpService.endpoints().forEach(httpEndpoint -> {
                 buildErrorMap(httpService, httpEndpoint, errorMap);
@@ -343,9 +339,9 @@ public final class ClientGeneratorCli {
     private static void buildErrorMap(
             HttpService httpService,
             HttpEndpoint httpEndpoint,
-            Map<ErrorName, Map<HttpService, List<HttpEndpoint>>> errorMap) {
+            Map<DeclaredErrorName, Map<HttpService, List<HttpEndpoint>>> errorMap) {
         httpEndpoint.errors().value().forEach(responseError -> {
-            ErrorName errorName = responseError.error();
+            DeclaredErrorName errorName = responseError.error();
             Map<HttpService, List<HttpEndpoint>> containingEndpoints;
             if (errorMap.containsKey(errorName)) {
                 containingEndpoints = errorMap.get(errorName);

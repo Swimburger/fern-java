@@ -18,9 +18,9 @@ package com.fern.codegen;
 import com.fern.codegen.utils.ClassNameUtils;
 import com.fern.codegen.utils.ImmutablesUtils;
 import com.fern.codegen.utils.VisitorUtils;
+import com.fern.types.DeclaredErrorName;
 import com.fern.types.DeclaredTypeName;
 import com.fern.types.ErrorDeclaration;
-import com.fern.types.ErrorName;
 import com.fern.types.FernConstants;
 import com.fern.types.TypeDeclaration;
 import java.util.Map;
@@ -31,13 +31,13 @@ public final class GeneratorContext {
     private final ImmutablesUtils immutablesUtils;
     private final VisitorUtils visitorUtils;
     private final Map<DeclaredTypeName, TypeDeclaration> typeDefinitionsByName;
-    private final Map<ErrorName, ErrorDeclaration> errorDefinitionsByName;
+    private final Map<DeclaredErrorName, ErrorDeclaration> errorDefinitionsByName;
     private final FernConstants fernConstants;
 
     public GeneratorContext(
             String packagePrefix,
             Map<DeclaredTypeName, TypeDeclaration> typeDefinitionsByName,
-            Map<ErrorName, ErrorDeclaration> errorDefinitionsByName,
+            Map<DeclaredErrorName, ErrorDeclaration> errorDefinitionsByName,
             FernConstants fernConstants) {
         this.classNameUtils = new ClassNameUtils(packagePrefix);
         this.immutablesUtils = new ImmutablesUtils(classNameUtils);
@@ -63,7 +63,7 @@ public final class GeneratorContext {
         return typeDefinitionsByName;
     }
 
-    public Map<ErrorName, ErrorDeclaration> getErrorDefinitionsByName() {
+    public Map<DeclaredErrorName, ErrorDeclaration> getErrorDefinitionsByName() {
         return errorDefinitionsByName;
     }
 

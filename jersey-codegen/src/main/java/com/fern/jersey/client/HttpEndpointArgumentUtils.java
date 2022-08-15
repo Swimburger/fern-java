@@ -20,8 +20,8 @@ import com.fern.codegen.GeneratedEndpointModel;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.server.HttpAuthParameterSpecVisitor;
 import com.fern.jersey.JerseyServiceGeneratorUtils;
-import com.fern.types.services.EndpointId;
 import com.fern.types.services.HttpEndpoint;
+import com.fern.types.services.HttpEndpointId;
 import com.fern.types.services.HttpService;
 import com.squareup.javapoet.ParameterSpec;
 import java.util.ArrayList;
@@ -40,11 +40,11 @@ public final class HttpEndpointArgumentUtils {
             HttpService httpService,
             HttpEndpoint httpEndpoint,
             GeneratorContext generatorContext,
-            Map<EndpointId, GeneratedEndpointModel> generatedEndpointModels) {
+            Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels) {
         JerseyServiceGeneratorUtils jerseyServiceGeneratorUtils = new JerseyServiceGeneratorUtils(generatorContext);
         List<ParameterSpec> parameters = new ArrayList<>();
 
-        httpEndpoint.auth().visit(JERSEY_AUTH_PARAMATER_SPEC_VISITOR).ifPresent(parameters::add);
+        // httpEndpoint.auth().visit(JERSEY_AUTH_PARAMATER_SPEC_VISITOR).ifPresent(parameters::add);
 
         httpService.headers().stream()
                 .map(jerseyServiceGeneratorUtils::getHeaderParameterSpec)
@@ -60,7 +60,7 @@ public final class HttpEndpointArgumentUtils {
                 .map(jerseyServiceGeneratorUtils::getQueryParameterSpec)
                 .forEach(parameters::add);
 
-        GeneratedEndpointModel generatedEndpointModel = generatedEndpointModels.get(httpEndpoint.endpointId());
+        GeneratedEndpointModel generatedEndpointModel = generatedEndpointModels.get(httpEndpoint.id());
         jerseyServiceGeneratorUtils
                 .getPayloadTypeName(generatedEndpointModel.generatedHttpRequest())
                 .ifPresent(typeName -> {

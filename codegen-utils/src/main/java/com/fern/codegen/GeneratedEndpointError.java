@@ -16,7 +16,7 @@
 package com.fern.codegen;
 
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
-import com.fern.types.ErrorName;
+import com.fern.types.DeclaredErrorName;
 import com.squareup.javapoet.MethodSpec;
 import java.util.Map;
 import org.immutables.value.Value;
@@ -25,7 +25,7 @@ import org.immutables.value.Value;
 @StagedBuilderImmutablesStyle
 public interface GeneratedEndpointError extends IGeneratedFile {
 
-    Map<ErrorName, MethodSpec> constructorsByResponseError();
+    Map<DeclaredErrorName, MethodSpec> constructorsByResponseError();
 
     static ImmutableGeneratedEndpointError.FileBuildStage builder() {
         return ImmutableGeneratedEndpointError.builder();

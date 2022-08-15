@@ -16,7 +16,7 @@
 package com.fern.codegen;
 
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
-import com.fern.types.services.EndpointId;
+import com.fern.types.services.HttpEndpointId;
 import com.fern.types.services.HttpService;
 import com.squareup.javapoet.MethodSpec;
 import java.util.Map;
@@ -29,7 +29,7 @@ public interface GeneratedHttpServiceInterface extends IGeneratedFile {
 
     HttpService httpService();
 
-    Map<EndpointId, MethodSpec> endpointMethods();
+    Map<HttpEndpointId, MethodSpec> endpointMethods();
 
     Optional<GeneratedErrorDecoder> generatedErrorDecoder();
 

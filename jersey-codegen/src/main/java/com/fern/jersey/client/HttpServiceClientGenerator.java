@@ -26,9 +26,9 @@ import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
 import com.fern.model.codegen.Generator;
-import com.fern.types.ErrorName;
-import com.fern.types.services.EndpointId;
+import com.fern.types.DeclaredErrorName;
 import com.fern.types.services.HttpEndpoint;
+import com.fern.types.services.HttpEndpointId;
 import com.fern.types.services.HttpService;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
@@ -58,15 +58,15 @@ public final class HttpServiceClientGenerator extends Generator {
 
     private final ClassName generatedServiceClientClassName;
 
-    private final Map<EndpointId, GeneratedEndpointModel> generatedEndpointModels;
+    private final Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels;
 
-    private final Map<ErrorName, GeneratedError> generatedErrors;
+    private final Map<DeclaredErrorName, GeneratedError> generatedErrors;
 
     public HttpServiceClientGenerator(
             GeneratorContext generatorContext,
             HttpService httpService,
-            Map<EndpointId, GeneratedEndpointModel> generatedEndpointModels,
-            Map<ErrorName, GeneratedError> generatedErrors) {
+            Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels,
+            Map<DeclaredErrorName, GeneratedError> generatedErrors) {
         super(generatorContext);
         this.httpService = httpService;
         this.generatedEndpointModels = generatedEndpointModels;
@@ -103,9 +103,9 @@ public final class HttpServiceClientGenerator extends Generator {
         List<GeneratedEndpointClient> endpointFiles = new ArrayList<>();
         for (HttpEndpoint httpEndpoint : httpService.endpoints()) {
             MethodSpec interfaceMethod =
-                    generatedHttpServiceInterface.endpointMethods().get(httpEndpoint.endpointId());
+                    generatedHttpServiceInterface.endpointMethods().get(httpEndpoint.id());
             MethodSpec.Builder endpointMethodBuilder =
-                    MethodSpec.methodBuilder(httpEndpoint.endpointId().value()).addModifiers(Modifier.PUBLIC);
+                    MethodSpec.methodBuilder(httpEndpoint.id().value()).addModifiers(Modifier.PUBLIC);
             if (interfaceMethod.parameters.size() <= 1) {
                 generateCallWithNoWrappedRequest(interfaceMethod, endpointMethodBuilder);
             } else {
@@ -170,7 +170,7 @@ public final class HttpServiceClientGenerator extends Generator {
     private GeneratedEndpointClient generateEndpointFile(HttpEndpoint httpEndpoint) {
         ClassName endpointClassName = generatorContext
                 .getClassNameUtils()
-                .getClassNameFromEndpointId(httpService.name(), httpEndpoint.endpointId(), PackageType.CLIENT);
+                .getClassNameFromEndpointId(httpService.name(), httpEndpoint.id(), PackageType.CLIENT);
         ClassName immutablesEndpointClassName =
                 generatorContext.getImmutablesUtils().getImmutablesClassName(endpointClassName);
         TypeSpec.Builder endpointTypeSpecBuilder = TypeSpec.classBuilder(endpointClassName)

@@ -117,7 +117,7 @@ public final class EnumGenerator extends Generator {
         return enumTypeDeclaration.values().stream()
                 .collect(Collectors.toMap(Function.identity(), enumValue -> FieldSpec.builder(
                                 generatedEnumClassName,
-                                enumValue.name(),
+                                enumValue.name().wireValue(),
                                 Modifier.PUBLIC,
                                 Modifier.STATIC,
                                 Modifier.FINAL)
@@ -300,7 +300,10 @@ public final class EnumGenerator extends Generator {
     private TypeSpec getNestedValueEnum() {
         TypeSpec.Builder nestedValueEnumBuilder =
                 TypeSpec.enumBuilder(VALUE_TYPE_NAME).addModifiers(Modifier.PUBLIC);
-        enumTypeDeclaration.values().forEach(enumValue -> nestedValueEnumBuilder.addEnumConstant(enumValue.name()));
+        enumTypeDeclaration
+                .values()
+                .forEach(enumValue ->
+                        nestedValueEnumBuilder.addEnumConstant(enumValue.name().wireValue()));
         nestedValueEnumBuilder.addEnumConstant(UNKNOWN_ENUM_CONSTANT);
         return nestedValueEnumBuilder.build();
     }
@@ -316,8 +319,10 @@ public final class EnumGenerator extends Generator {
     private GeneratedVisitor<EnumValue> getVisitor() {
         List<VisitorUtils.VisitMethodArgs<EnumValue>> visitMethodArgs = enumTypeDeclaration.values().stream()
                 .map(enumValue -> {
-                    String keyName = enumValue.name();
-                    if (CAPITAL_SNAKE_CASE_PATTERN.matcher(enumValue.name()).matches()) {
+                    String keyName = enumValue.name().wireValue();
+                    if (CAPITAL_SNAKE_CASE_PATTERN
+                            .matcher(enumValue.name().wireValue())
+                            .matches()) {
                         keyName = convertCapsSnakeCaseToCamelCase(keyName);
                     }
                     return VisitorUtils.VisitMethodArgs.<EnumValue>builder()
