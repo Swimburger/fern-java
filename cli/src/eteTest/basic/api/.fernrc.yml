@@ -1,4 +1,4 @@
-name: blog-api
+name: basic
 definition: src
 generators:
   - name: fern-java

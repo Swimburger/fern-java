@@ -1,4 +1,4 @@
-basic[api/generated-java/blog-api-client/build.gradle]=[
+basic[api/generated-java/basic-client/build.gradle]=[
 plugins {
     id 'java-library'
     id "org.inferred.processors" version "3.6.0"
@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    api project(':blog-api-model')
+    api project(':basic-model')
     api 'io.github.fern-api:auth-utils:0.0.82'
     api 'io.github.fern-api:exception-utils:0.0.82'
     api 'io.github.fern-api:immutables-utils:0.0.82'
@@ -31,13 +31,13 @@ dependencies {
 ]
 
 
-basic[api/generated-java/blog-api-client/src/main/java/com/fern/blog/api/blog/client/PostsService.java]=[
-package com.fern.blog.api.blog.client;
+basic[api/generated-java/basic-client/src/main/java/com/fern/basic/blog/client/PostsService.java]=[
+package com.fern.basic.blog.client;
 
-import com.fern.blog.api.blog.model.BlogPost;
-import com.fern.blog.api.blog.model.CreatePostRequest;
-import com.fern.blog.api.blog.model.PostId;
-import com.fern.blog.api.blog.model.PostNotFoundError;
+import com.fern.basic.blog.model.BlogPost;
+import com.fern.basic.blog.model.CreatePostRequest;
+import com.fern.basic.blog.model.PostId;
+import com.fern.basic.blog.model.PostNotFoundError;
 import com.fern.java.exception.UnknownRemoteException;
 import com.fern.java.jackson.ClientObjectMappers;
 import com.fern.java.jersey.contracts.OptionalAwareContract;
@@ -79,12 +79,12 @@ public interface PostsService {
 ]
 
 
-basic[api/generated-java/blog-api-client/src/main/java/com/fern/blog/api/blog/client/PostsServiceClient.java]=[
-package com.fern.blog.api.blog.client;
+basic[api/generated-java/basic-client/src/main/java/com/fern/basic/blog/client/PostsServiceClient.java]=[
+package com.fern.basic.blog.client;
 
-import com.fern.blog.api.blog.model.BlogPost;
-import com.fern.blog.api.blog.model.PostId;
-import com.fern.blog.api.blog.model.PostNotFoundError;
+import com.fern.basic.blog.model.BlogPost;
+import com.fern.basic.blog.model.PostId;
+import com.fern.basic.blog.model.PostNotFoundError;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
 import java.lang.String;
 import org.immutables.value.Value;
@@ -97,11 +97,11 @@ public final class PostsServiceClient {
     this.service = PostsService.getClient(url);
   }
 
-  public void createPost(com.fern.blog.api.blog.client.CreatePostRequest request) {
+  public void createPost(com.fern.basic.blog.client.CreatePostRequest request) {
     this.service.createPost(request.body());
   }
 
-  public BlogPost getPost(com.fern.blog.api.blog.client.GetPostRequest request) throws
+  public BlogPost getPost(com.fern.basic.blog.client.GetPostRequest request) throws
       PostNotFoundError {
     this.service.getPost(request.postId());
   }
@@ -109,7 +109,7 @@ public final class PostsServiceClient {
   @Value.Immutable
   @StagedBuilderImmutablesStyle
   interface CreatePostRequest {
-    com.fern.blog.api.blog.model.CreatePostRequest body();
+    com.fern.basic.blog.model.CreatePostRequest body();
 
     static PostsServiceClient.ImmutableCreatePostRequest.Builder builder() {
       return PostsServiceClient.ImmutableCreatePostRequest.builder();
@@ -130,10 +130,10 @@ public final class PostsServiceClient {
 ]
 
 
-basic[api/generated-java/blog-api-client/src/main/java/com/fern/blog/api/blog/client/PostsServiceErrorDecoder.java]=[
-package com.fern.blog.api.blog.client;
+basic[api/generated-java/basic-client/src/main/java/com/fern/basic/blog/client/PostsServiceErrorDecoder.java]=[
+package com.fern.basic.blog.client;
 
-import com.fern.blog.api.blog.model.GetPostFailedResponse;
+import com.fern.basic.blog.model.GetPostFailedResponse;
 import com.fern.java.exception.UnknownRemoteException;
 import com.fern.java.jackson.ClientObjectMappers;
 import feign.Response;
@@ -169,22 +169,22 @@ final class PostsServiceErrorDecoder implements ErrorDecoder {
 ]
 
 
-basic[api/generated-java/blog-api-client/src/main/java/com/fern/blog/api/client/BlogApiClient.java]=[
-package com.fern.blog.api.client;
+basic[api/generated-java/basic-client/src/main/java/com/fern/basic/client/BasicClient.java]=[
+package com.fern.basic.client;
 
-import com.fern.blog.api.blog.client.PostsServiceClient;
-import com.fern.blog.api.dummy.client.DummyServiceClient;
+import com.fern.basic.blog.client.PostsServiceClient;
+import com.fern.basic.dummy.client.DummyServiceClient;
 import java.lang.String;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-public final class BlogApiClient {
+public final class BasicClient {
   private final Supplier<PostsServiceClient> postsServiceClient;
 
   private final Supplier<DummyServiceClient> dummyServiceClient;
 
-  public BlogApiClient(String url) {
+  public BasicClient(String url) {
     this.postsServiceClient = memoize(() -> new PostsServiceClient(url));
     this.dummyServiceClient = memoize(() -> new DummyServiceClient(url));
   }
@@ -212,10 +212,10 @@ public final class BlogApiClient {
 ]
 
 
-basic[api/generated-java/blog-api-client/src/main/java/com/fern/blog/api/dummy/client/DummyService.java]=[
-package com.fern.blog.api.dummy.client;
+basic[api/generated-java/basic-client/src/main/java/com/fern/basic/dummy/client/DummyService.java]=[
+package com.fern.basic.dummy.client;
 
-import com.fern.blog.api.dummy.model.DummyId;
+import com.fern.basic.dummy.model.DummyId;
 import com.fern.java.auth.BearerAuthHeader;
 import com.fern.java.jackson.ClientObjectMappers;
 import com.fern.java.jersey.contracts.OptionalAwareContract;
@@ -251,10 +251,10 @@ public interface DummyService {
 ]
 
 
-basic[api/generated-java/blog-api-client/src/main/java/com/fern/blog/api/dummy/client/DummyServiceClient.java]=[
-package com.fern.blog.api.dummy.client;
+basic[api/generated-java/basic-client/src/main/java/com/fern/basic/dummy/client/DummyServiceClient.java]=[
+package com.fern.basic.dummy.client;
 
-import com.fern.blog.api.dummy.model.DummyId;
+import com.fern.basic.dummy.model.DummyId;
 import com.fern.java.auth.BearerAuthHeader;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
 import java.lang.String;
@@ -268,7 +268,7 @@ public final class DummyServiceClient {
     this.service = DummyService.getClient(url);
   }
 
-  public void getDummy(com.fern.blog.api.dummy.client.GetDummyRequest request) {
+  public void getDummy(com.fern.basic.dummy.client.GetDummyRequest request) {
     this.service.getDummy(request.authHeader(), request.body());
   }
 
@@ -288,7 +288,7 @@ public final class DummyServiceClient {
 ]
 
 
-basic[api/generated-java/blog-api-model/build.gradle]=[
+basic[api/generated-java/basic-model/build.gradle]=[
 plugins {
     id 'java-library'
     id "org.inferred.processors" version "3.6.0"
@@ -314,8 +314,8 @@ dependencies {
 ]
 
 
-basic[api/generated-java/blog-api-model/src/main/java/com/fern/blog/api/blog/model/Age.java]=[
-package com.fern.blog.api.blog.model;
+basic[api/generated-java/basic-model/src/main/java/com/fern/basic/blog/model/Age.java]=[
+package com.fern.basic.blog.model;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -351,8 +351,8 @@ public abstract class Age {
 ]
 
 
-basic[api/generated-java/blog-api-model/src/main/java/com/fern/blog/api/blog/model/Author.java]=[
-package com.fern.blog.api.blog.model;
+basic[api/generated-java/basic-model/src/main/java/com/fern/basic/blog/model/Author.java]=[
+package com.fern.basic.blog.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -508,8 +508,8 @@ public final class Author {
 ]
 
 
-basic[api/generated-java/blog-api-model/src/main/java/com/fern/blog/api/blog/model/BlogPost.java]=[
-package com.fern.blog.api.blog.model;
+basic[api/generated-java/basic-model/src/main/java/com/fern/basic/blog/model/BlogPost.java]=[
+package com.fern.basic.blog.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -548,8 +548,8 @@ public interface BlogPost {
 ]
 
 
-basic[api/generated-java/blog-api-model/src/main/java/com/fern/blog/api/blog/model/CreatePostRequest.java]=[
-package com.fern.blog.api.blog.model;
+basic[api/generated-java/basic-model/src/main/java/com/fern/basic/blog/model/CreatePostRequest.java]=[
+package com.fern.basic.blog.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -590,8 +590,8 @@ public interface CreatePostRequest {
 ]
 
 
-basic[api/generated-java/blog-api-model/src/main/java/com/fern/blog/api/blog/model/GetPostFailedResponse.java]=[
-package com.fern.blog.api.blog.model;
+basic[api/generated-java/basic-model/src/main/java/com/fern/basic/blog/model/GetPostFailedResponse.java]=[
+package com.fern.basic.blog.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -673,8 +673,8 @@ public final class GetPostFailedResponse {
 ]
 
 
-basic[api/generated-java/blog-api-model/src/main/java/com/fern/blog/api/blog/model/PostId.java]=[
-package com.fern.blog.api.blog.model;
+basic[api/generated-java/basic-model/src/main/java/com/fern/basic/blog/model/PostId.java]=[
+package com.fern.basic.blog.model;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -709,8 +709,8 @@ public abstract class PostId {
 ]
 
 
-basic[api/generated-java/blog-api-model/src/main/java/com/fern/blog/api/blog/model/PostNotFoundError.java]=[
-package com.fern.blog.api.blog.model;
+basic[api/generated-java/basic-model/src/main/java/com/fern/basic/blog/model/PostNotFoundError.java]=[
+package com.fern.basic.blog.model;
 
 import com.fern.java.exception.HttpException;
 import java.lang.Override;
@@ -735,8 +735,8 @@ public final class PostNotFoundError extends HttpException {
 ]
 
 
-basic[api/generated-java/blog-api-model/src/main/java/com/fern/blog/api/blog/model/PostNotFoundErrorBody.java]=[
-package com.fern.blog.api.blog.model;
+basic[api/generated-java/basic-model/src/main/java/com/fern/basic/blog/model/PostNotFoundErrorBody.java]=[
+package com.fern.basic.blog.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -766,8 +766,8 @@ public interface PostNotFoundErrorBody {
 ]
 
 
-basic[api/generated-java/blog-api-model/src/main/java/com/fern/blog/api/blog/model/PostType.java]=[
-package com.fern.blog.api.blog.model;
+basic[api/generated-java/basic-model/src/main/java/com/fern/basic/blog/model/PostType.java]=[
+package com.fern.basic.blog.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -869,8 +869,8 @@ public final class PostType {
 ]
 
 
-basic[api/generated-java/blog-api-model/src/main/java/com/fern/blog/api/blog/model/UnauthorizedError.java]=[
-package com.fern.blog.api.blog.model;
+basic[api/generated-java/basic-model/src/main/java/com/fern/basic/blog/model/UnauthorizedError.java]=[
+package com.fern.basic.blog.model;
 
 import com.fern.java.exception.HttpException;
 import java.lang.Override;
@@ -895,8 +895,8 @@ public final class UnauthorizedError extends HttpException {
 ]
 
 
-basic[api/generated-java/blog-api-model/src/main/java/com/fern/blog/api/blog/model/UnauthorizedErrorBody.java]=[
-package com.fern.blog.api.blog.model;
+basic[api/generated-java/basic-model/src/main/java/com/fern/basic/blog/model/UnauthorizedErrorBody.java]=[
+package com.fern.basic.blog.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -927,8 +927,8 @@ public interface UnauthorizedErrorBody {
 ]
 
 
-basic[api/generated-java/blog-api-model/src/main/java/com/fern/blog/api/dummy/model/DummyId.java]=[
-package com.fern.blog.api.dummy.model;
+basic[api/generated-java/basic-model/src/main/java/com/fern/basic/dummy/model/DummyId.java]=[
+package com.fern.basic.dummy.model;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -963,7 +963,7 @@ public abstract class DummyId {
 ]
 
 
-basic[api/generated-java/blog-api-server-jersey/build.gradle]=[
+basic[api/generated-java/basic-server-jersey/build.gradle]=[
 plugins {
     id 'java-library'
     id "org.inferred.processors" version "3.6.0"
@@ -977,7 +977,7 @@ repositories {
 }
 
 dependencies {
-    api project(':blog-api-model')
+    api project(':basic-model')
     api 'io.github.fern-api:auth-utils:0.0.82'
     api 'io.github.fern-api:exception-utils:0.0.82'
     api 'io.github.fern-api:immutables-utils:0.0.82'
@@ -998,10 +998,10 @@ dependencies {
 ]
 
 
-basic[api/generated-java/blog-api-server-jersey/src/main/java/com/fern/blog/api/blog/server/PostNotFoundErrorExceptionMapper.java]=[
-package com.fern.blog.api.blog.server;
+basic[api/generated-java/basic-server-jersey/src/main/java/com/fern/basic/blog/server/PostNotFoundErrorExceptionMapper.java]=[
+package com.fern.basic.blog.server;
 
-import com.fern.blog.api.blog.model.PostNotFoundError;
+import com.fern.basic.blog.model.PostNotFoundError;
 import com.fern.java.jersey.ResourceInfoUtils;
 import java.lang.Override;
 import javax.ws.rs.container.ResourceInfo;
@@ -1022,7 +1022,7 @@ public final class PostNotFoundErrorExceptionMapper implements ExceptionMapper<P
     log.info("Error handling request. ErrorInstanceId= {}", e.getErrorInstanceId(), e);
     if (ResourceInfoUtils.getInterfaceNames(resourceInfo).contains("PostsService")) {
       if (ResourceInfoUtils.getMethodName(resourceInfo).contains("getPost")) {
-        return Response.status(e.getStatusCode()).entity(com.fern.blog.api.blog.model.GetPostFailedResponse.postNotFoundError(e)).build();
+        return Response.status(e.getStatusCode()).entity(com.fern.basic.blog.model.GetPostFailedResponse.postNotFoundError(e)).build();
       }
     }
     return null;
@@ -1032,13 +1032,13 @@ public final class PostNotFoundErrorExceptionMapper implements ExceptionMapper<P
 ]
 
 
-basic[api/generated-java/blog-api-server-jersey/src/main/java/com/fern/blog/api/blog/server/PostsService.java]=[
-package com.fern.blog.api.blog.server;
+basic[api/generated-java/basic-server-jersey/src/main/java/com/fern/basic/blog/server/PostsService.java]=[
+package com.fern.basic.blog.server;
 
-import com.fern.blog.api.blog.model.BlogPost;
-import com.fern.blog.api.blog.model.CreatePostRequest;
-import com.fern.blog.api.blog.model.PostId;
-import com.fern.blog.api.blog.model.PostNotFoundError;
+import com.fern.basic.blog.model.BlogPost;
+import com.fern.basic.blog.model.CreatePostRequest;
+import com.fern.basic.blog.model.PostId;
+import com.fern.basic.blog.model.PostNotFoundError;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -1063,10 +1063,10 @@ public interface PostsService {
 ]
 
 
-basic[api/generated-java/blog-api-server-jersey/src/main/java/com/fern/blog/api/dummy/server/DummyService.java]=[
-package com.fern.blog.api.dummy.server;
+basic[api/generated-java/basic-server-jersey/src/main/java/com/fern/basic/dummy/server/DummyService.java]=[
+package com.fern.basic.dummy.server;
 
-import com.fern.blog.api.dummy.model.DummyId;
+import com.fern.basic.dummy.model.DummyId;
 import com.fern.java.auth.BearerAuthHeader;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
@@ -1087,12 +1087,12 @@ public interface DummyService {
 ]
 
 
-basic[api/generated-java/blog-api-server-jersey/src/main/java/com/fern/blog/api/server/AbstractServiceRegistry.java]=[
-package com.fern.blog.api.server;
+basic[api/generated-java/basic-server-jersey/src/main/java/com/fern/basic/server/AbstractServiceRegistry.java]=[
+package com.fern.basic.server;
 
-import com.fern.blog.api.blog.server.PostNotFoundErrorExceptionMapper;
-import com.fern.blog.api.blog.server.PostsService;
-import com.fern.blog.api.dummy.server.DummyService;
+import com.fern.basic.blog.server.PostNotFoundErrorExceptionMapper;
+import com.fern.basic.blog.server.PostsService;
+import com.fern.basic.dummy.server.DummyService;
 import org.glassfish.jersey.server.ResourceConfig;
 
 public abstract class AbstractServiceRegistry extends ResourceConfig {
@@ -1111,8 +1111,8 @@ public abstract class AbstractServiceRegistry extends ResourceConfig {
 ]
 
 
-basic[api/generated-java/blog-api-server-jersey/src/main/java/com/fern/blog/api/server/DefaultExceptionMapper.java]=[
-package com.fern.blog.api.server;
+basic[api/generated-java/basic-server-jersey/src/main/java/com/fern/basic/server/DefaultExceptionMapper.java]=[
+package com.fern.basic.server;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -1166,7 +1166,7 @@ public final class DefaultExceptionMapper implements ExceptionMapper<Exception> 
 ]
 
 
-basic[api/generated-java/blog-api-server-spring/build.gradle]=[
+basic[api/generated-java/basic-server-spring/build.gradle]=[
 plugins {
     id 'java-library'
     id "org.inferred.processors" version "3.6.0"
@@ -1180,7 +1180,7 @@ repositories {
 }
 
 dependencies {
-    api project(':blog-api-model')
+    api project(':basic-model')
     api 'io.github.fern-api:auth-utils:0.0.82'
     api 'io.github.fern-api:exception-utils:0.0.82'
     api 'io.github.fern-api:immutables-utils:0.0.82'
@@ -1199,8 +1199,8 @@ dependencies {
 ]
 
 
-basic[api/generated-java/blog-api-server-spring/src/main/java/com/fern/blog/api/blog/model/PostNotFoundErrorExceptionMapper.java]=[
-package com.fern.blog.api.blog.model;
+basic[api/generated-java/basic-server-spring/src/main/java/com/fern/basic/blog/model/PostNotFoundErrorExceptionMapper.java]=[
+package com.fern.basic.blog.model;
 
 import com.fern.java.spring.HandlerMethodUtils;
 import java.lang.Object;
@@ -1235,13 +1235,13 @@ public final class PostNotFoundErrorExceptionMapper extends ResponseEntityExcept
 ]
 
 
-basic[api/generated-java/blog-api-server-spring/src/main/java/com/fern/blog/api/blog/server/PostsService.java]=[
-package com.fern.blog.api.blog.server;
+basic[api/generated-java/basic-server-spring/src/main/java/com/fern/basic/blog/server/PostsService.java]=[
+package com.fern.basic.blog.server;
 
-import com.fern.blog.api.blog.model.BlogPost;
-import com.fern.blog.api.blog.model.CreatePostRequest;
-import com.fern.blog.api.blog.model.PostId;
-import com.fern.blog.api.blog.model.PostNotFoundError;
+import com.fern.basic.blog.model.BlogPost;
+import com.fern.basic.blog.model.CreatePostRequest;
+import com.fern.basic.blog.model.PostId;
+import com.fern.basic.blog.model.PostNotFoundError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -1264,10 +1264,10 @@ public interface PostsService {
 ]
 
 
-basic[api/generated-java/blog-api-server-spring/src/main/java/com/fern/blog/api/dummy/server/DummyService.java]=[
-package com.fern.blog.api.dummy.server;
+basic[api/generated-java/basic-server-spring/src/main/java/com/fern/basic/dummy/server/DummyService.java]=[
+package com.fern.basic.dummy.server;
 
-import com.fern.blog.api.dummy.model.DummyId;
+import com.fern.basic.dummy.model.DummyId;
 import com.fern.java.auth.BearerAuthHeader;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -1288,8 +1288,8 @@ public interface DummyService {
 ]
 
 
-basic[api/generated-java/blog-api-server-spring/src/main/java/com/fern/blog/api/server/DefaultExceptionMapper.java]=[
-package com.fern.blog.api.server;
+basic[api/generated-java/basic-server-spring/src/main/java/com/fern/basic/server/DefaultExceptionMapper.java]=[
+package com.fern.basic.server;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -1346,9 +1346,9 @@ public final class DefaultExceptionMapper extends ResponseEntityExceptionHandler
 basic[api/generated-java/settings.gradle]=[
 rootProject.name = 'fern-generated-java'
 
-include 'blog-api-model'
-include 'blog-api-client'
-include 'blog-api-server-spring'
-include 'blog-api-server-jersey'
+include 'basic-model'
+include 'basic-client'
+include 'basic-server-spring'
+include 'basic-server-jersey'
 
 ]
