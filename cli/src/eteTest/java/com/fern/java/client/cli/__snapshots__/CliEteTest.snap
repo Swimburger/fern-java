@@ -31,6 +31,58 @@ dependencies {
 ]
 
 
+basic[api/generated-java/basic-client/src/main/java/com/fern/basic/blog/client/CreatePost.java]=[
+package com.fern.basic.blog.client;
+
+import com.fern.basic.blog.model.CreatePostRequest;
+import com.fern.java.immutables.StagedBuilderImmutablesStyle;
+import org.immutables.value.Value;
+
+@Value.Enclosing
+public final class CreatePost {
+  private CreatePost() {
+  }
+
+  @Value.Immutable
+  @StagedBuilderImmutablesStyle
+  interface Request {
+    CreatePostRequest body();
+
+    static ImmutableRequest.Builder builder() {
+      return ImmutableCreatePost.ImmutableRequest.builder();
+    }
+  }
+}
+
+]
+
+
+basic[api/generated-java/basic-client/src/main/java/com/fern/basic/blog/client/GetPost.java]=[
+package com.fern.basic.blog.client;
+
+import com.fern.basic.blog.model.PostId;
+import com.fern.java.immutables.StagedBuilderImmutablesStyle;
+import org.immutables.value.Value;
+
+@Value.Enclosing
+public final class GetPost {
+  private GetPost() {
+  }
+
+  @Value.Immutable
+  @StagedBuilderImmutablesStyle
+  interface Request {
+    PostId postId();
+
+    static ImmutableRequest.Builder builder() {
+      return ImmutableGetPost.ImmutableRequest.builder();
+    }
+  }
+}
+
+]
+
+
 basic[api/generated-java/basic-client/src/main/java/com/fern/basic/blog/client/PostsService.java]=[
 package com.fern.basic.blog.client;
 
@@ -240,6 +292,35 @@ public final class DummyServiceClient {
 
   public void getDummy(GetDummy.Request request) {
     this.service.getDummy(request.authHeader(), request.body());
+  }
+}
+
+]
+
+
+basic[api/generated-java/basic-client/src/main/java/com/fern/basic/dummy/client/GetDummy.java]=[
+package com.fern.basic.dummy.client;
+
+import com.fern.basic.dummy.model.DummyId;
+import com.fern.java.auth.BearerAuthHeader;
+import com.fern.java.immutables.StagedBuilderImmutablesStyle;
+import org.immutables.value.Value;
+
+@Value.Enclosing
+public final class GetDummy {
+  private GetDummy() {
+  }
+
+  @Value.Immutable
+  @StagedBuilderImmutablesStyle
+  interface Request {
+    BearerAuthHeader authHeader();
+
+    DummyId body();
+
+    static ImmutableRequest.Builder builder() {
+      return ImmutableGetDummy.ImmutableRequest.builder();
+    }
   }
 }
 

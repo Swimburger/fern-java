@@ -226,6 +226,7 @@ public final class ClientGeneratorCli {
         for (GeneratedHttpServiceClient generatedHttpServiceClient : generatedHttpServiceClients) {
             resultBuilder.addClientFiles(generatedHttpServiceClient);
             resultBuilder.addClientFiles(generatedHttpServiceClient.serviceInterface());
+            resultBuilder.addAllClientFiles(generatedHttpServiceClient.endpointFiles());
             generatedHttpServiceClient
                     .serviceInterface()
                     .generatedErrorDecoder()
