@@ -21,6 +21,7 @@ import com.fern.codegen.GeneratedError;
 import com.fern.codegen.GeneratedHttpServiceClient;
 import com.fern.codegen.GeneratedHttpServiceInterface;
 import com.fern.codegen.GeneratorContext;
+import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
 import com.fern.jersey.JerseyServiceGeneratorUtils;
 import com.fern.model.codegen.Generator;
@@ -74,8 +75,9 @@ public final class HttpServiceClientGenerator extends Generator {
         super(generatorContext);
         this.httpService = httpService;
         this.generatedEndpointModels = generatedEndpointModels;
-        this.generatedServiceClientClassName =
-                generatorContext.getClassNameUtils().getClassNameFromServiceName(httpService.name(), CLIENT_SUFFIX);
+        this.generatedServiceClientClassName = generatorContext
+                .getClassNameUtils()
+                .getClassNameFromServiceName(httpService.name(), CLIENT_SUFFIX, PackageType.CLIENT);
         this.generatedErrors = generatedErrors;
         this.jerseyServiceGeneratorUtils = new JerseyServiceGeneratorUtils(generatorContext);
     }
@@ -161,7 +163,8 @@ public final class HttpServiceClientGenerator extends Generator {
                 .getClassName(
                         StringUtils.capitalize(httpEndpoint.endpointId().value()),
                         Optional.of(REQUEST_SUFFIX),
-                        Optional.of(fernFilepath));
+                        Optional.of(fernFilepath),
+                        PackageType.CLIENT);
         ClassName immutablesRequestClassName = generatedServiceClientClassName.nestedClass(generatorContext
                 .getImmutablesUtils()
                 .getImmutablesClassName(requestClassName)

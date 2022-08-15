@@ -21,6 +21,7 @@ import com.fern.codegen.GeneratedErrorDecoder;
 import com.fern.codegen.GeneratedHttpServiceInterface;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameConstants;
+import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.codegen.utils.server.HttpPathUtils;
 import com.fern.java.exception.UnknownRemoteException;
 import com.fern.java.jersey.contracts.OptionalAwareContract;
@@ -71,8 +72,9 @@ public final class HttpServiceInterfaceGenerator extends Generator {
             HttpService httpService) {
         super(generatorContext);
         this.httpService = httpService;
-        this.generatedServiceClassName =
-                generatorContext.getClassNameUtils().getClassNameFromServiceName(httpService.name());
+        this.generatedServiceClassName = generatorContext
+                .getClassNameUtils()
+                .getClassNameFromServiceName(httpService.name(), PackageType.CLIENT);
         this.jerseyServiceGeneratorUtils = new JerseyServiceGeneratorUtils(generatorContext);
         this.generatedEndpointModels = generatedEndpointModels;
         this.generatedErrors = generatedErrors;

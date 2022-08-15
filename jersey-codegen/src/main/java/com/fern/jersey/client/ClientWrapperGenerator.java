@@ -21,6 +21,7 @@ import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratedHttpServiceClient;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.CasingUtils;
+import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
 import com.fern.model.codegen.Generator;
 import com.fern.types.FernFilepath;
@@ -67,7 +68,8 @@ public final class ClientWrapperGenerator extends Generator {
                 .getClassName(
                         CasingUtils.convertKebabCaseToUpperCamelCase(workspaceName),
                         Optional.of("Client"),
-                        Optional.empty());
+                        Optional.empty(),
+                        PackageType.CLIENT);
         List<GeneratedHttpServiceClient> clientsOrderedByDept = generatedHttpServiceClients.stream()
                 .sorted(Comparator.comparingInt(generatedClient -> generatedClient
                         .serviceInterface()
@@ -221,8 +223,9 @@ public final class ClientWrapperGenerator extends Generator {
             }
         }
         KeyedStream.stream(nestedClients).forEach((prefix, prefixedClients) -> {
-            ClassName nestedClientClassName =
-                    generatorContext.getClassNameUtils().getClassName(prefix, Optional.of("Client"), Optional.empty());
+            ClassName nestedClientClassName = generatorContext
+                    .getClassNameUtils()
+                    .getClassName(prefix, Optional.of("Client"), Optional.empty(), PackageType.CLIENT);
             ClientConfig nestedClientConfig =
                     createClientConfig(prefixedClients, fernFilePathSize + 1, nestedClientClassName);
             clientConfigBuilder.putNestedClients(prefix, nestedClientConfig);

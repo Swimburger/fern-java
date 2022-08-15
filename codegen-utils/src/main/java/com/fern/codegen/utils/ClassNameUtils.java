@@ -38,24 +38,26 @@ public final class ClassNameUtils {
         this.typeReferenceUtils = new TypeReferenceUtils(this);
     }
 
-    public ClassName getClassNameFromServiceName(ServiceName serviceName, String suffix) {
-        return getClassName(serviceName.name(), Optional.of(suffix), Optional.of(serviceName.fernFilepath()));
+    public ClassName getClassNameFromServiceName(ServiceName serviceName, String suffix, PackageType packageType) {
+        return getClassName(
+                serviceName.name(), Optional.of(suffix), Optional.of(serviceName.fernFilepath()), packageType);
     }
 
-    public ClassName getClassNameFromServiceName(ServiceName serviceName) {
-        return getClassName(serviceName.name(), Optional.empty(), Optional.of(serviceName.fernFilepath()));
+    public ClassName getClassNameFromServiceName(ServiceName serviceName, PackageType packageType) {
+        return getClassName(serviceName.name(), Optional.empty(), Optional.of(serviceName.fernFilepath()), packageType);
     }
 
-    public ClassName getClassNameFromDeclaredTypeName(DeclaredTypeName declaredTypeName) {
-        return getClassName(declaredTypeName.name(), Optional.empty(), Optional.of(declaredTypeName.fernFilepath()));
+    public ClassName getClassNameFromDeclaredTypeName(DeclaredTypeName declaredTypeName, PackageType packageType) {
+        return getClassName(
+                declaredTypeName.name(), Optional.empty(), Optional.of(declaredTypeName.fernFilepath()), packageType);
     }
 
-    public ClassName getClassNameFromErrorName(ErrorName errorName) {
-        return getClassName(errorName.name(), Optional.empty(), Optional.of(errorName.fernFilepath()));
+    public ClassName getClassNameFromErrorName(ErrorName errorName, PackageType packageType) {
+        return getClassName(errorName.name(), Optional.empty(), Optional.of(errorName.fernFilepath()), packageType);
     }
 
-    public ClassName getClassNameFromErrorName(ErrorName errorName, String suffix) {
-        return getClassName(errorName.name(), Optional.of(suffix), Optional.of(errorName.fernFilepath()));
+    public ClassName getClassNameFromErrorName(ErrorName errorName, String suffix, PackageType packageType) {
+        return getClassName(errorName.name(), Optional.of(suffix), Optional.of(errorName.fernFilepath()), packageType);
     }
 
     public ClassName getNestedClassName(ClassName outerClassName, String nestedClassName) {
@@ -63,12 +65,16 @@ public final class ClassNameUtils {
         return outerClassName.nestedClass(compatibleNestedClassName);
     }
 
-    public ClassName getClassName(String className, Optional<String> maybeSuffix, Optional<FernFilepath> fernFilepath) {
+    public ClassName getClassName(
+            String className,
+            Optional<String> maybeSuffix,
+            Optional<FernFilepath> fernFilepath,
+            PackageType packageType) {
         String fullClassName = maybeSuffix
                 .map(suffix -> className + StringUtils.capitalize(suffix))
                 .orElse(className);
         String compatibleClassname = getCompatibleClassName(fullClassName);
-        String packageName = getPackage(fernFilepath);
+        String packageName = getPackage(fernFilepath, packageType);
         return ClassName.get(packageName, compatibleClassname);
     }
 
@@ -101,9 +107,28 @@ public final class ClassNameUtils {
         return KeyWordUtils.getKeyWordCompatibleName(camelCasedClassName);
     }
 
-    private String getPackage(Optional<FernFilepath> filepath) {
+    private String getPackage(Optional<FernFilepath> filepath, PackageType packageType) {
         List<String> packageParts = new ArrayList<>(packagePrefixes);
         filepath.ifPresent(fernFilepath -> packageParts.addAll(fernFilepath.value()));
+        packageParts.add(getPackageFromType(packageType));
         return String.join(".", packageParts);
+    }
+
+    private static String getPackageFromType(PackageType packageType) {
+        switch (packageType) {
+            case SERVER:
+                return "server";
+            case CLIENT:
+                return "client";
+            case MODEL:
+            default:
+                return "model";
+        }
+    }
+
+    public enum PackageType {
+        SERVER,
+        CLIENT,
+        MODEL
     }
 }
