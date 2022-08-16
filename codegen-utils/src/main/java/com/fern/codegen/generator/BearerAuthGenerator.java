@@ -49,7 +49,7 @@ public final class BearerAuthGenerator extends Generator {
     }
 
     @Override
-    public final GeneratedFile generate() {
+    public GeneratedFile generate() {
         TypeSpec authHeaderTypeSpec = TypeSpec.classBuilder(generatedClassName)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addAnnotation(Value.Immutable.class)

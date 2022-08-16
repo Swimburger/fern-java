@@ -56,6 +56,7 @@ public final class HttpServiceClientGenerator extends Generator {
 
     private static final String STATIC_BUILDER_METHOD_NAME = "builder";
     private static final String SERVICE_FIELD_NAME = "service";
+    private static final String AUTH_FIELD_NAME = "auth";
     private static final String CLIENT_SUFFIX = "Client";
     private static final String REQUEST_CLASS_NAME = "Request";
     private static final String REQUEST_PARAMETER_NAME = "request";
@@ -101,17 +102,19 @@ public final class HttpServiceClientGenerator extends Generator {
                                 SERVICE_FIELD_NAME,
                                 Modifier.PRIVATE,
                                 Modifier.FINAL)
-                        .build())
-                .addMethod(MethodSpec.constructorBuilder()
-                        .addModifiers(Modifier.PUBLIC)
-                        .addParameter(String.class, "url")
-                        .addStatement(
-                                "this.$L = $T.$L($L)",
-                                SERVICE_FIELD_NAME,
-                                generatedHttpServiceInterface.className(),
-                                HttpServiceInterfaceGenerator.GET_CLIENT_METHOD_NAME,
-                                "url")
                         .build());
+        if (maybeGeneratedAuthSchemes.isPresent()) {
+            serviceClientBuilder.addField(FieldSpec.builder(
+                            ParameterizedTypeName.get(
+                                    ClassName.get(Optional.class), generatedHttpServiceInterface.className()),
+                            AUTH_FIELD_NAME,
+                            Modifier.PRIVATE,
+                            Modifier.FINAL)
+                    .build());
+        }
+        serviceClientBuilder.addMethod(getUrlConstructor(generatedHttpServiceInterface));
+        maybeGeneratedAuthSchemes.ifPresent(
+                generatedAuthSchemes -> getUrlAuthConstructor(generatedHttpServiceInterface, generatedAuthSchemes));
 
         List<GeneratedEndpointClient> endpointFiles = new ArrayList<>();
         for (HttpEndpoint httpEndpoint : httpService.endpoints()) {
@@ -142,6 +145,39 @@ public final class HttpServiceClientGenerator extends Generator {
                 .className(generatedServiceClientClassName)
                 .serviceInterface(generatedHttpServiceInterface)
                 .addAllEndpointFiles(endpointFiles)
+                .build();
+    }
+
+    private MethodSpec getUrlConstructor(GeneratedHttpServiceInterface generatedHttpServiceInterface) {
+        MethodSpec.Builder constructorBuilder =
+                MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC).addParameter(String.class, "url");
+        constructorBuilder.addStatement(
+                "this.$L = $T.$L($L)",
+                SERVICE_FIELD_NAME,
+                generatedHttpServiceInterface.className(),
+                HttpServiceInterfaceGenerator.GET_CLIENT_METHOD_NAME,
+                "url");
+        if (maybeGeneratedAuthSchemes.isPresent()) {
+            constructorBuilder
+                    .addStatement("this.$L = $T.empty()", AUTH_FIELD_NAME, Optional.class)
+                    .build();
+        }
+        return constructorBuilder.build();
+    }
+
+    private MethodSpec getUrlAuthConstructor(
+            GeneratedHttpServiceInterface generatedHttpServiceInterface, GeneratedAuthSchemes generatedAuthSchemes) {
+        return MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(String.class, "url")
+                .addParameter(generatedAuthSchemes.className(), AUTH_FIELD_NAME)
+                .addStatement(
+                        "this.$L = $T.$L($L)",
+                        SERVICE_FIELD_NAME,
+                        generatedHttpServiceInterface.className(),
+                        HttpServiceInterfaceGenerator.GET_CLIENT_METHOD_NAME,
+                        "url")
+                .addStatement("this.$L = $T.of($L)", Optional.class, AUTH_FIELD_NAME)
                 .build();
     }
 
@@ -183,7 +219,7 @@ public final class HttpServiceClientGenerator extends Generator {
         if (maybeGeneratedAuthSchemes.isPresent()) {
             GeneratedAuthSchemes generatedAuthSchemes = maybeGeneratedAuthSchemes.get();
             endpointMethodBuilder.addStatement(
-                    "$T auth = $L.$M().orElseThrow(() -> new $T($S)",
+                    "$T authValue = $L.$M().orElse(this.$L.orElseThrow(() -> new $T($S)))",
                     maybeGeneratedAuthSchemes.get().className(),
                     REQUEST_CLASS_NAME,
                     generatedEndpointFile
@@ -191,18 +227,19 @@ public final class HttpServiceClientGenerator extends Generator {
                             .authMethodSpec()
                             .get()
                             .name,
+                    AUTH_FIELD_NAME,
                     RuntimeException.class,
                     "Auth is required for " + httpEndpoint.id().value());
             List<String> argTokens = new ArrayList<>();
             if (generatedAuthSchemes.generatedAuthSchemes().size() == 1) {
-                argTokens.add("auth");
+                argTokens.add("authValue");
             } else if (generatorContext.getApiAuth().requirement().equals(AuthSchemesRequirement.ALL)) {
                 generatedAuthSchemes.generatedAuthSchemes().forEach(((authScheme, generatedFile) -> {
-                    argTokens.add("auth." + AuthSchemeUtils.getAuthSchemeCamelCaseName(authScheme) + "()");
+                    argTokens.add("authValue." + AuthSchemeUtils.getAuthSchemeCamelCaseName(authScheme) + "()");
                 }));
             } else if (generatorContext.getApiAuth().requirement().equals(AuthSchemesRequirement.ANY)) {
                 generatedAuthSchemes.generatedAuthSchemes().forEach(((authScheme, generatedFile) -> {
-                    argTokens.add("auth." + AnyAuthGenerator.GET_AUTH_PREFIX
+                    argTokens.add("authValue." + AnyAuthGenerator.GET_AUTH_PREFIX
                             + AuthSchemeUtils.getAuthSchemePascalCaseName(authScheme) + "()");
                 }));
             }
@@ -281,9 +318,15 @@ public final class HttpServiceClientGenerator extends Generator {
                 .addMethods(parameterImmutablesMethods)
                 .addMethod(generateStaticBuilder(immutablesEndpointClassName))
                 .build();
+
+        Optional<MethodSpec> authMethodSpec = Optional.empty();
+        if (httpEndpoint.auth() && maybeGeneratedAuthSchemes.isPresent()) {
+            authMethodSpec = Optional.of(parameterImmutablesMethods.get(0));
+        }
         return GeneratedRequestInfo.builder()
                 .requestTypeSpec(typeSpec)
                 .requestClassName(endpointClassName.nestedClass(REQUEST_CLASS_NAME))
+                .authMethodSpec(authMethodSpec)
                 .addAllPropertyMethodSpecs(parameterImmutablesMethods)
                 .build();
     }

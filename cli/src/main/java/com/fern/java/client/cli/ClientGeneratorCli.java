@@ -224,8 +224,8 @@ public final class ClientGeneratorCli {
                     return httpServiceClientGenerator.generate();
                 })
                 .collect(Collectors.toList());
-        ClientWrapperGenerator clientWrapperGenerator =
-                new ClientWrapperGenerator(generatorContext, generatedHttpServiceClients, ir.apiName());
+        ClientWrapperGenerator clientWrapperGenerator = new ClientWrapperGenerator(
+                generatorContext, generatedHttpServiceClients, ir.apiName(), maybeGeneratedAuthSchemes);
         GeneratedClientWrapper generatedClientWrapper = clientWrapperGenerator.generate();
         resultBuilder.addClientFiles(generatedClientWrapper);
         resultBuilder.addAllClientFiles(generatedClientWrapper.nestedClientWrappers());
