@@ -46,7 +46,7 @@ public abstract class BasicAuthHeader {
         if (this.username == null || this.password == null) {
             byte[] decodedToken = Base64.getDecoder().decode(getToken());
             String credentials = new String(decodedToken, StandardCharsets.UTF_8);
-            final String[] values = credentials.split(":", 2);
+            String[] values = credentials.split(":", 2);
             if (values.length != 2) {
                 throw new IllegalStateException("Failed to decode basic token");
             }

@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fern.model.codegen;
 
-import com.fern.codegen.GeneratorContext;
-import com.fern.codegen.IGeneratedFile;
+package com.fern.codegen;
 
-public abstract class Generator {
+import com.fern.java.immutables.StagedBuilderImmutablesStyle;
+import java.util.List;
+import org.immutables.value.Value;
 
-    @SuppressWarnings("VisibilityModifier")
-    protected final GeneratorContext generatorContext;
+@Value.Immutable
+@StagedBuilderImmutablesStyle
+public interface GeneratedFileWithDependents extends IGeneratedFile {
 
-    public Generator(GeneratorContext generatorContext) {
-        this.generatorContext = generatorContext;
+    List<GeneratedFile> dependentFiles();
+
+    static ImmutableGeneratedFileWithDependents.FileBuildStage builder() {
+        return ImmutableGeneratedFileWithDependents.builder();
     }
-
-    public abstract IGeneratedFile generate();
 }

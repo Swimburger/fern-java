@@ -17,11 +17,11 @@ package com.fern.jersey.client;
 
 import com.fern.codegen.GeneratedEndpointError;
 import com.fern.codegen.GeneratedErrorDecoder;
+import com.fern.codegen.Generator;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameConstants;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.java.exception.UnknownRemoteException;
-import com.fern.model.codegen.Generator;
 import com.fern.model.codegen.services.payloads.FailedResponseGenerator;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpEndpointId;
