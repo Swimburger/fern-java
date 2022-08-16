@@ -250,7 +250,7 @@ public final class ClientGeneratorCli {
         Optional<GeneratedAuthSchemes> maybeGeneratedAuthSchemes = authGenerator.generate();
         Map<AuthScheme, GeneratedFile> generatedAuthSchemes = maybeGeneratedAuthSchemes
                 .map(GeneratedAuthSchemes::generatedAuthSchemes)
-                .orElse(Collections.emptyMap());
+                .orElseGet(Collections::emptyMap);
         if (fernPluginConfig.customPluginConfig().getServerFrameworkEnums().contains(ServerFramework.JERSEY)) {
             resultBuilder.addAllJerseyServerFiles(generatedAuthSchemes.values());
             addJerseyServerFiles(ir, generatorContext, modelGeneratorResult, generatedAuthSchemes, resultBuilder);

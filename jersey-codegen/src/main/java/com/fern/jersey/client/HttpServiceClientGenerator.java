@@ -92,7 +92,7 @@ public final class HttpServiceClientGenerator extends Generator {
                 generatedErrors,
                 maybeGeneratedAuthSchemes
                         .map(GeneratedAuthSchemes::generatedAuthSchemes)
-                        .orElse(Collections.emptyMap()),
+                        .orElseGet(Collections::emptyMap),
                 httpService);
         GeneratedHttpServiceInterface generatedHttpServiceInterface = httpServiceInterfaceGenerator.generate();
         TypeSpec.Builder serviceClientBuilder = TypeSpec.classBuilder(generatedServiceClientClassName)
@@ -238,10 +238,11 @@ public final class HttpServiceClientGenerator extends Generator {
                     argTokens.add("authValue." + AuthSchemeUtils.getAuthSchemeCamelCaseName(authScheme) + "()");
                 }));
             } else if (generatorContext.getApiAuth().requirement().equals(AuthSchemesRequirement.ANY)) {
-                generatedAuthSchemes.generatedAuthSchemes().forEach(((authScheme, generatedFile) -> {
-                    argTokens.add("authValue." + AnyAuthGenerator.GET_AUTH_PREFIX
-                            + AuthSchemeUtils.getAuthSchemePascalCaseName(authScheme) + "()");
-                }));
+                generatedAuthSchemes
+                        .generatedAuthSchemes()
+                        .forEach((authScheme, generatedFile) ->
+                                argTokens.add("authValue." + AnyAuthGenerator.GET_AUTH_PREFIX
+                                        + AuthSchemeUtils.getAuthSchemePascalCaseName(authScheme) + "()"));
             }
             for (int i = generatedAuthSchemes.generatedAuthSchemes().size() - 1;
                     i
@@ -340,7 +341,7 @@ public final class HttpServiceClientGenerator extends Generator {
                 generatedEndpointModels,
                 maybeGeneratedAuthSchemes
                         .map(GeneratedAuthSchemes::generatedAuthSchemes)
-                        .orElse(Collections.emptyMap()));
+                        .orElseGet(Collections::emptyMap));
         if (httpEndpoint.auth() && maybeGeneratedAuthSchemes.isPresent()) {
             GeneratedAuthSchemes generatedAuthSchemes = maybeGeneratedAuthSchemes.get();
             requestParameters.add(ParameterSpec.builder(
