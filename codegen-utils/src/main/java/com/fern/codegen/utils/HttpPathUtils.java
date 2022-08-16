@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.fern.codegen.utils;
 
-package com.fern.codegen;
+import com.fern.types.services.HttpPath;
+import com.fern.types.services.HttpPathPart;
 
-import com.fern.java.immutables.StagedBuilderImmutablesStyle;
-import java.util.List;
-import org.immutables.value.Value;
+public class HttpPathUtils {
 
-@Value.Immutable
-@StagedBuilderImmutablesStyle
-public interface GeneratedFileWithDependents extends IGeneratedFile {
+    private HttpPathUtils() {}
 
-    List<GeneratedFile> dependentFiles();
-
-    static ImmutableGeneratedFileWithDependents.FileBuildStage builder() {
-        return ImmutableGeneratedFileWithDependents.builder();
+    public static String getPathWithCurlyBracedPathParams(HttpPath httpPath) {
+        String result = httpPath.head();
+        for (HttpPathPart httpPathPart : httpPath.parts()) {
+            result += "{" + httpPathPart.pathParameter() + "}" + httpPathPart.tail();
+        }
+        return result;
     }
 }

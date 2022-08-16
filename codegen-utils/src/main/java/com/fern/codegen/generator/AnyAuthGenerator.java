@@ -16,17 +16,15 @@
 
 package com.fern.codegen.generator;
 
+import com.fern.codegen.GeneratedAuthSchemes;
 import com.fern.codegen.GeneratedFile;
-import com.fern.codegen.GeneratedFileWithDependents;
 import com.fern.codegen.Generator;
 import com.fern.codegen.GeneratorContext;
-import com.fern.codegen.IGeneratedFile;
+import com.fern.codegen.utils.AuthSchemeUtils;
 import com.fern.codegen.utils.CasingUtils;
 import com.fern.codegen.utils.ClassNameConstants;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.types.AuthScheme;
-import com.fern.types.WithDocs;
-import com.fern.types.services.HttpHeader;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -40,9 +38,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
-import org.apache.commons.lang3.StringUtils;
 
-public class AnyAuthGenerator extends Generator {
+public final class AnyAuthGenerator extends Generator {
 
     private static final String AUTH_FIELD_NAME = "auth";
     private static final String EQUALS_METHOD_OTHER_PARAM_NAME = "other";
@@ -65,7 +62,7 @@ public class AnyAuthGenerator extends Generator {
     }
 
     @Override
-    public IGeneratedFile generate() {
+    public GeneratedAuthSchemes generate() {
         Map<AuthScheme, GeneratedFile> generatedAuthSchemes = authSchemes.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
@@ -90,10 +87,10 @@ public class AnyAuthGenerator extends Generator {
                 .build();
         JavaFile anyAuthFile = JavaFile.builder(generatedClassName.packageName(), anyAuthTypeSpec)
                 .build();
-        return GeneratedFileWithDependents.builder()
+        return GeneratedAuthSchemes.builder()
                 .file(anyAuthFile)
                 .className(generatedClassName)
-                .addAllDependentFiles(generatedAuthSchemes.values())
+                .putAllGeneratedAuthSchemes(generatedAuthSchemes)
                 .build();
     }
 
@@ -137,7 +134,7 @@ public class AnyAuthGenerator extends Generator {
     private List<MethodSpec> getStaticBuilderMethods(Map<AuthScheme, GeneratedFile> generatedAuthSchemes) {
         return authSchemes.stream()
                 .map(authScheme -> {
-                    String methodName = authScheme.visit(AuthSchemeCamelCaseName.INSTANCE);
+                    String methodName = AuthSchemeUtils.getAuthSchemeCamelCaseName(authScheme);
                     return MethodSpec.methodBuilder(methodName)
                             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                             .addParameter(generatedAuthSchemes.get(authScheme).className(), "value")
@@ -152,7 +149,8 @@ public class AnyAuthGenerator extends Generator {
         return authSchemes.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        authScheme -> MethodSpec.methodBuilder("is" + getAuthSchemePascalCaseName(authScheme))
+                        authScheme -> MethodSpec.methodBuilder(
+                                        "is" + AuthSchemeUtils.getAuthSchemePascalCaseName(authScheme))
                                 .addModifiers(Modifier.PUBLIC)
                                 .returns(boolean.class)
                                 .addStatement(
@@ -171,7 +169,7 @@ public class AnyAuthGenerator extends Generator {
                 .map(authScheme -> {
                     ClassName authSchemeClassName =
                             generatedAuthSchemes.get(authScheme).className();
-                    return MethodSpec.methodBuilder("get" + getAuthSchemePascalCaseName(authScheme))
+                    return MethodSpec.methodBuilder("get" + AuthSchemeUtils.getAuthSchemePascalCaseName(authScheme))
                             .addModifiers(Modifier.PUBLIC)
                             .returns(ParameterizedTypeName.get(
                                     ClassNameConstants.OPTIONAL_CLASS_NAME, authSchemeClassName))
@@ -185,33 +183,5 @@ public class AnyAuthGenerator extends Generator {
                             .build();
                 })
                 .collect(Collectors.toList());
-    }
-
-    private static final String getAuthSchemePascalCaseName(AuthScheme authScheme) {
-        return StringUtils.capitalize(authScheme.visit(AuthSchemeCamelCaseName.INSTANCE));
-    }
-
-    private static final class AuthSchemeCamelCaseName implements AuthScheme.Visitor<String> {
-        private static final AuthSchemeCamelCaseName INSTANCE = new AuthSchemeCamelCaseName();
-
-        @Override
-        public String visitBearer(WithDocs value) {
-            return "bearer";
-        }
-
-        @Override
-        public String visitBasic(WithDocs value) {
-            return "basic";
-        }
-
-        @Override
-        public String visitHeader(HttpHeader value) {
-            return value.name().camelCase();
-        }
-
-        @Override
-        public String visitUnknown(String unknownType) {
-            throw new RuntimeException("Encountered unknown authScheme: " + unknownType);
-        }
     }
 }

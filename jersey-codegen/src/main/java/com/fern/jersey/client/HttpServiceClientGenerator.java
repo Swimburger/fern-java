@@ -20,12 +20,14 @@ import com.fern.codegen.GeneratedEndpointClient;
 import com.fern.codegen.GeneratedEndpointClient.GeneratedRequestInfo;
 import com.fern.codegen.GeneratedEndpointModel;
 import com.fern.codegen.GeneratedError;
+import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratedHttpServiceClient;
 import com.fern.codegen.GeneratedHttpServiceInterface;
 import com.fern.codegen.Generator;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
+import com.fern.types.AuthScheme;
 import com.fern.types.DeclaredErrorName;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpEndpointId;
@@ -47,26 +49,25 @@ import javax.lang.model.element.Modifier;
 import org.immutables.value.Value;
 
 public final class HttpServiceClientGenerator extends Generator {
+
     private static final String STATIC_BUILDER_METHOD_NAME = "builder";
     private static final String SERVICE_FIELD_NAME = "service";
     private static final String CLIENT_SUFFIX = "Client";
     private static final String REQUEST_CLASS_NAME = "Request";
-
     private static final String REQUEST_PARAMETER_NAME = "request";
 
     private final HttpService httpService;
-
     private final ClassName generatedServiceClientClassName;
-
     private final Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels;
-
     private final Map<DeclaredErrorName, GeneratedError> generatedErrors;
+    private final Map<AuthScheme, GeneratedFile> generatedAuthSchemes;
 
     public HttpServiceClientGenerator(
             GeneratorContext generatorContext,
             HttpService httpService,
             Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels,
-            Map<DeclaredErrorName, GeneratedError> generatedErrors) {
+            Map<DeclaredErrorName, GeneratedError> generatedErrors,
+            Map<AuthScheme, GeneratedFile> generatedAuthSchemes) {
         super(generatorContext);
         this.httpService = httpService;
         this.generatedEndpointModels = generatedEndpointModels;
@@ -74,12 +75,13 @@ public final class HttpServiceClientGenerator extends Generator {
                 .getClassNameUtils()
                 .getClassNameFromServiceName(httpService.name(), CLIENT_SUFFIX, PackageType.CLIENT);
         this.generatedErrors = generatedErrors;
+        this.generatedAuthSchemes = generatedAuthSchemes;
     }
 
     @Override
     public GeneratedHttpServiceClient generate() {
         HttpServiceInterfaceGenerator httpServiceInterfaceGenerator = new HttpServiceInterfaceGenerator(
-                generatorContext, generatedEndpointModels, generatedErrors, httpService);
+                generatorContext, generatedEndpointModels, generatedErrors, generatedAuthSchemes, httpService);
         GeneratedHttpServiceInterface generatedHttpServiceInterface = httpServiceInterfaceGenerator.generate();
         TypeSpec.Builder serviceClientBuilder = TypeSpec.classBuilder(generatedServiceClientClassName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -202,7 +204,7 @@ public final class HttpServiceClientGenerator extends Generator {
                         Optional.of(httpService.name().fernFilepath()),
                         PackageType.CLIENT);
         List<ParameterSpec> endpointParameters = HttpEndpointArgumentUtils.getHttpEndpointArguments(
-                httpService, httpEndpoint, generatorContext, generatedEndpointModels);
+                httpService, httpEndpoint, generatorContext, generatedEndpointModels, generatedAuthSchemes);
         List<MethodSpec> parameterImmutablesMethods = endpointParameters.stream()
                 .map(endpointParameter -> MethodSpec.methodBuilder(endpointParameter.name)
                         .returns(endpointParameter.type)

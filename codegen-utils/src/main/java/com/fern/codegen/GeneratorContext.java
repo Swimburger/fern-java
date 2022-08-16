@@ -18,6 +18,7 @@ package com.fern.codegen;
 import com.fern.codegen.utils.ClassNameUtils;
 import com.fern.codegen.utils.ImmutablesUtils;
 import com.fern.codegen.utils.VisitorUtils;
+import com.fern.types.ApiAuth;
 import com.fern.types.DeclaredErrorName;
 import com.fern.types.DeclaredTypeName;
 import com.fern.types.ErrorDeclaration;
@@ -33,17 +34,20 @@ public final class GeneratorContext {
     private final Map<DeclaredTypeName, TypeDeclaration> typeDefinitionsByName;
     private final Map<DeclaredErrorName, ErrorDeclaration> errorDefinitionsByName;
     private final FernConstants fernConstants;
+    private final ApiAuth apiAuth;
 
     public GeneratorContext(
             String packagePrefix,
             Map<DeclaredTypeName, TypeDeclaration> typeDefinitionsByName,
             Map<DeclaredErrorName, ErrorDeclaration> errorDefinitionsByName,
+            ApiAuth apiAuth,
             FernConstants fernConstants) {
         this.classNameUtils = new ClassNameUtils(packagePrefix);
         this.immutablesUtils = new ImmutablesUtils(classNameUtils);
         this.visitorUtils = new VisitorUtils();
         this.typeDefinitionsByName = typeDefinitionsByName;
         this.errorDefinitionsByName = errorDefinitionsByName;
+        this.apiAuth = apiAuth;
         this.fernConstants = fernConstants;
     }
 
@@ -69,5 +73,9 @@ public final class GeneratorContext {
 
     public VisitorUtils getVisitorUtils() {
         return visitorUtils;
+    }
+
+    public ApiAuth getApiAuth() {
+        return apiAuth;
     }
 }

@@ -16,6 +16,7 @@
 
 package com.fern.codegen.generator;
 
+import com.fern.codegen.GeneratedAuthSchemes;
 import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
@@ -24,26 +25,40 @@ import com.fern.types.AuthScheme;
 import com.fern.types.AuthSchemesRequirement;
 import java.util.Optional;
 
-public final class ClientAuthGenerator {
+public final class AuthGenerator {
 
     private final ApiAuth apiAuth;
     private final GeneratorContext generatorContext;
+    private final String apiName;
+    private final PackageType packageType;
 
-    public ClientAuthGenerator(ApiAuth apiAuth, GeneratorContext generatorContext) {
+    public AuthGenerator(ApiAuth apiAuth, GeneratorContext generatorContext, String apiName, PackageType packageType) {
         this.apiAuth = apiAuth;
         this.generatorContext = generatorContext;
+        this.apiName = apiName;
+        this.packageType = packageType;
     }
 
-    public Optional<GeneratedFile> generate() {
+    public Optional<GeneratedAuthSchemes> generate() {
         if (apiAuth.schemes().size() == 0) {
             return Optional.empty();
         } else if (apiAuth.schemes().size() == 1) {
             AuthScheme authScheme = apiAuth.schemes().get(0);
-            authScheme.visit(new AuthSchemeToGeneratedFile(generatorContext, PackageType.CLIENT));
+            GeneratedFile generatedFile =
+                    authScheme.visit(new AuthSchemeToGeneratedFile(generatorContext, packageType));
+            return Optional.of(GeneratedAuthSchemes.builder()
+                    .file(generatedFile.file())
+                    .className(generatedFile.className())
+                    .putGeneratedAuthSchemes(authScheme, generatedFile)
+                    .build());
         } else if (apiAuth.requirement().equals(AuthSchemesRequirement.ANY)) {
-
+            AnyAuthGenerator anyAuthGenerator =
+                    new AnyAuthGenerator(generatorContext, packageType, apiName, apiAuth.schemes());
+            return Optional.of(anyAuthGenerator.generate());
         } else if (apiAuth.requirement().equals(AuthSchemesRequirement.ALL)) {
-
+            AllAuthGenerator allAuthGenerator =
+                    new AllAuthGenerator(generatorContext, packageType, apiName, apiAuth.schemes());
+            return Optional.of(allAuthGenerator.generate());
         }
         return Optional.empty();
     }

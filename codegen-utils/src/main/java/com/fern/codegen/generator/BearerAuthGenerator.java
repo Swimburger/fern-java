@@ -31,7 +31,7 @@ import javax.lang.model.element.Modifier;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Style.ImplementationVisibility;
 
-public class BearerAuthGenerator extends Generator {
+public final class BearerAuthGenerator extends Generator {
 
     private static final String CLASS_NAME = "BearerAuth";
     private static final String GET_TOKEN_METHOD_NAME = "getToken";

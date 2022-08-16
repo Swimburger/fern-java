@@ -17,9 +17,11 @@
 package com.fern.jersey.client;
 
 import com.fern.codegen.GeneratedEndpointModel;
+import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratorContext;
-import com.fern.codegen.utils.server.HttpAuthParameterSpecVisitor;
+import com.fern.codegen.utils.HttpAuthParameterSpecsUtils;
 import com.fern.jersey.JerseyServiceGeneratorUtils;
+import com.fern.types.AuthScheme;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpEndpointId;
 import com.fern.types.services.HttpService;
@@ -31,20 +33,20 @@ import javax.ws.rs.HeaderParam;
 
 public final class HttpEndpointArgumentUtils {
 
-    private static final HttpAuthParameterSpecVisitor JERSEY_AUTH_PARAMATER_SPEC_VISITOR =
-            new HttpAuthParameterSpecVisitor(HeaderParam.class);
-
     private HttpEndpointArgumentUtils() {}
 
     public static List<ParameterSpec> getHttpEndpointArguments(
             HttpService httpService,
             HttpEndpoint httpEndpoint,
             GeneratorContext generatorContext,
-            Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels) {
+            Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels,
+            Map<AuthScheme, GeneratedFile> generatedAuthSchemes) {
         JerseyServiceGeneratorUtils jerseyServiceGeneratorUtils = new JerseyServiceGeneratorUtils(generatorContext);
         List<ParameterSpec> parameters = new ArrayList<>();
 
-        // httpEndpoint.auth().visit(JERSEY_AUTH_PARAMATER_SPEC_VISITOR).ifPresent(parameters::add);
+        HttpAuthParameterSpecsUtils httpAuthParameterSpecsUtils =
+                new HttpAuthParameterSpecsUtils(HeaderParam.class, generatorContext, generatedAuthSchemes);
+        parameters.addAll(httpAuthParameterSpecsUtils.getAuthParameters(httpEndpoint));
 
         httpService.headers().stream()
                 .map(jerseyServiceGeneratorUtils::getHeaderParameterSpec)

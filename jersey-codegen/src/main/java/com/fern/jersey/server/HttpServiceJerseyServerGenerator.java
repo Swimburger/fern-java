@@ -17,14 +17,16 @@ package com.fern.jersey.server;
 
 import com.fern.codegen.GeneratedEndpointModel;
 import com.fern.codegen.GeneratedError;
+import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratedHttpServiceServer;
 import com.fern.codegen.Generator;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
-import com.fern.codegen.utils.server.HttpAuthParameterSpecVisitor;
-import com.fern.codegen.utils.server.HttpPathUtils;
+import com.fern.codegen.utils.HttpAuthParameterSpecsUtils;
+import com.fern.codegen.utils.HttpPathUtils;
 import com.fern.jersey.JerseyHttpMethodAnnotationVisitor;
 import com.fern.jersey.JerseyServiceGeneratorUtils;
+import com.fern.types.AuthScheme;
 import com.fern.types.DeclaredErrorName;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpEndpointId;
@@ -50,19 +52,18 @@ import javax.ws.rs.core.MediaType;
 
 public final class HttpServiceJerseyServerGenerator extends Generator {
 
-    private static final HttpAuthParameterSpecVisitor JERSEY_AUTH_PARAMATER_SPEC_VISITOR =
-            new HttpAuthParameterSpecVisitor(HeaderParam.class);
-
     private final HttpService httpService;
     private final ClassName generatedServiceClassName;
     private final JerseyServiceGeneratorUtils jerseyServiceGeneratorUtils;
     private final Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels;
     private final Map<DeclaredErrorName, GeneratedError> generatedErrors;
+    private final Map<AuthScheme, GeneratedFile> generatedAuthSchemes;
 
     public HttpServiceJerseyServerGenerator(
             GeneratorContext generatorContext,
             Map<DeclaredErrorName, GeneratedError> generatedErrors,
             Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels,
+            Map<AuthScheme, GeneratedFile> generatedAuthSchemes,
             HttpService httpService) {
         super(generatorContext);
         this.httpService = httpService;
@@ -72,6 +73,7 @@ public final class HttpServiceJerseyServerGenerator extends Generator {
                 .getClassNameFromServiceName(httpService.name(), PackageType.SERVER);
         this.jerseyServiceGeneratorUtils = new JerseyServiceGeneratorUtils(generatorContext);
         this.generatedEndpointModels = generatedEndpointModels;
+        this.generatedAuthSchemes = generatedAuthSchemes;
     }
 
     @Override
@@ -112,7 +114,11 @@ public final class HttpServiceJerseyServerGenerator extends Generator {
                         .addMember("value", "$S", HttpPathUtils.getPathWithCurlyBracedPathParams(httpEndpoint.path()))
                         .build())
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
-        // httpEndpoint.auth().visit(JERSEY_AUTH_PARAMATER_SPEC_VISITOR).ifPresent(endpointMethodBuilder::addParameter);
+
+        HttpAuthParameterSpecsUtils httpAuthParameterSpecsUtils =
+                new HttpAuthParameterSpecsUtils(HeaderParam.class, generatorContext, generatedAuthSchemes);
+        endpointMethodBuilder.addParameters(httpAuthParameterSpecsUtils.getAuthParameters(httpEndpoint));
+
         httpService.headers().stream()
                 .map(jerseyServiceGeneratorUtils::getHeaderParameterSpec)
                 .forEach(endpointMethodBuilder::addParameter);

@@ -18,16 +18,18 @@ package com.fern.jersey.client;
 import com.fern.codegen.GeneratedEndpointModel;
 import com.fern.codegen.GeneratedError;
 import com.fern.codegen.GeneratedErrorDecoder;
+import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratedHttpServiceInterface;
 import com.fern.codegen.Generator;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameConstants;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
-import com.fern.codegen.utils.server.HttpPathUtils;
+import com.fern.codegen.utils.HttpPathUtils;
 import com.fern.java.exception.UnknownRemoteException;
 import com.fern.java.jersey.contracts.OptionalAwareContract;
 import com.fern.jersey.JerseyHttpMethodAnnotationVisitor;
 import com.fern.jersey.JerseyServiceGeneratorUtils;
+import com.fern.types.AuthScheme;
 import com.fern.types.DeclaredErrorName;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpEndpointId;
@@ -64,11 +66,13 @@ public final class HttpServiceInterfaceGenerator extends Generator {
     private final Map<DeclaredErrorName, GeneratedError> generatedErrors;
     private final JerseyServiceGeneratorUtils jerseyServiceGeneratorUtils;
     private final Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels;
+    private final Map<AuthScheme, GeneratedFile> generatedAuthSchemes;
 
     public HttpServiceInterfaceGenerator(
             GeneratorContext generatorContext,
             Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels,
             Map<DeclaredErrorName, GeneratedError> generatedErrors,
+            Map<AuthScheme, GeneratedFile> generatedAuthSchemes,
             HttpService httpService) {
         super(generatorContext);
         this.httpService = httpService;
@@ -78,6 +82,7 @@ public final class HttpServiceInterfaceGenerator extends Generator {
         this.jerseyServiceGeneratorUtils = new JerseyServiceGeneratorUtils(generatorContext);
         this.generatedEndpointModels = generatedEndpointModels;
         this.generatedErrors = generatedErrors;
+        this.generatedAuthSchemes = generatedAuthSchemes;
     }
 
     @Override
@@ -127,7 +132,7 @@ public final class HttpServiceInterfaceGenerator extends Generator {
                 .build());
 
         List<ParameterSpec> endpointParameters = HttpEndpointArgumentUtils.getHttpEndpointArguments(
-                httpService, httpEndpoint, generatorContext, generatedEndpointModels);
+                httpService, httpEndpoint, generatorContext, generatedEndpointModels, generatedAuthSchemes);
         endpointMethodBuilder.addParameters(endpointParameters);
 
         GeneratedEndpointModel generatedEndpointModel = generatedEndpointModels.get(httpEndpoint.id());

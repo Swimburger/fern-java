@@ -34,7 +34,7 @@ import javax.lang.model.element.Modifier;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Style.ImplementationVisibility;
 
-public class BasicAuthGenerator extends Generator {
+public final class BasicAuthGenerator extends Generator {
 
     private static final String CLASS_NAME = "BasicAuth";
     private static final String USERNAME_FIELD_NAME = "username";

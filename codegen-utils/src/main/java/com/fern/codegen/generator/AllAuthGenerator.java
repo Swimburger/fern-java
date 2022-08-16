@@ -16,8 +16,8 @@
 
 package com.fern.codegen.generator;
 
+import com.fern.codegen.GeneratedAuthSchemes;
 import com.fern.codegen.GeneratedFile;
-import com.fern.codegen.GeneratedFileWithDependents;
 import com.fern.codegen.Generator;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.CasingUtils;
@@ -66,7 +66,7 @@ public class AllAuthGenerator extends Generator {
     }
 
     @Override
-    public GeneratedFileWithDependents generate() {
+    public GeneratedAuthSchemes generate() {
         Map<AuthScheme, GeneratedFile> generatedAuthSchemes = authSchemes.stream()
                 .collect(Collectors.toMap(
                         Function.identity(), authScheme -> authScheme.visit(this.authSchemeToGeneratedFile)));
@@ -84,10 +84,10 @@ public class AllAuthGenerator extends Generator {
                 .build();
         JavaFile allAuthFile = JavaFile.builder(generatedClassName.packageName(), allAuthTypeSpec)
                 .build();
-        return GeneratedFileWithDependents.builder()
+        return GeneratedAuthSchemes.builder()
                 .file(allAuthFile)
                 .className(generatedClassName)
-                .addAllDependentFiles(generatedAuthSchemes.values())
+                .putAllGeneratedAuthSchemes(generatedAuthSchemes)
                 .build();
     }
 

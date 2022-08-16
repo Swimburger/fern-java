@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fern.codegen.utils.server;
 
-import com.fern.types.services.HttpPath;
-import com.fern.types.services.HttpPathPart;
+package com.fern.codegen;
 
-public class HttpPathUtils {
+import com.fern.java.immutables.StagedBuilderImmutablesStyle;
+import com.fern.types.AuthScheme;
+import java.util.Map;
+import org.immutables.value.Value;
 
-    private HttpPathUtils() {}
+@Value.Immutable
+@StagedBuilderImmutablesStyle
+public interface GeneratedAuthSchemes extends IGeneratedFile {
 
-    public static String getPathWithCurlyBracedPathParams(HttpPath httpPath) {
-        String result = httpPath.head();
-        for (HttpPathPart httpPathPart : httpPath.parts()) {
-            result += "{" + httpPathPart.pathParameter() + "}" + httpPathPart.tail();
-        }
-        return result;
+    Map<AuthScheme, GeneratedFile> generatedAuthSchemes();
+
+    static ImmutableGeneratedAuthSchemes.FileBuildStage builder() {
+        return ImmutableGeneratedAuthSchemes.builder();
     }
 }

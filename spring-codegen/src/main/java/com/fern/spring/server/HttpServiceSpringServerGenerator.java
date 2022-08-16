@@ -17,13 +17,15 @@ package com.fern.spring.server;
 
 import com.fern.codegen.GeneratedEndpointModel;
 import com.fern.codegen.GeneratedError;
+import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratedHttpServiceServer;
 import com.fern.codegen.Generator;
 import com.fern.codegen.GeneratorContext;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
-import com.fern.codegen.utils.server.HttpAuthParameterSpecVisitor;
+import com.fern.codegen.utils.HttpAuthParameterSpecsUtils;
 import com.fern.spring.SpringHttpMethodAnnotationVisitor;
 import com.fern.spring.SpringServiceGeneratorUtils;
+import com.fern.types.AuthScheme;
 import com.fern.types.DeclaredErrorName;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpEndpointId;
@@ -47,19 +49,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 public final class HttpServiceSpringServerGenerator extends Generator {
 
-    private static final HttpAuthParameterSpecVisitor SPRING_AUTH_PARAMATER_SPEC_VISITOR =
-            new HttpAuthParameterSpecVisitor(RequestHeader.class);
-
     private final HttpService httpService;
     private final ClassName generatedServiceClassName;
     private final SpringServiceGeneratorUtils springServiceGeneratorUtils;
     private final Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels;
     private final Map<DeclaredErrorName, GeneratedError> generatedErrors;
+    private final Map<AuthScheme, GeneratedFile> generatedAuthSchemes;
 
     public HttpServiceSpringServerGenerator(
             GeneratorContext generatorContext,
             Map<DeclaredErrorName, GeneratedError> generatedErrors,
             Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels,
+            Map<AuthScheme, GeneratedFile> generatedAuthSchemes,
             HttpService httpService) {
         super(generatorContext);
         this.httpService = httpService;
@@ -69,6 +70,7 @@ public final class HttpServiceSpringServerGenerator extends Generator {
                 .getClassNameFromServiceName(httpService.name(), PackageType.SERVER);
         this.springServiceGeneratorUtils = new SpringServiceGeneratorUtils(generatorContext);
         this.generatedEndpointModels = generatedEndpointModels;
+        this.generatedAuthSchemes = generatedAuthSchemes;
     }
 
     @Override
@@ -102,7 +104,11 @@ public final class HttpServiceSpringServerGenerator extends Generator {
                         httpEndpoint.id().value())
                 .addAnnotation(httpEndpoint.method().visit(new SpringHttpMethodAnnotationVisitor(httpEndpoint)))
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
-        // httpEndpoint.auth().visit(SPRING_AUTH_PARAMATER_SPEC_VISITOR).ifPresent(endpointMethodBuilder::addParameter);
+
+        HttpAuthParameterSpecsUtils httpAuthParameterSpecsUtils =
+                new HttpAuthParameterSpecsUtils(RequestHeader.class, generatorContext, generatedAuthSchemes);
+        endpointMethodBuilder.addParameters(httpAuthParameterSpecsUtils.getAuthParameters(httpEndpoint));
+
         httpService.headers().stream()
                 .map(springServiceGeneratorUtils::getHeaderParameterSpec)
                 .forEach(endpointMethodBuilder::addParameter);
