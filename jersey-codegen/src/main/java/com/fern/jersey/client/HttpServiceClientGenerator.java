@@ -16,18 +16,20 @@
 
 package com.fern.jersey.client;
 
+import com.fern.codegen.GeneratedAuthSchemes;
 import com.fern.codegen.GeneratedEndpointClient;
 import com.fern.codegen.GeneratedEndpointClient.GeneratedRequestInfo;
 import com.fern.codegen.GeneratedEndpointModel;
 import com.fern.codegen.GeneratedError;
-import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratedHttpServiceClient;
 import com.fern.codegen.GeneratedHttpServiceInterface;
 import com.fern.codegen.Generator;
 import com.fern.codegen.GeneratorContext;
+import com.fern.codegen.generator.AnyAuthGenerator;
+import com.fern.codegen.utils.AuthSchemeUtils;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
-import com.fern.types.AuthScheme;
+import com.fern.types.AuthSchemesRequirement;
 import com.fern.types.DeclaredErrorName;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpEndpointId;
@@ -38,9 +40,11 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,19 +59,20 @@ public final class HttpServiceClientGenerator extends Generator {
     private static final String CLIENT_SUFFIX = "Client";
     private static final String REQUEST_CLASS_NAME = "Request";
     private static final String REQUEST_PARAMETER_NAME = "request";
+    private static final String AUTH_REQUEST_PARAMETER = "auth";
 
     private final HttpService httpService;
     private final ClassName generatedServiceClientClassName;
     private final Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels;
     private final Map<DeclaredErrorName, GeneratedError> generatedErrors;
-    private final Map<AuthScheme, GeneratedFile> generatedAuthSchemes;
+    private final Optional<GeneratedAuthSchemes> maybeGeneratedAuthSchemes;
 
     public HttpServiceClientGenerator(
             GeneratorContext generatorContext,
             HttpService httpService,
             Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels,
             Map<DeclaredErrorName, GeneratedError> generatedErrors,
-            Map<AuthScheme, GeneratedFile> generatedAuthSchemes) {
+            Optional<GeneratedAuthSchemes> maybeGeneratedAuthSchemes) {
         super(generatorContext);
         this.httpService = httpService;
         this.generatedEndpointModels = generatedEndpointModels;
@@ -75,13 +80,19 @@ public final class HttpServiceClientGenerator extends Generator {
                 .getClassNameUtils()
                 .getClassNameFromServiceName(httpService.name(), CLIENT_SUFFIX, PackageType.CLIENT);
         this.generatedErrors = generatedErrors;
-        this.generatedAuthSchemes = generatedAuthSchemes;
+        this.maybeGeneratedAuthSchemes = maybeGeneratedAuthSchemes;
     }
 
     @Override
     public GeneratedHttpServiceClient generate() {
         HttpServiceInterfaceGenerator httpServiceInterfaceGenerator = new HttpServiceInterfaceGenerator(
-                generatorContext, generatedEndpointModels, generatedErrors, generatedAuthSchemes, httpService);
+                generatorContext,
+                generatedEndpointModels,
+                generatedErrors,
+                maybeGeneratedAuthSchemes
+                        .map(GeneratedAuthSchemes::generatedAuthSchemes)
+                        .orElse(Collections.emptyMap()),
+                httpService);
         GeneratedHttpServiceInterface generatedHttpServiceInterface = httpServiceInterfaceGenerator.generate();
         TypeSpec.Builder serviceClientBuilder = TypeSpec.classBuilder(generatedServiceClientClassName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -108,8 +119,9 @@ public final class HttpServiceClientGenerator extends Generator {
                     generatedHttpServiceInterface.endpointMethods().get(httpEndpoint.id());
             MethodSpec.Builder endpointMethodBuilder =
                     MethodSpec.methodBuilder(httpEndpoint.id().value()).addModifiers(Modifier.PUBLIC);
+
             if (interfaceMethod.parameters.size() <= 1) {
-                generateCallWithNoWrappedRequest(interfaceMethod, endpointMethodBuilder);
+                generateCallWithNoWrappedRequest(httpEndpoint, interfaceMethod, endpointMethodBuilder);
             } else {
                 GeneratedEndpointClient generatedEndpointFile =
                         generateCallWithWrappedRequest(httpEndpoint, interfaceMethod, endpointMethodBuilder);
@@ -134,12 +146,22 @@ public final class HttpServiceClientGenerator extends Generator {
     }
 
     private void generateCallWithNoWrappedRequest(
-            MethodSpec interfaceMethod, MethodSpec.Builder endpointMethodBuilder) {
-        List<ParameterSpec> parametersWithoutAnnotations = interfaceMethod.parameters.stream()
-                .map(interfaceParameter -> ParameterSpec.builder(interfaceParameter.type, interfaceParameter.name)
-                        .build())
-                .collect(Collectors.toList());
-        endpointMethodBuilder.addParameters(parametersWithoutAnnotations);
+            HttpEndpoint httpEndpoint, MethodSpec interfaceMethod, MethodSpec.Builder endpointMethodBuilder) {
+        List<ParameterSpec> parameters = new ArrayList<>();
+        if (httpEndpoint.auth() && maybeGeneratedAuthSchemes.isPresent()) {
+            parameters.add(ParameterSpec.builder(
+                            ParameterizedTypeName.get(
+                                    ClassName.get(Optional.class),
+                                    maybeGeneratedAuthSchemes.get().className()),
+                            AUTH_REQUEST_PARAMETER)
+                    .build());
+        } else {
+            interfaceMethod.parameters.stream().forEach(interfaceParameter -> {
+                parameters.add(ParameterSpec.builder(interfaceParameter.type, interfaceParameter.name)
+                        .build());
+            });
+        }
+        endpointMethodBuilder.addParameters(parameters);
         String joinedParameters = interfaceMethod.parameters.stream()
                 .map(parameterSpec -> parameterSpec.name)
                 .collect(Collectors.joining(", "));
@@ -157,9 +179,52 @@ public final class HttpServiceClientGenerator extends Generator {
         endpointMethodBuilder.addParameter(ParameterSpec.builder(
                         generatedEndpointFile.generatedRequestInfo().requestClassName(), REQUEST_PARAMETER_NAME)
                 .build());
-        String args = generatedEndpointFile.generatedRequestInfo().propertyMethodSpecs().stream()
-                .map(requestMethodSpec -> REQUEST_PARAMETER_NAME + "." + requestMethodSpec.name + "()")
-                .collect(Collectors.joining(", "));
+        String args;
+        if (maybeGeneratedAuthSchemes.isPresent()) {
+            GeneratedAuthSchemes generatedAuthSchemes = maybeGeneratedAuthSchemes.get();
+            endpointMethodBuilder.addStatement(
+                    "$T auth = $L.$M().orElseThrow(() -> new $T($S)",
+                    maybeGeneratedAuthSchemes.get().className(),
+                    REQUEST_CLASS_NAME,
+                    generatedEndpointFile
+                            .generatedRequestInfo()
+                            .authMethodSpec()
+                            .get()
+                            .name,
+                    RuntimeException.class,
+                    "Auth is required for " + httpEndpoint.id().value());
+            List<String> argTokens = new ArrayList<>();
+            if (generatedAuthSchemes.generatedAuthSchemes().size() == 1) {
+                argTokens.add("auth");
+            } else if (generatorContext.getApiAuth().requirement().equals(AuthSchemesRequirement.ALL)) {
+                generatedAuthSchemes.generatedAuthSchemes().forEach(((authScheme, generatedFile) -> {
+                    argTokens.add("auth." + AuthSchemeUtils.getAuthSchemeCamelCaseName(authScheme) + "()");
+                }));
+            } else if (generatorContext.getApiAuth().requirement().equals(AuthSchemesRequirement.ANY)) {
+                generatedAuthSchemes.generatedAuthSchemes().forEach(((authScheme, generatedFile) -> {
+                    argTokens.add("auth." + AnyAuthGenerator.GET_AUTH_PREFIX
+                            + AuthSchemeUtils.getAuthSchemePascalCaseName(authScheme) + "()");
+                }));
+            }
+            for (int i = generatedAuthSchemes.generatedAuthSchemes().size() - 1;
+                    i
+                            < generatedEndpointFile
+                                    .generatedRequestInfo()
+                                    .propertyMethodSpecs()
+                                    .size();
+                    ++i) {
+                argTokens.add(generatedEndpointFile
+                        .generatedRequestInfo()
+                        .propertyMethodSpecs()
+                        .get(i)
+                        .name);
+            }
+            args = argTokens.stream().collect(Collectors.joining(", "));
+        } else {
+            args = generatedEndpointFile.generatedRequestInfo().propertyMethodSpecs().stream()
+                    .map(requestMethodSpec -> REQUEST_PARAMETER_NAME + "." + requestMethodSpec.name + "()")
+                    .collect(Collectors.joining(", "));
+        }
         String codeBlockFormat = "this.$L.$L(" + args + ")";
         if (interfaceMethod.returnType.equals(TypeName.VOID)) {
             endpointMethodBuilder.addStatement(codeBlockFormat, SERVICE_FIELD_NAME, interfaceMethod.name);
@@ -203,9 +268,8 @@ public final class HttpServiceClientGenerator extends Generator {
                         Optional.empty(),
                         Optional.of(httpService.name().fernFilepath()),
                         PackageType.CLIENT);
-        List<ParameterSpec> endpointParameters = HttpEndpointArgumentUtils.getHttpEndpointArguments(
-                httpService, httpEndpoint, generatorContext, generatedEndpointModels, generatedAuthSchemes);
-        List<MethodSpec> parameterImmutablesMethods = endpointParameters.stream()
+        List<ParameterSpec> requestParameters = getRequestParameters(httpEndpoint);
+        List<MethodSpec> parameterImmutablesMethods = requestParameters.stream()
                 .map(endpointParameter -> MethodSpec.methodBuilder(endpointParameter.name)
                         .returns(endpointParameter.type)
                         .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
@@ -222,6 +286,33 @@ public final class HttpServiceClientGenerator extends Generator {
                 .requestClassName(endpointClassName.nestedClass(REQUEST_CLASS_NAME))
                 .addAllPropertyMethodSpecs(parameterImmutablesMethods)
                 .build();
+    }
+
+    private List<ParameterSpec> getRequestParameters(HttpEndpoint httpEndpoint) {
+        List<ParameterSpec> requestParameters = new ArrayList<>();
+        List<ParameterSpec> interfaceEndpointParameters = HttpEndpointArgumentUtils.getHttpEndpointArguments(
+                httpService,
+                httpEndpoint,
+                generatorContext,
+                generatedEndpointModels,
+                maybeGeneratedAuthSchemes
+                        .map(GeneratedAuthSchemes::generatedAuthSchemes)
+                        .orElse(Collections.emptyMap()));
+        if (httpEndpoint.auth() && maybeGeneratedAuthSchemes.isPresent()) {
+            GeneratedAuthSchemes generatedAuthSchemes = maybeGeneratedAuthSchemes.get();
+            requestParameters.add(ParameterSpec.builder(
+                            ParameterizedTypeName.get(ClassName.get(Optional.class), generatedAuthSchemes.className()),
+                            AUTH_REQUEST_PARAMETER)
+                    .build());
+            for (int i = generatedAuthSchemes.generatedAuthSchemes().size() - 1;
+                    i < interfaceEndpointParameters.size();
+                    ++i) {
+                requestParameters.add(interfaceEndpointParameters.get(i));
+            }
+        } else {
+            requestParameters.addAll(interfaceEndpointParameters);
+        }
+        return requestParameters;
     }
 
     private MethodSpec generateStaticBuilder(ClassName immutablesEndpointClassName) {

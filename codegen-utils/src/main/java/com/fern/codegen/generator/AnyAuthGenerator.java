@@ -41,6 +41,7 @@ import javax.lang.model.element.Modifier;
 
 public final class AnyAuthGenerator extends Generator {
 
+    public static final String GET_AUTH_PREFIX = "get";
     private static final String AUTH_FIELD_NAME = "auth";
     private static final String EQUALS_METHOD_OTHER_PARAM_NAME = "other";
     private final ClassName generatedClassName;
@@ -169,7 +170,8 @@ public final class AnyAuthGenerator extends Generator {
                 .map(authScheme -> {
                     ClassName authSchemeClassName =
                             generatedAuthSchemes.get(authScheme).className();
-                    return MethodSpec.methodBuilder("get" + AuthSchemeUtils.getAuthSchemePascalCaseName(authScheme))
+                    return MethodSpec.methodBuilder(
+                                    GET_AUTH_PREFIX + AuthSchemeUtils.getAuthSchemePascalCaseName(authScheme))
                             .addModifiers(Modifier.PUBLIC)
                             .returns(ParameterizedTypeName.get(
                                     ClassNameConstants.OPTIONAL_CLASS_NAME, authSchemeClassName))

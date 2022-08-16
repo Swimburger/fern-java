@@ -213,9 +213,6 @@ public final class ClientGeneratorCli {
             ImmutableCodeGenerationResult.Builder resultBuilder) {
         AuthGenerator authGenerator = new AuthGenerator(ir.auth(), generatorContext, ir.apiName(), PackageType.CLIENT);
         Optional<GeneratedAuthSchemes> maybeGeneratedAuthSchemes = authGenerator.generate();
-        Map<AuthScheme, GeneratedFile> generatedAuthSchemes = maybeGeneratedAuthSchemes
-                .map(GeneratedAuthSchemes::generatedAuthSchemes)
-                .orElse(Collections.emptyMap());
         List<GeneratedHttpServiceClient> generatedHttpServiceClients = ir.services().http().stream()
                 .map(httpService -> {
                     HttpServiceClientGenerator httpServiceClientGenerator = new HttpServiceClientGenerator(
@@ -223,7 +220,7 @@ public final class ClientGeneratorCli {
                             httpService,
                             modelGeneratorResult.endpointModels().get(httpService),
                             modelGeneratorResult.errors(),
-                            generatedAuthSchemes);
+                            maybeGeneratedAuthSchemes);
                     return httpServiceClientGenerator.generate();
                 })
                 .collect(Collectors.toList());
