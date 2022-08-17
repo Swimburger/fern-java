@@ -98,7 +98,7 @@ public final class EnumGenerator extends Generator {
                 .addMethod(getToStringMethod())
                 .addMethod(getEqualsMethod())
                 .addMethod(getHashCodeMethod())
-                .addMethod(getAcceptMethod(generatedVisitor))
+                .addMethod(getVisitMethod(generatedVisitor))
                 .addMethod(getValueOfMethod(enumConstants))
                 .addType(getNestedValueEnum())
                 .addType(generatedVisitor.typeSpec())
@@ -117,7 +117,7 @@ public final class EnumGenerator extends Generator {
         return enumTypeDeclaration.values().stream()
                 .collect(Collectors.toMap(Function.identity(), enumValue -> FieldSpec.builder(
                                 generatedEnumClassName,
-                                enumValue.name().wireValue(),
+                                enumValue.name().screamingSnakeCase(),
                                 Modifier.PUBLIC,
                                 Modifier.STATIC,
                                 Modifier.FINAL)
@@ -125,7 +125,7 @@ public final class EnumGenerator extends Generator {
                                 "new $T($T.$L, $S)",
                                 generatedEnumClassName,
                                 valueFieldClassName,
-                                enumValue.name(),
+                                enumValue.name().screamingSnakeCase(),
                                 enumValue.value())
                         .build()));
     }
@@ -199,7 +199,7 @@ public final class EnumGenerator extends Generator {
 
     /*
      * Generates an accept method that visits the enum as shown below.
-     * public <T> T accept(Visitor<T> visitor) {
+     * public <T> T visit(Visitor<T> visitor) {
      *     switch (value) {
      *         case ON:
      *             return visitor.visitOn();
@@ -211,11 +211,11 @@ public final class EnumGenerator extends Generator {
      *     }
      * }
      */
-    private MethodSpec getAcceptMethod(GeneratedVisitor<EnumValue> generatedVisitor) {
+    private MethodSpec getVisitMethod(GeneratedVisitor<EnumValue> generatedVisitor) {
         CodeBlock.Builder acceptMethodImplementation = CodeBlock.builder().beginControlFlow("switch (value)");
         generatedVisitor.visitMethodsByKeyName().forEach((enumValue, visitMethod) -> {
             acceptMethodImplementation
-                    .add("case $L:\n", enumValue.name())
+                    .add("case $L:\n", enumValue.name().screamingSnakeCase())
                     .indent()
                     .addStatement("return visitor.$L()", visitMethod.name)
                     .unindent();
@@ -303,7 +303,7 @@ public final class EnumGenerator extends Generator {
         enumTypeDeclaration
                 .values()
                 .forEach(enumValue ->
-                        nestedValueEnumBuilder.addEnumConstant(enumValue.name().wireValue()));
+                        nestedValueEnumBuilder.addEnumConstant(enumValue.name().screamingSnakeCase()));
         nestedValueEnumBuilder.addEnumConstant(UNKNOWN_ENUM_CONSTANT);
         return nestedValueEnumBuilder.build();
     }
@@ -319,12 +319,7 @@ public final class EnumGenerator extends Generator {
     private GeneratedVisitor<EnumValue> getVisitor() {
         List<VisitorUtils.VisitMethodArgs<EnumValue>> visitMethodArgs = enumTypeDeclaration.values().stream()
                 .map(enumValue -> {
-                    String keyName = enumValue.name().wireValue();
-                    if (CAPITAL_SNAKE_CASE_PATTERN
-                            .matcher(enumValue.name().wireValue())
-                            .matches()) {
-                        keyName = convertCapsSnakeCaseToCamelCase(keyName);
-                    }
+                    String keyName = enumValue.name().pascalCase();
                     return VisitorUtils.VisitMethodArgs.<EnumValue>builder()
                             .key(enumValue)
                             .keyName(keyName)

@@ -47,7 +47,7 @@ public class CliEteTest {
                 ? currentPath.resolve(Paths.get("src/eteTest/.fern"))
                 : currentPath.resolve(Paths.get("cli/src/eteTest/.fern"));
         runCommand(dotFernProjectPath, new String[] {"fern-dev", "generate", "--local", "--keepDocker"});
-        List<Path> paths = Files.walk(dotFernProjectPath.resolve(Paths.get("api/generated-java")))
+        List<Path> paths = Files.walk(dotFernProjectPath.resolve(Paths.get("basic/generated-java")))
                 .collect(Collectors.toList());
         boolean filesGenerated = false;
         for (Path path : paths) {
@@ -72,10 +72,10 @@ public class CliEteTest {
             throw new RuntimeException("Failed to generate any files!");
         }
 
-        Path basicApiPaht = dotFernProjectPath.resolve("basic");
-        Path generatedJavaPath = basicApiPaht.resolve("generated-java");
-        runCommand(basicApiPaht, new String[] {"cp", "gradlew", "generated-java/"});
-        runCommand(basicApiPaht, new String[] {"cp", "-R", "gradle-wrapper/.", "generated-java/"});
+        Path basicApiPath = dotFernProjectPath.resolve("basic");
+        Path generatedJavaPath = basicApiPath.resolve("generated-java");
+        runCommand(basicApiPath, new String[] {"cp", "gradlew", "generated-java/"});
+        runCommand(basicApiPath, new String[] {"cp", "-R", "gradle-wrapper/.", "generated-java/"});
         runCommand(generatedJavaPath, new String[] {"./gradlew", "compileJava"});
     }
 
