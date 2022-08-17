@@ -95,7 +95,7 @@ public final class AllAuthGenerator extends Generator {
 
         private final GeneratedFile generatedFile;
 
-        public AuthSchemeToMethodSpec(GeneratedFile generatedFile) {
+        AuthSchemeToMethodSpec(GeneratedFile generatedFile) {
             this.generatedFile = generatedFile;
         }
 
