@@ -61,7 +61,7 @@ public abstract class BearerAuth {
 ]
 
 
-basic[basic/generated-java/basic-client/src/main/java/com/fern/basic/client/FernbasicClient.java]=[
+basic[basic/generated-java/basic-client/src/main/java/com/fern/basic/client/FernBasicClient.java]=[
 package com.fern.basic.client;
 
 import com.fern.basic.client.blog.PostsServiceClient;
@@ -71,17 +71,17 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-public final class FernbasicClient {
+public final class FernBasicClient {
   private final Supplier<PostsServiceClient> postsServiceClient;
 
   private final Supplier<DummyServiceClient> dummyServiceClient;
 
-  public FernbasicClient(String url) {
+  public FernBasicClient(String url) {
     this.postsServiceClient = memoize(() -> new PostsServiceClient(url));
     this.dummyServiceClient = memoize(() -> new DummyServiceClient(url));
   }
 
-  public FernbasicClient(String url, BearerAuth auth) {
+  public FernBasicClient(String url, BearerAuth auth) {
     this.postsServiceClient = memoize(() -> new PostsServiceClient(url, auth));
     this.dummyServiceClient = memoize(() -> new DummyServiceClient(url, auth));
   }
