@@ -3,7 +3,10 @@ ids:
 services:
   http:
     DummyService:
-      auth: bearer
+      auth: true
+      base-path: /dummy
       endpoints:
         getDummy:
+          method: GET
+          path: /
           request: DummyId

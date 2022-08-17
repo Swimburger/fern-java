@@ -227,6 +227,11 @@ public final class ClientGeneratorCli {
         ClientWrapperGenerator clientWrapperGenerator = new ClientWrapperGenerator(
                 generatorContext, generatedHttpServiceClients, ir.apiName(), maybeGeneratedAuthSchemes);
         GeneratedClientWrapper generatedClientWrapper = clientWrapperGenerator.generate();
+        maybeGeneratedAuthSchemes.ifPresent(generatedAuthSchemes -> {
+            resultBuilder.addAllClientFiles(
+                    generatedAuthSchemes.generatedAuthSchemes().values());
+            resultBuilder.addClientFiles(generatedAuthSchemes);
+        });
         resultBuilder.addClientFiles(generatedClientWrapper);
         resultBuilder.addAllClientFiles(generatedClientWrapper.nestedClientWrappers());
         for (GeneratedHttpServiceClient generatedHttpServiceClient : generatedHttpServiceClients) {
@@ -254,10 +259,14 @@ public final class ClientGeneratorCli {
         if (fernPluginConfig.customPluginConfig().getServerFrameworkEnums().contains(ServerFramework.JERSEY)) {
             resultBuilder.addAllJerseyServerFiles(generatedAuthSchemes.values());
             addJerseyServerFiles(ir, generatorContext, modelGeneratorResult, generatedAuthSchemes, resultBuilder);
+            resultBuilder.addAllJerseyServerFiles(generatedAuthSchemes.values());
+            maybeGeneratedAuthSchemes.ifPresent(resultBuilder::addJerseyServerFiles);
         }
         if (fernPluginConfig.customPluginConfig().getServerFrameworkEnums().contains(ServerFramework.SPRING)) {
             resultBuilder.addAllSpringServerFiles(generatedAuthSchemes.values());
             addSpringServerFiles(ir, generatorContext, modelGeneratorResult, generatedAuthSchemes, resultBuilder);
+            resultBuilder.addAllSpringServerFiles(generatedAuthSchemes.values());
+            maybeGeneratedAuthSchemes.ifPresent(resultBuilder::addSpringServerFiles);
         }
     }
 

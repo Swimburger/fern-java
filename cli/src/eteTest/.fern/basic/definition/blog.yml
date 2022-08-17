@@ -44,7 +44,7 @@ services:
   http:
     PostsService:
       base-path: /posts
-      auth: none
+      auth: false
       endpoints:
         createPost:
           docs: Create a new blog post

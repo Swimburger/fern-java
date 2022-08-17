@@ -80,7 +80,7 @@ public final class BearerAuthGenerator extends Generator {
                         .addParameter(String.class, "token")
                         .returns(generatedClassName)
                         .addStatement(
-                                "$T.of($L.startsWith($S) ? $L.substring(7) : token)",
+                                "return $T.of($L.startsWith($S) ? $L.substring(7) : token)",
                                 generatedImmutablesClassName,
                                 "token",
                                 "Bearer ",
