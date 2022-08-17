@@ -39,7 +39,7 @@ import javax.lang.model.element.Modifier;
 import org.apache.commons.lang3.StringUtils;
 import org.immutables.value.Value;
 
-public class AllAuthGenerator extends Generator {
+public final class AllAuthGenerator extends Generator {
 
     private static final String STATIC_BUILDER_METHOD_NAME = "builder";
     private static final String BUILD_STAGE_SUFFIX = "BuildStage";
