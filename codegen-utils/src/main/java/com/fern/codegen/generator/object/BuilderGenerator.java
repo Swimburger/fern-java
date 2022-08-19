@@ -31,6 +31,8 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -94,7 +96,7 @@ public final class BuilderGenerator {
             ClassName stageInterfaceClassName = objectClassName.nestedClass(stageInterfaceName);
             TypeSpec.Builder stageInterfaceBuilder = TypeSpec.interfaceBuilder(stageInterfaceClassName)
                     .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                    .addMethod(MethodSpec.methodBuilder(StageBuilderConstants.BUILD_METHOD_NAME)
+                    .addMethod(MethodSpec.methodBuilder(enrichedObjectProperty.fieldSpec().name)
                             .addModifiers(Modifier.PUBLIC)
                             .returns(previousStage.className())
                             .build());
@@ -148,6 +150,12 @@ public final class BuilderGenerator {
                 finalStageBuilder.addMethod(getDefaultSetter(enrichedProperty, finalStageClassName)
                         .addModifiers(Modifier.ABSTRACT)
                         .build());
+                implBuilder.addReversedMethods(getDefaultSetter(enrichedProperty, finalStageClassName)
+                        .addAnnotation(Override.class)
+                        .addStatement(
+                                "this.$L = $L", enrichedProperty.fieldSpec().name, enrichedProperty.fieldSpec().name)
+                        .addStatement("return this")
+                        .build());
             }
         }
         return PoetTypeWithClassName.of(finalStageClassName, finalStageBuilder.build());
@@ -176,6 +184,7 @@ public final class BuilderGenerator {
             TypeSpec.Builder finalStageBuilder,
             ImmutableBuilderImplBuilder.Builder implBuilder) {
         FieldSpec fieldSpec = enrichedObjectProperty.fieldSpec();
+        FieldSpec.Builder implFieldSpecBuilder = FieldSpec.builder(fieldSpec.type, fieldSpec.name, Modifier.PRIVATE);
 
         finalStageBuilder.addMethod(getDefaultSetter(enrichedObjectProperty, finalStageClassName)
                 .addModifiers(Modifier.ABSTRACT)
@@ -193,6 +202,9 @@ public final class BuilderGenerator {
                             .addModifiers(Modifier.ABSTRACT)
                             .build());
 
+            implBuilder.addReversedFields(implFieldSpecBuilder
+                    .initializer("$T.empty()", Optional.class)
+                    .build());
             implBuilder.addReversedMethods(defaultMethodImplBuilder
                     .addStatement("this.$L = $L", fieldSpec.name, fieldSpec.name)
                     .addStatement("return this")
@@ -213,6 +225,9 @@ public final class BuilderGenerator {
                             .addModifiers(Modifier.ABSTRACT)
                             .build());
 
+            implBuilder.addReversedFields(implFieldSpecBuilder
+                    .initializer("new $T<>()", LinkedHashMap.class)
+                    .build());
             implBuilder.addReversedMethods(defaultMethodImplBuilder
                     .addStatement("this.$L.clear()", fieldSpec.name)
                     .addStatement("this.$L.putAll($L)", fieldSpec.name, fieldSpec.name)
@@ -232,8 +247,7 @@ public final class BuilderGenerator {
                                     StageBuilderConstants.MAP_ITEM_APPENDER_VALUE_PARAMETER_NAME)
                             .addStatement("return this")
                             .build());
-        } else if (isEqual(propertyTypeName, ClassName.get(List.class))
-                || isEqual(propertyTypeName, ClassName.get(Set.class))) {
+        } else if (isEqual(propertyTypeName, ClassName.get(List.class))) {
             finalStageBuilder.addMethod(
                     createCollectionItemAppender(enrichedObjectProperty, propertyTypeName, finalStageClassName)
                             .addModifiers(Modifier.ABSTRACT)
@@ -243,6 +257,9 @@ public final class BuilderGenerator {
                             .addModifiers(Modifier.ABSTRACT)
                             .build());
 
+            implBuilder.addReversedFields(implFieldSpecBuilder
+                    .initializer("new $T<>()", ArrayList.class)
+                    .build());
             implBuilder.addReversedMethods(defaultMethodImplBuilder
                     .addStatement("this.$L.clear()", fieldSpec.name)
                     .addStatement("this.$L.addAll($L)", fieldSpec.name, fieldSpec.name)
@@ -250,16 +267,40 @@ public final class BuilderGenerator {
                     .build());
             implBuilder.addReversedMethods(
                     createCollectionItemAppender(enrichedObjectProperty, propertyTypeName, finalStageClassName)
-                            .addStatement("this.$L.addAll($L)", fieldSpec.name)
+                            .addStatement("this.$L.addAll($L)", fieldSpec.name, fieldSpec.name)
                             .addStatement("return this")
                             .build());
             implBuilder.addReversedMethods(
                     createCollectionAddAllSetter(enrichedObjectProperty, propertyTypeName, finalStageClassName)
-                            .addStatement(
-                                    "this.$L.add($L)",
-                                    fieldSpec.name,
-                                    StageBuilderConstants.MAP_ITEM_APPENDER_KEY_PARAMETER_NAME,
-                                    StageBuilderConstants.MAP_ITEM_APPENDER_VALUE_PARAMETER_NAME)
+                            .addStatement("this.$L.add($L)", fieldSpec.name, fieldSpec.name)
+                            .addStatement("return this")
+                            .build());
+        } else if (isEqual(propertyTypeName, ClassName.get(Set.class))) {
+            finalStageBuilder.addMethod(
+                    createCollectionItemAppender(enrichedObjectProperty, propertyTypeName, finalStageClassName)
+                            .addModifiers(Modifier.ABSTRACT)
+                            .build());
+            finalStageBuilder.addMethod(
+                    createCollectionAddAllSetter(enrichedObjectProperty, propertyTypeName, finalStageClassName)
+                            .addModifiers(Modifier.ABSTRACT)
+                            .build());
+
+            implBuilder.addReversedFields(implFieldSpecBuilder
+                    .initializer("new $T<>()", LinkedHashSet.class)
+                    .build());
+            implBuilder.addReversedMethods(defaultMethodImplBuilder
+                    .addStatement("this.$L.clear()", fieldSpec.name)
+                    .addStatement("this.$L.addAll($L)", fieldSpec.name, fieldSpec.name)
+                    .addStatement("return this")
+                    .build());
+            implBuilder.addReversedMethods(
+                    createCollectionItemAppender(enrichedObjectProperty, propertyTypeName, finalStageClassName)
+                            .addStatement("this.$L.addAll($L)", fieldSpec.name, fieldSpec.name)
+                            .addStatement("return this")
+                            .build());
+            implBuilder.addReversedMethods(
+                    createCollectionAddAllSetter(enrichedObjectProperty, propertyTypeName, finalStageClassName)
+                            .addStatement("this.$L.add($L)", fieldSpec.name, fieldSpec.name)
                             .addStatement("return this")
                             .build());
         }
