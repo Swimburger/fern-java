@@ -16,7 +16,9 @@
 
 package com.fern.codegen.generator.object;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fern.codegen.PoetTypeWithClassName;
+import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
@@ -24,9 +26,9 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeSpec;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 
@@ -50,8 +52,13 @@ public final class GenericObjectGenerator {
 
     public TypeSpec generate() {
         MethodSpec equalToMethod = generateEqualToMethod();
-        return TypeSpec.classBuilder(objectClassName)
+        Optional<ObjectBuilder> maybeObjectBuilder = generateBuilder();
+        TypeSpec.Builder typeSpecBuilder = TypeSpec.classBuilder(objectClassName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addFields(allEnrichedProperties.stream()
+                        .map(EnrichedObjectProperty::fieldSpec)
+                        .collect(Collectors.toList()))
+                .addField(int.class, HashCodeConstants.CACHED_HASH_CODE_FIELD_NAME, Modifier.PRIVATE)
                 .addSuperinterfaces(interfaces.stream()
                         .map(ImplementsInterface::interfaceClassName)
                         .collect(Collectors.toList()))
@@ -62,9 +69,18 @@ public final class GenericObjectGenerator {
                 .addMethod(generateEqualsMethod(equalToMethod))
                 .addMethod(equalToMethod)
                 .addMethod(generateHashCode())
-                .addMethod(generateToString())
-                .addTypes(generateBuilder())
-                .build();
+                .addMethod(generateToString());
+        if (maybeObjectBuilder.isPresent()) {
+            ObjectBuilder objectBuilder = maybeObjectBuilder.get();
+            typeSpecBuilder.addMethod(objectBuilder.getBuilderStaticMethod());
+            typeSpecBuilder.addTypes(objectBuilder.getGeneratedTypes().stream()
+                    .map(PoetTypeWithClassName::typeSpec)
+                    .collect(Collectors.toList()));
+            typeSpecBuilder.addAnnotation(AnnotationSpec.builder(JsonDeserialize.class)
+                    .addMember("builder", "$T.class", objectBuilder.getBuilderImplClassName())
+                    .build());
+        }
+        return typeSpecBuilder.build();
     }
 
     private MethodSpec generatePrivateConstructor() {
@@ -113,7 +129,7 @@ public final class GenericObjectGenerator {
                 .addParameter(Object.class, EqualsConstants.OTHER_PARAMETER)
                 .addStatement("if (this == $L) return true", EqualsConstants.OTHER_PARAMETER)
                 .addStatement(
-                        "return $L instanceOf $T && $N(($T) $L)",
+                        "return $L instanceof $T && $N(($T) $L)",
                         EqualsConstants.OTHER_PARAMETER,
                         objectClassName,
                         equalToMethod,
@@ -142,24 +158,24 @@ public final class GenericObjectGenerator {
     }
 
     private MethodSpec generateToString() {
-        StringBuilder codeBlock = new StringBuilder("\"" + objectClassName + "{\"");
+        StringBuilder codeBlock = new StringBuilder("\"" + objectClassName.simpleName() + "{\"");
         for (int i = 0; i < allEnrichedProperties.size(); ++i) {
             FieldSpec fieldSpec = allEnrichedProperties.get(i).fieldSpec();
             if (i == 0) {
                 codeBlock
-                        .append("+ \"")
+                        .append(" + \"")
                         .append(fieldSpec.name)
                         .append(": \" + ")
                         .append(fieldSpec.name);
             } else {
                 codeBlock
-                        .append("+ \", ")
+                        .append(" + \", ")
                         .append(fieldSpec.name)
                         .append(": \" + ")
                         .append(fieldSpec.name);
             }
         }
-        codeBlock.append("}");
+        codeBlock.append(" + \"}\"");
         return MethodSpec.methodBuilder(ToStringConstants.TO_STRING_METHOD_NAME)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
@@ -168,14 +184,9 @@ public final class GenericObjectGenerator {
                 .build();
     }
 
-    private List<TypeSpec> generateBuilder() {
+    private Optional<ObjectBuilder> generateBuilder() {
         BuilderGenerator builderGenerator = new BuilderGenerator(objectClassName, allEnrichedProperties);
-        return builderGenerator
-                .generate()
-                .map(generatedTypes -> generatedTypes.stream()
-                        .map(PoetTypeWithClassName::typeSpec)
-                        .collect(Collectors.toList()))
-                .orElseGet(Collections::emptyList);
+        return builderGenerator.generate();
     }
 
     private static final class EqualsConstants {

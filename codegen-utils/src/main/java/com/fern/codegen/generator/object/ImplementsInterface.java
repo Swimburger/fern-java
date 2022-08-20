@@ -28,4 +28,8 @@ public interface ImplementsInterface {
     ClassName interfaceClassName();
 
     List<EnrichedObjectProperty> interfaceProperties();
+
+    static ImmutableImplementsInterface.InterfaceClassNameBuildStage builder() {
+        return ImmutableImplementsInterface.builder();
+    }
 }

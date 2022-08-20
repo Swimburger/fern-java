@@ -46,6 +46,8 @@ public final class BuilderGenerator {
 
     private static final String NESTED_BUILDER_CLASS_NAME = "Builder";
 
+    private static final String STATIC_BUILDER_METHOD_NAME = "builder";
+
     private final ClassName objectClassName;
     private final ClassName nestedBuilderClassName;
     private final List<EnrichedObjectProperty> objectPropertyWithFields;
@@ -56,7 +58,7 @@ public final class BuilderGenerator {
         this.nestedBuilderClassName = objectClassName.nestedClass(NESTED_BUILDER_CLASS_NAME);
     }
 
-    public Optional<List<PoetTypeWithClassName>> generate() {
+    public Optional<ObjectBuilder> generate() {
         Optional<BuilderConfig> maybeBuilderConfig = getBuilderConfig();
         if (maybeBuilderConfig.isEmpty()) {
             return Optional.empty();
@@ -65,11 +67,25 @@ public final class BuilderGenerator {
         if (builderConfig instanceof DefaultBuilderConfig) {
             DefaultBuilderConfig defaultBuilderConfig = (DefaultBuilderConfig) builderConfig;
             PoetTypeWithClassName defaultBuilderType = getDefaultBuilderImplementation(defaultBuilderConfig);
-            return Optional.of(Collections.singletonList(defaultBuilderType));
+            return Optional.of(new ObjectBuilder(
+                    Collections.singletonList(defaultBuilderType),
+                    MethodSpec.methodBuilder(STATIC_BUILDER_METHOD_NAME)
+                            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                            .returns(nestedBuilderClassName)
+                            .addStatement("return new $T()", nestedBuilderClassName)
+                            .build(),
+                    nestedBuilderClassName));
         } else if (builderConfig instanceof StagedBuilderConfig) {
             StagedBuilderConfig stagedBuilderConfig = (StagedBuilderConfig) builderConfig;
             List<PoetTypeWithClassName> stageBuilderTypes = getStagedBuilderImplementation(stagedBuilderConfig);
-            return Optional.of(stageBuilderTypes);
+            return Optional.of(new ObjectBuilder(
+                    stageBuilderTypes,
+                    MethodSpec.methodBuilder(STATIC_BUILDER_METHOD_NAME)
+                            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                            .returns(stageBuilderTypes.get(0).className())
+                            .addStatement("return new $T()", nestedBuilderClassName)
+                            .build(),
+                    nestedBuilderClassName));
         }
         throw new RuntimeException("Encountered unexpected builderConfig: "
                 + builderConfig.getClass().getSimpleName());
@@ -88,12 +104,8 @@ public final class BuilderGenerator {
 
         List<PoetTypeWithClassName> interfaces = buildStagedBuilder(stagedBuilderConfig, builderImpl);
         BuilderImplBuilder builderImplValue = builderImpl.build();
-        builderImplTypeSpec.addMethods(builderImplValue.reversedMethods().stream()
-                .sorted(Collections.reverseOrder())
-                .collect(Collectors.toList()));
-        builderImplTypeSpec.addFields(builderImplValue.reversedFields().stream()
-                .sorted(Collections.reverseOrder())
-                .collect(Collectors.toList()));
+        builderImplTypeSpec.addMethods(reverse(builderImplValue.reversedMethods()));
+        builderImplTypeSpec.addFields(reverse(builderImplValue.reversedFields()));
         builderImplTypeSpec.addSuperinterfaces(
                 interfaces.stream().map(PoetTypeWithClassName::className).collect(Collectors.toList()));
 
@@ -174,9 +186,16 @@ public final class BuilderGenerator {
                             .addModifiers(Modifier.ABSTRACT)
                             .build());
 
-            builderImpl.addReversedFields(enrichedObjectProperty.fieldSpec());
+            builderImpl.addReversedFields(FieldSpec.builder(
+                            enrichedObjectProperty.fieldSpec().type,
+                            enrichedObjectProperty.fieldSpec().name,
+                            Modifier.PRIVATE)
+                    .build());
             builderImpl.addReversedMethods(getRequiredFieldSetter(enrichedObjectProperty, previousStage.className())
                     .addAnnotation(Override.class)
+                    .addAnnotation(AnnotationSpec.builder(JsonSetter.class)
+                            .addMember("value", "$S", enrichedObjectProperty.wireKey())
+                            .build())
                     .addStatement(
                             "this.$L = $L",
                             enrichedObjectProperty.fieldSpec().name,
@@ -204,24 +223,25 @@ public final class BuilderGenerator {
             reverseStageInterfaces.add(
                     PoetTypeWithClassName.of(stageInterfaceClassName, stageInterfaceBuilder.build()));
         }
-        return reverseStageInterfaces.stream()
-                .sorted(Collections.reverseOrder())
-                .collect(Collectors.toList());
+        return reverse(reverseStageInterfaces);
     }
 
     private MethodSpec.Builder getRequiredFieldSetter(
             EnrichedObjectProperty enrichedObjectProperty, ClassName returnClass) {
         return MethodSpec.methodBuilder(enrichedObjectProperty.fieldSpec().name)
                 .addModifiers(Modifier.PUBLIC)
-                .returns(returnClass);
+                .returns(returnClass)
+                .addParameter(ParameterSpec.builder(
+                                enrichedObjectProperty.poetTypeName(), enrichedObjectProperty.fieldSpec().name)
+                        .build());
     }
 
     private MethodSpec.Builder getFromSetter() {
         return MethodSpec.methodBuilder(StageBuilderConstants.FROM_METHOD_NAME)
+                .addModifiers(Modifier.PUBLIC)
                 .returns(nestedBuilderClassName)
                 .addParameter(
                         ParameterSpec.builder(objectClassName, StageBuilderConstants.FROM_METHOD_OTHER_PARAMETER_NAME)
-                                .addModifiers(Modifier.PUBLIC)
                                 .build());
     }
 
@@ -241,7 +261,7 @@ public final class BuilderGenerator {
         ClassName finalStageClassName = objectClassName.nestedClass(StageBuilderConstants.FINAL_STAGE_CLASS_NAME);
         TypeSpec.Builder finalStageBuilder = TypeSpec.interfaceBuilder(
                         objectClassName.nestedClass(StageBuilderConstants.FINAL_STAGE_CLASS_NAME))
-                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .addModifiers(Modifier.PUBLIC)
                 .addMethod(getBaseBuildMethod().addModifiers(Modifier.ABSTRACT).build());
 
         List<EnrichedObjectProperty> finalStageProperties = stagedBuilderConfig.finalStage();
@@ -257,7 +277,7 @@ public final class BuilderGenerator {
                         builderImpl::addReversedMethods);
             } else {
                 throw new RuntimeException("Encountered final stage property that is not a ParameterizedTypeName: "
-                        + poetTypeName.getClass().getSimpleName());
+                        + poetTypeName.toString());
             }
         }
         return PoetTypeWithClassName.of(finalStageClassName, finalStageBuilder.build());
@@ -501,18 +521,10 @@ public final class BuilderGenerator {
         if (nonRequiredFields.isEmpty() && requiredFields.isEmpty()) {
             return Optional.empty();
         } else if (requiredFields.isEmpty()) {
-            // default builder b/c all fields are not required
             return Optional.of(DefaultBuilderConfig.builder()
                     .addAllProperties(objectPropertyWithFields)
                     .build());
-        } else if (nonRequiredFields.isEmpty()) {
-            // staged builder
-            return Optional.of(StagedBuilderConfig.builder()
-                    .addAllStages(requiredFields.subList(0, requiredFields.size() - 1))
-                    .addFinalStage(requiredFields.get(requiredFields.size() - 1))
-                    .build());
         } else {
-            // staged builder
             return Optional.of(StagedBuilderConfig.builder()
                     .addAllStages(requiredFields)
                     .addAllFinalStage(nonRequiredFields)
@@ -535,6 +547,14 @@ public final class BuilderGenerator {
     @SuppressWarnings("checkstyle:ParameterName")
     private boolean isEqual(ParameterizedTypeName a, ClassName b) {
         return a.rawType.compareTo(b) == 0;
+    }
+
+    private static <T> List<T> reverse(List<T> val) {
+        List<T> reversed = new ArrayList<>();
+        for (int i = val.size() - 1; i >= 0; --i) {
+            reversed.add(val.get(i));
+        }
+        return reversed;
     }
 
     interface BuilderConfig {}
