@@ -16,12 +16,15 @@
 
 package com.fern.codegen.generator.object;
 
+import com.fern.codegen.PoetTypeWithClassName;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.TypeSpec;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -45,11 +48,28 @@ public final class GenericObjectGenerator {
         allEnrichedProperties.addAll(enrichedObjectProperties);
     }
 
-    public void generate() {}
+    public TypeSpec generate() {
+        MethodSpec equalToMethod = generateEqualToMethod();
+        return TypeSpec.classBuilder(objectClassName)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addSuperinterfaces(interfaces.stream()
+                        .map(ImplementsInterface::interfaceClassName)
+                        .collect(Collectors.toList()))
+                .addMethod(generatePrivateConstructor())
+                .addMethods(allEnrichedProperties.stream()
+                        .map(EnrichedObjectProperty::getterProperty)
+                        .collect(Collectors.toList()))
+                .addMethod(generateEqualsMethod(equalToMethod))
+                .addMethod(equalToMethod)
+                .addMethod(generateHashCode())
+                .addMethod(generateToString())
+                .addTypes(generateBuilder())
+                .build();
+    }
 
-    private MethodSpec generatePrivateConstructor(List<FieldSpec> fields) {
+    private MethodSpec generatePrivateConstructor() {
         MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder();
-        fields.forEach(fieldSpec -> {
+        allEnrichedProperties.stream().map(EnrichedObjectProperty::fieldSpec).forEach(fieldSpec -> {
             ParameterSpec parameterSpec =
                     ParameterSpec.builder(fieldSpec.type, fieldSpec.name).build();
             constructorBuilder.addParameter(parameterSpec);
@@ -148,9 +168,15 @@ public final class GenericObjectGenerator {
                 .build();
     }
 
-    private void generateStagedBuilder() {}
-
-    // Helpers
+    private List<TypeSpec> generateBuilder() {
+        BuilderGenerator builderGenerator = new BuilderGenerator(objectClassName, allEnrichedProperties);
+        return builderGenerator
+                .generate()
+                .map(generatedTypes -> generatedTypes.stream()
+                        .map(PoetTypeWithClassName::typeSpec)
+                        .collect(Collectors.toList()))
+                .orElseGet(Collections::emptyList);
+    }
 
     private static final class EqualsConstants {
         private static final String EQUALS_METHOD_NAME = "equals";
