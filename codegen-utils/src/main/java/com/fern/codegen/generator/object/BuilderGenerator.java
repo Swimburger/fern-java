@@ -237,7 +237,7 @@ public final class BuilderGenerator {
                 .addStatement("return this");
         if (enrichedObjectProperty.wireKey().isPresent()) {
             methodBuilder.addAnnotation(AnnotationSpec.builder(JsonSetter.class)
-                    .addMember("value", "$S", enrichedObjectProperty.wireKey())
+                    .addMember("value", "$S", enrichedObjectProperty.wireKey().get())
                     .build());
         }
         return methodBuilder.build();

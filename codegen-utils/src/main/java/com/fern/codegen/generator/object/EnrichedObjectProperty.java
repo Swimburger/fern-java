@@ -61,7 +61,7 @@ public interface EnrichedObjectProperty {
                 .addStatement("return $L", fieldSpec().name);
         if (wireKey().isPresent()) {
             getterBuilder.addAnnotation(AnnotationSpec.builder(JsonProperty.class)
-                    .addMember("value", "$S", wireKey())
+                    .addMember("value", "$S", wireKey().get())
                     .build());
         }
         if (fromInterface()) {
