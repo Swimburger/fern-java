@@ -198,8 +198,8 @@ public final class PostsServiceClient {
 basic[basic/generated-java/basic-client/src/main/java/com/fern/basic/client/blog/PostsServiceErrorDecoder.java]=[
 package com.fern.basic.client.blog;
 
-import com.fern.basic.model.blog.GetPostFailedResponse;
-import com.fern.java.exception.UnknownRemoteException;
+import com.fern.basic.client.blog.endpoints.CreatePost;
+import com.fern.basic.client.blog.endpoints.GetPost;
 import com.fern.java.jackson.ClientObjectMappers;
 import feign.Response;
 import feign.codec.ErrorDecoder;
@@ -207,27 +207,28 @@ import java.io.IOException;
 import java.lang.Class;
 import java.lang.Exception;
 import java.lang.Override;
+import java.lang.RuntimeException;
 import java.lang.String;
-import java.util.function.Function;
 
 final class PostsServiceErrorDecoder implements ErrorDecoder {
   @Override
   public Exception decode(String methodKey, Response response) {
-    if (methodKey.contains("getPost")) {
-      return decodeException(response, GetPostFailedResponse.class, GetPostFailedResponse::getException);
-    }
-    return new UnknownRemoteException("Encountered exception for unknown method: " + methodKey);
-  }
-
-  private static <T> Exception decodeException(Response response, Class<T> clazz,
-      Function<T, Exception> exceptionRetriever) {
     try {
-      T value = ClientObjectMappers.JSON_MAPPER.readValue(response.body().asInputStream(), clazz);
-      return exceptionRetriever.apply(value);
+      if (methodKey.contains("createPost")) {
+        return decodeException(response, CreatePost.Error.class);
+      }
+      if (methodKey.contains("getPost")) {
+        return decodeException(response, GetPost.Error.class);
+      }
     }
     catch (IOException e) {
-      return new UnknownRemoteException("Failed to read error body");
     }
+    return new RuntimeException("Failed to read response body. Received status " + response.status() + " for method " + methodKey);
+  }
+
+  private static <T extends Exception> Exception decodeException(Response response, Class<T> clazz)
+      throws IOException {
+    return ClientObjectMappers.JSON_MAPPER.reader().withAttribute("statusCode", response.status()).readValue(response.body().asInputStream(), clazz);
   }
 }
 
@@ -777,7 +778,7 @@ interface DummyService {
         .contract(new OptionalAwareContract(new JAXRSContract()))
         .decoder(new JacksonDecoder(ClientObjectMappers.JSON_MAPPER))
         .encoder(new JacksonEncoder(ClientObjectMappers.JSON_MAPPER))
-        .target(DummyService.class, url);
+        .errorDecoder(new DummyServiceErrorDecoder()).target(DummyService.class, url);
   }
 }
 
@@ -811,6 +812,42 @@ public final class DummyServiceClient {
   public void getDummy(GetDummy.Request request) throws GetDummy.Error {
     BearerAuth authValue = request.getAuthOverride().orElse(this.auth.orElseThrow(() -> new RuntimeException("Auth is required for getDummy")));
     this.service.getDummy(authValue, request.getBody());
+  }
+}
+
+]
+
+
+basic[basic/generated-java/basic-client/src/main/java/com/fern/basic/client/dummy/service/DummyServiceErrorDecoder.java]=[
+package com.fern.basic.client.dummy.service;
+
+import com.fern.basic.client.dummy.service.endpoints.GetDummy;
+import com.fern.java.jackson.ClientObjectMappers;
+import feign.Response;
+import feign.codec.ErrorDecoder;
+import java.io.IOException;
+import java.lang.Class;
+import java.lang.Exception;
+import java.lang.Override;
+import java.lang.RuntimeException;
+import java.lang.String;
+
+final class DummyServiceErrorDecoder implements ErrorDecoder {
+  @Override
+  public Exception decode(String methodKey, Response response) {
+    try {
+      if (methodKey.contains("getDummy")) {
+        return decodeException(response, GetDummy.Error.class);
+      }
+    }
+    catch (IOException e) {
+    }
+    return new RuntimeException("Failed to read response body. Received status " + response.status() + " for method " + methodKey);
+  }
+
+  private static <T extends Exception> Exception decodeException(Response response, Class<T> clazz)
+      throws IOException {
+    return ClientObjectMappers.JSON_MAPPER.reader().withAttribute("statusCode", response.status()).readValue(response.body().asInputStream(), clazz);
   }
 }
 

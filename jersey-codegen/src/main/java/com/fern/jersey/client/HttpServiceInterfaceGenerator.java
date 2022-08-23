@@ -115,7 +115,7 @@ public final class HttpServiceInterfaceGenerator extends Generator {
         Map<HttpEndpointId, GeneratedEndpointClient> endpointFiles = KeyedStream.stream(httpEndpointInfos)
                 .map(MethodSpecAndEndpointClient::endpointClient)
                 .collectToMap();
-        Optional<GeneratedErrorDecoder> maybeGeneratedErrorDecoder = getGeneratedErrorDecoder();
+        GeneratedErrorDecoder maybeGeneratedErrorDecoder = getGeneratedErrorDecoder(endpointFiles);
         TypeSpec jerseyServiceTypeSpec = jerseyServiceBuilder
                 .addMethods(httpEndpointMethods.values())
                 .addMethod(getStaticClientBuilderMethod(maybeGeneratedErrorDecoder))
@@ -181,25 +181,13 @@ public final class HttpServiceInterfaceGenerator extends Generator {
         return httpEndpointGenerator.generate();
     }
 
-    private Optional<GeneratedErrorDecoder> getGeneratedErrorDecoder() {
-        Optional<GeneratedErrorDecoder> maybeGeneratedErrorDecoder = Optional.empty();
-        boolean shouldGenerateErrorDecoder = httpService.endpoints().stream()
-                        .flatMap(httpEndpoint -> httpEndpoint.errors().value().stream())
-                        .count()
-                > 0;
-        if (shouldGenerateErrorDecoder) {
-            ServiceErrorDecoderGenerator serviceErrorDecoderGenerator = new ServiceErrorDecoderGenerator(
-                    generatorContext,
-                    httpService,
-                    KeyedStream.stream(generatedEndpointModels)
-                            .map(GeneratedEndpointModel::errorFile)
-                            .collectToMap());
-            maybeGeneratedErrorDecoder = Optional.of(serviceErrorDecoderGenerator.generate());
-        }
-        return maybeGeneratedErrorDecoder;
+    private GeneratedErrorDecoder getGeneratedErrorDecoder(Map<HttpEndpointId, GeneratedEndpointClient> endpointFiles) {
+        ServiceErrorDecoderGenerator serviceErrorDecoderGenerator =
+                new ServiceErrorDecoderGenerator(generatorContext, httpService, endpointFiles);
+        return serviceErrorDecoderGenerator.generate();
     }
 
-    private MethodSpec getStaticClientBuilderMethod(Optional<GeneratedErrorDecoder> generatedErrorDecoder) {
+    private MethodSpec getStaticClientBuilderMethod(GeneratedErrorDecoder generatedErrorDecoder) {
         CodeBlock.Builder codeBlockBuilder = CodeBlock.builder()
                 .add("return $T.builder()\n", Feign.class)
                 .indent()
@@ -214,11 +202,8 @@ public final class HttpServiceInterfaceGenerator extends Generator {
                         ".encoder(new $T($T.$L))\n",
                         JacksonEncoder.class,
                         ClassNameConstants.CLIENT_OBJECT_MAPPERS_CLASS_NAME,
-                        ClassNameConstants.CLIENT_OBJECT_MAPPERS_JSON_MAPPER_FIELD_NAME);
-        if (generatedErrorDecoder.isPresent()) {
-            codeBlockBuilder.add(
-                    ".errorDecoder(new $T())", generatedErrorDecoder.get().className());
-        }
+                        ClassNameConstants.CLIENT_OBJECT_MAPPERS_JSON_MAPPER_FIELD_NAME)
+                .add(".errorDecoder(new $T())", generatedErrorDecoder.className());
         codeBlockBuilder.add(".target($T.class, $L);", generatedServiceClassName, "url");
         CodeBlock codeBlock = codeBlockBuilder.unindent().unindent().build();
         return MethodSpec.methodBuilder(GET_CLIENT_METHOD_NAME)
