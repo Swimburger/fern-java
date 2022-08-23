@@ -44,14 +44,14 @@ public abstract class GenericUnionGenerator {
 
     private final ClassName unionClassName;
     private final ClassName valueInterfaceClassName;
-    private final List<UnionSubType> subTypes;
+    private final List<? extends UnionSubType> subTypes;
     private final UnionSubType unknownSubType;
     private final FernConstants fernConstants;
     private final ParameterizedTypeName visitorInterfaceClassName;
 
     public GenericUnionGenerator(
             ClassName unionClassName,
-            List<UnionSubType> subTypes,
+            List<? extends UnionSubType> subTypes,
             UnionSubType unknownSubType,
             FernConstants fernConstants) {
         this.unionClassName = unionClassName;
@@ -152,7 +152,7 @@ public abstract class GenericUnionGenerator {
                                     "return $T.of((($T) value).$L)",
                                     ClassNameConstants.OPTIONAL_CLASS_NAME,
                                     subType.getUnionSubTypeWrapperClass(),
-                                    getValueFieldName())
+                                    subType.getValueFieldName())
                             .endControlFlow()
                             .addStatement("return $T.empty()", ClassNameConstants.OPTIONAL_CLASS_NAME)
                             .build();
@@ -172,27 +172,31 @@ public abstract class GenericUnionGenerator {
     }
 
     public final TypeSpec generateValueInterface() {
-        AnnotationSpec.Builder jsonSubTypeAnnotationBuilder = AnnotationSpec.builder(JsonSubTypes.class);
-        subTypes.forEach(unionSubType -> {
-            AnnotationSpec subTypeAnnotation = AnnotationSpec.builder(JsonSubTypes.Type.class)
-                    .addMember("value", "$T.class", unionSubType.getUnionSubTypeWrapperClass())
-                    .build();
-            jsonSubTypeAnnotationBuilder.addMember("value", "$L", subTypeAnnotation);
-        });
-        return TypeSpec.interfaceBuilder(valueInterfaceClassName)
+        TypeSpec.Builder valueInterfaceBuilder = TypeSpec.interfaceBuilder(valueInterfaceClassName)
                 .addModifiers(Modifier.PRIVATE)
                 .addAnnotation(AnnotationSpec.builder(JsonTypeInfo.class)
                         .addMember("use", "$T.Id.$L", JsonTypeInfo.class, Id.NAME.name())
                         .addMember("property", "$S", fernConstants.errorDiscriminant())
                         .addMember("visible", "$L", true)
                         .addMember("defaultImpl", "$T.class", unknownSubType.getUnionSubTypeWrapperClass())
-                        .build())
-                .addAnnotation(jsonSubTypeAnnotationBuilder.build())
+                        .build());
+        if (subTypes.size() > 0) {
+            AnnotationSpec.Builder jsonSubTypeAnnotationBuilder = AnnotationSpec.builder(JsonSubTypes.class);
+            subTypes.forEach(unionSubType -> {
+                AnnotationSpec subTypeAnnotation = AnnotationSpec.builder(JsonSubTypes.Type.class)
+                        .addMember("value", "$T.class", unionSubType.getUnionSubTypeWrapperClass())
+                        .build();
+                jsonSubTypeAnnotationBuilder.addMember("value", "$L", subTypeAnnotation);
+            });
+            valueInterfaceBuilder.addAnnotation(jsonSubTypeAnnotationBuilder.build());
+        }
+
+        return valueInterfaceBuilder
                 .addAnnotation(AnnotationSpec.builder(JsonIgnoreProperties.class)
                         .addMember("ignoreUnknown", "$L", true)
                         .build())
-                .addTypeVariable(VISITOR_RETURN_TYPE)
                 .addMethod(MethodSpec.methodBuilder("visit")
+                        .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                         .addTypeVariable(VISITOR_RETURN_TYPE)
                         .returns(VISITOR_RETURN_TYPE)
                         .addParameter(visitorInterfaceClassName, "visitor")

@@ -80,6 +80,8 @@ public abstract class UnionSubType {
 
     public final MethodSpec getVisitMethod() {
         return MethodSpec.methodBuilder("visit")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override.class)
                 .addTypeVariable(VISITOR_RETURN_TYPE)
                 .returns(VISITOR_RETURN_TYPE)
                 .addParameter(ParameterSpec.builder(visitorInterfaceClassName, "visitor")
@@ -89,11 +91,11 @@ public abstract class UnionSubType {
     }
 
     public final MethodSpec getEqualsMethod(MethodSpec equalToMethod) {
-        return DefaultMethodGenerators.generateEqualsMethod(getUnionSubTypeClassName(), equalToMethod);
+        return DefaultMethodGenerators.generateEqualsMethod(getUnionSubTypeWrapperClass(), equalToMethod);
     }
 
     public final MethodSpec getEqualToMethod() {
-        return DefaultMethodGenerators.generateEqualToMethod(getUnionSubTypeClassName(), getFieldSpecs());
+        return DefaultMethodGenerators.generateEqualToMethod(getUnionSubTypeWrapperClass(), getFieldSpecs());
     }
 
     public final MethodSpec getHashCodeMethod() {
@@ -102,7 +104,7 @@ public abstract class UnionSubType {
 
     public final MethodSpec getToStringMethod() {
         return DefaultMethodGenerators.generateToString(
-                Optional.of(unionClassName), getUnionSubTypeClassName(), getFieldSpecs());
+                Optional.ofNullable(unionClassName.enclosingClassName()), unionClassName, getFieldSpecs());
     }
 
     public final TypeSpec getUnionSubTypeWrapper(ClassName unionWrapperInterface) {

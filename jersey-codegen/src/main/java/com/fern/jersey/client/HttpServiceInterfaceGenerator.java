@@ -15,21 +15,20 @@
  */
 package com.fern.jersey.client;
 
+import com.fern.codegen.GeneratedAuthSchemes;
+import com.fern.codegen.GeneratedEndpointClient;
 import com.fern.codegen.GeneratedEndpointModel;
-import com.fern.codegen.GeneratedError;
 import com.fern.codegen.GeneratedErrorDecoder;
-import com.fern.codegen.GeneratedFile;
 import com.fern.codegen.GeneratedHttpServiceInterface;
 import com.fern.codegen.Generator;
 import com.fern.codegen.GeneratorContext;
+import com.fern.codegen.IGeneratedFile;
 import com.fern.codegen.utils.ClassNameConstants;
 import com.fern.codegen.utils.ClassNameUtils.PackageType;
 import com.fern.codegen.utils.HttpPathUtils;
-import com.fern.java.exception.UnknownRemoteException;
 import com.fern.java.jersey.contracts.OptionalAwareContract;
 import com.fern.jersey.JerseyHttpMethodAnnotationVisitor;
 import com.fern.jersey.JerseyServiceGeneratorUtils;
-import com.fern.types.AuthScheme;
 import com.fern.types.DeclaredErrorName;
 import com.fern.types.services.HttpEndpoint;
 import com.fern.types.services.HttpEndpointId;
@@ -46,6 +45,7 @@ import feign.Feign;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.jaxrs.JAXRSContract;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +56,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import org.immutables.value.Value;
 
 public final class HttpServiceInterfaceGenerator extends Generator {
 
@@ -63,16 +64,17 @@ public final class HttpServiceInterfaceGenerator extends Generator {
 
     private final HttpService httpService;
     private final ClassName generatedServiceClassName;
-    private final Map<DeclaredErrorName, GeneratedError> generatedErrors;
+    private final Map<DeclaredErrorName, IGeneratedFile> generatedErrors;
     private final JerseyServiceGeneratorUtils jerseyServiceGeneratorUtils;
     private final Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels;
-    private final Map<AuthScheme, GeneratedFile> generatedAuthSchemes;
+    private final Optional<GeneratedAuthSchemes> maybeGeneratedAuthSchemes;
+    private final ClientClassNameUtils clientClassNameUtils;
 
     public HttpServiceInterfaceGenerator(
             GeneratorContext generatorContext,
             Map<HttpEndpointId, GeneratedEndpointModel> generatedEndpointModels,
-            Map<DeclaredErrorName, GeneratedError> generatedErrors,
-            Map<AuthScheme, GeneratedFile> generatedAuthSchemes,
+            Map<DeclaredErrorName, IGeneratedFile> generatedErrors,
+            Optional<GeneratedAuthSchemes> maybeGeneratedAuthSchemes,
             HttpService httpService) {
         super(generatorContext);
         this.httpService = httpService;
@@ -82,7 +84,9 @@ public final class HttpServiceInterfaceGenerator extends Generator {
         this.jerseyServiceGeneratorUtils = new JerseyServiceGeneratorUtils(generatorContext);
         this.generatedEndpointModels = generatedEndpointModels;
         this.generatedErrors = generatedErrors;
-        this.generatedAuthSchemes = generatedAuthSchemes;
+        this.maybeGeneratedAuthSchemes = maybeGeneratedAuthSchemes;
+        this.clientClassNameUtils =
+                new ClientClassNameUtils(generatorContext.getIr(), generatorContext.getOrganization());
     }
 
     @Override
@@ -97,7 +101,7 @@ public final class HttpServiceInterfaceGenerator extends Generator {
         jerseyServiceBuilder.addAnnotation(AnnotationSpec.builder(Path.class)
                 .addMember("value", "$S", httpService.basePath().orElse("/"))
                 .build());
-        Map<HttpEndpointId, MethodSpec> httpEndpointMethods = httpService.endpoints().stream()
+        Map<HttpEndpointId, MethodSpecAndEndpointClient> httpEndpointInfos = httpService.endpoints().stream()
                 .collect(Collectors.toMap(
                         HttpEndpoint::id,
                         this::getHttpEndpointMethodSpec,
@@ -105,6 +109,12 @@ public final class HttpServiceInterfaceGenerator extends Generator {
                             throw new IllegalStateException(String.format("Duplicate key %s", u));
                         },
                         LinkedHashMap::new));
+        Map<HttpEndpointId, MethodSpec> httpEndpointMethods = KeyedStream.stream(httpEndpointInfos)
+                .map(MethodSpecAndEndpointClient::methodSpec)
+                .collectToMap();
+        Map<HttpEndpointId, GeneratedEndpointClient> endpointFiles = KeyedStream.stream(httpEndpointInfos)
+                .map(MethodSpecAndEndpointClient::endpointClient)
+                .collectToMap();
         Optional<GeneratedErrorDecoder> maybeGeneratedErrorDecoder = getGeneratedErrorDecoder();
         TypeSpec jerseyServiceTypeSpec = jerseyServiceBuilder
                 .addMethods(httpEndpointMethods.values())
@@ -118,11 +128,12 @@ public final class HttpServiceInterfaceGenerator extends Generator {
                 .className(generatedServiceClassName)
                 .httpService(httpService)
                 .generatedErrorDecoder(maybeGeneratedErrorDecoder)
+                .putAllEndpointFiles(endpointFiles)
                 .putAllEndpointMethods(httpEndpointMethods)
                 .build();
     }
 
-    private MethodSpec getHttpEndpointMethodSpec(HttpEndpoint httpEndpoint) {
+    private MethodSpecAndEndpointClient getHttpEndpointMethodSpec(HttpEndpoint httpEndpoint) {
         MethodSpec.Builder endpointMethodBuilder = MethodSpec.methodBuilder(
                         httpEndpoint.id().value())
                 .addAnnotation(httpEndpoint.method().visit(JerseyHttpMethodAnnotationVisitor.INSTANCE))
@@ -132,7 +143,13 @@ public final class HttpServiceInterfaceGenerator extends Generator {
                 .build());
 
         List<ParameterSpec> endpointParameters = HttpEndpointArgumentUtils.getHttpEndpointArguments(
-                httpService, httpEndpoint, generatorContext, generatedEndpointModels, generatedAuthSchemes);
+                httpService,
+                httpEndpoint,
+                generatorContext,
+                generatedEndpointModels,
+                maybeGeneratedAuthSchemes
+                        .map(GeneratedAuthSchemes::generatedAuthSchemes)
+                        .orElseGet(Collections::emptyMap));
         endpointMethodBuilder.addParameters(endpointParameters);
 
         GeneratedEndpointModel generatedEndpointModel = generatedEndpointModels.get(httpEndpoint.id());
@@ -140,14 +157,28 @@ public final class HttpServiceInterfaceGenerator extends Generator {
                 .getPayloadTypeName(generatedEndpointModel.generatedHttpResponse())
                 .ifPresent(endpointMethodBuilder::returns);
 
-        List<ClassName> errorClassNames = httpEndpoint.errors().value().stream()
-                .map(responseError -> generatedErrors.get(responseError.error()).className())
-                .collect(Collectors.toList());
-        endpointMethodBuilder.addExceptions(errorClassNames);
-        if (!errorClassNames.isEmpty()) {
-            endpointMethodBuilder.addException(ClassName.get(UnknownRemoteException.class));
-        }
-        return endpointMethodBuilder.build();
+        GeneratedEndpointClient generatedEndpointClient =
+                generateEndpointFile(httpEndpoint, endpointMethodBuilder.parameters);
+        MethodSpec serviceInterfaceMethodSpec = endpointMethodBuilder
+                .addException(generatedEndpointClient.generatedNestedError().className())
+                .build();
+        return MethodSpecAndEndpointClient.builder()
+                .methodSpec(serviceInterfaceMethodSpec)
+                .endpointClient(generatedEndpointClient)
+                .build();
+    }
+
+    private GeneratedEndpointClient generateEndpointFile(
+            HttpEndpoint httpEndpoint, List<ParameterSpec> serviceInterfaceMethodParameters) {
+        HttpEndpointGenerator httpEndpointGenerator = new HttpEndpointGenerator(
+                generatorContext,
+                clientClassNameUtils,
+                httpService,
+                httpEndpoint,
+                serviceInterfaceMethodParameters,
+                maybeGeneratedAuthSchemes,
+                generatedErrors);
+        return httpEndpointGenerator.generate();
     }
 
     private Optional<GeneratedErrorDecoder> getGeneratedErrorDecoder() {
@@ -196,5 +227,16 @@ public final class HttpServiceInterfaceGenerator extends Generator {
                 .returns(generatedServiceClassName)
                 .addCode(codeBlock)
                 .build();
+    }
+
+    @Value.Immutable
+    interface MethodSpecAndEndpointClient {
+        MethodSpec methodSpec();
+
+        GeneratedEndpointClient endpointClient();
+
+        static ImmutableMethodSpecAndEndpointClient.Builder builder() {
+            return ImmutableMethodSpecAndEndpointClient.builder();
+        }
     }
 }

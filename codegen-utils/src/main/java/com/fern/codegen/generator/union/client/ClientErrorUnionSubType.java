@@ -98,6 +98,7 @@ public final class ClientErrorUnionSubType extends UnionSubType {
     public MethodSpec getVisitorMethodInterface() {
         return MethodSpec.methodBuilder(
                         "visit" + StringUtils.capitalize(errorDeclaration.name().name()))
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .returns(TypeVariableName.get("T"))
                 .addParameter(ParameterSpec.builder(
                                 getUnionSubTypeClassName(),
@@ -113,7 +114,7 @@ public final class ClientErrorUnionSubType extends UnionSubType {
                 .returns(getUnionClassName())
                 .addParameter(getUnionSubTypeClassName(), getValueFieldName())
                 .addStatement(
-                        "new $T(new $T($L), $L)",
+                        "return new $T(new $T($L), $L)",
                         getUnionClassName(),
                         getUnionSubTypeWrapperClass(),
                         getValueFieldName(),
@@ -141,6 +142,7 @@ public final class ClientErrorUnionSubType extends UnionSubType {
 
     private MethodSpec getFromJsonConstructor() {
         MethodSpec.Builder fromJsonConstructorBuilder = MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PRIVATE)
                 .addAnnotation(AnnotationSpec.builder(JsonCreator.class)
                         .addMember(
                                 "mode",
@@ -160,7 +162,7 @@ public final class ClientErrorUnionSubType extends UnionSubType {
                     .build());
             fromJsonConstructorBuilder.addStatement("this.$L = $L", getValueFieldName(), getValueFieldName());
         }
-        parameterSpecs.add(ParameterSpec.builder(getUnionSubTypeClassName(), ERROR_INSTANCE_ID_FIELD_NAME)
+        parameterSpecs.add(ParameterSpec.builder(String.class, ERROR_INSTANCE_ID_FIELD_NAME)
                 .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
                         .addMember("value", "$S", fernConstants.errorInstanceIdKey())
                         .build())
@@ -173,6 +175,7 @@ public final class ClientErrorUnionSubType extends UnionSubType {
 
     private MethodSpec getInitConstructor() {
         return MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PRIVATE)
                 .addParameter(ParameterSpec.builder(getUnionSubTypeClassName(), getValueFieldName())
                         .build())
                 .addStatement("this.$L = $L", getValueFieldName(), getValueFieldName())

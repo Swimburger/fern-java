@@ -41,7 +41,7 @@ public final class ClientErrorUnionGenerator extends GenericUnionGenerator {
 
     public ClientErrorUnionGenerator(
             ClassName unionClassName,
-            List<UnionSubType> subTypes,
+            List<? extends UnionSubType> subTypes,
             UnionSubType unknownSubType,
             FernConstants fernConstants) {
         super(unionClassName, subTypes, unknownSubType, fernConstants);
@@ -57,10 +57,12 @@ public final class ClientErrorUnionGenerator extends GenericUnionGenerator {
     @Override
     public TypeSpec build(TypeSpec.Builder unionBuilder) {
         return unionBuilder
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .addType(getCustomDeserializer())
                 .addAnnotation(AnnotationSpec.builder(JsonDeserialize.class)
                         .addMember("using", "$T.class", deserializerClassName)
                         .build())
+                .superclass(Exception.class)
                 .build();
     }
 
@@ -69,6 +71,8 @@ public final class ClientErrorUnionGenerator extends GenericUnionGenerator {
                 .addModifiers(Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
                 .superclass(ParameterizedTypeName.get(ClassName.get(JsonDeserializer.class), getUnionClassName()))
                 .addMethod(MethodSpec.methodBuilder("deserialize")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
                         .returns(getUnionClassName())
                         .addParameter(JsonParser.class, "p")
                         .addParameter(DeserializationContext.class, "ctx")
@@ -79,7 +83,7 @@ public final class ClientErrorUnionGenerator extends GenericUnionGenerator {
                                 "ctx",
                                 "p",
                                 getValueInterfaceClassName())
-                        .addStatement("$T statusCode = (int) $L.getAttribute($S)", int.class, "statusCode")
+                        .addStatement("$T statusCode = (int) $L.getAttribute($S)", int.class, "ctx", "statusCode")
                         .addStatement("return new $T($L, $L)", getUnionClassName(), "value", "statusCode")
                         .build())
                 .build();

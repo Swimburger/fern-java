@@ -75,6 +75,7 @@ public final class ClientErrorUnionOtherSubType extends UnionSubType {
     @Override
     public MethodSpec getVisitorMethodInterface() {
         return MethodSpec.methodBuilder("visitOtherError")
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .returns(TypeVariableName.get("T"))
                 .addParameter(ParameterSpec.builder(getUnionSubTypeClassName(), "errorBody")
                         .build())
@@ -89,7 +90,7 @@ public final class ClientErrorUnionOtherSubType extends UnionSubType {
                 .addParameter(getUnionSubTypeClassName(), getValueFieldName())
                 .addParameter(int.class, "statusCode")
                 .addStatement(
-                        "new $T(new $T($L), $L)",
+                        "return new $T(new $T($L), $L)",
                         getUnionClassName(),
                         getUnionSubTypeWrapperClass(),
                         getValueFieldName(),
