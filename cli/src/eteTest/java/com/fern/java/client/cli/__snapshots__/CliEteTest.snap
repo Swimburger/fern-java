@@ -275,6 +275,10 @@ public final class CreatePost {
       return value.visit(visitor);
     }
 
+    public int getStatusCode() {
+      return this.statusCode;
+    }
+
     public static Error other(Object unknownValue, int statusCode) {
       return new Error(new UnknownErrorValue(unknownValue), statusCode);
     }
@@ -400,6 +404,10 @@ public final class GetPost {
 
     public <T> T visit(Visitor<T> visitor) {
       return value.visit(visitor);
+    }
+
+    public int getStatusCode() {
+      return this.statusCode;
     }
 
     public static Error postNotFoundError(PostNotFoundError value) {
@@ -995,6 +1003,10 @@ public final class GetDummy {
 
     public <T> T visit(Visitor<T> visitor) {
       return value.visit(visitor);
+    }
+
+    public int getStatusCode() {
+      return this.statusCode;
     }
 
     public static Error other(Object unknownValue, int statusCode) {

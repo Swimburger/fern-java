@@ -83,7 +83,17 @@ public abstract class GenericUnionGenerator {
                         .returns(VISITOR_RETURN_TYPE)
                         .addParameter(visitorInterfaceClassName, "visitor")
                         .addStatement("return $L.$L($L)", getValueFieldName(), "visit", "visitor")
-                        .build())
+                        .build());
+
+        getAdditionalFieldSpecs().forEach(fieldSpec -> {
+            errorUnionBuilder.addMethod(MethodSpec.methodBuilder("get" + StringUtils.capitalize(fieldSpec.name))
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(fieldSpec.type)
+                    .addStatement("return this.$L", fieldSpec.name)
+                    .build());
+        });
+
+        errorUnionBuilder
                 .addMethods(getStaticConstructors())
                 .addMethods(getIsSubTypeMethods())
                 .addMethods(getSubTypeMethods())
