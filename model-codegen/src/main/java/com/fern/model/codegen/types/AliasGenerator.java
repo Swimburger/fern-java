@@ -79,7 +79,7 @@ public final class AliasGenerator extends Generator {
                         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                         .addParameter(ParameterSpec.builder(String.class, VALUE_FIELD_NAME)
                                 .build())
-                        .returns(aliasTypeName)
+                        .returns(generatedAliasClassName)
                         .addCode(maybeValueOfFactoryMethod.get())
                         .build());
             }
