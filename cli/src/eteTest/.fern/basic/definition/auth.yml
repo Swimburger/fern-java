@@ -1,5 +1,3 @@
-ids:
-  - DummyId
 services:
   http:
     AuthService:
