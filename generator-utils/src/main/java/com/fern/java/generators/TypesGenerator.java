@@ -37,12 +37,9 @@ public final class TypesGenerator {
     private final Map<DeclaredTypeName, TypeDeclaration> typeDeclarationsByName;
     private final AbstractGeneratorContext generatorContext;
 
-    public TypesGenerator(
-            List<TypeDeclaration> typeDeclarations,
-            List<ErrorDeclaration> errorDeclarations,
-            AbstractGeneratorContext generatorContext) {
-        this.typeDeclarations = typeDeclarations;
-        this.errorDeclarations = errorDeclarations;
+    public TypesGenerator(AbstractGeneratorContext generatorContext) {
+        this.typeDeclarations = generatorContext.getIr().getTypes();
+        this.errorDeclarations = generatorContext.getIr().getErrors();
         this.typeDeclarationsByName = generatorContext.getTypeDefinitionsByName();
         this.generatorContext = generatorContext;
     }

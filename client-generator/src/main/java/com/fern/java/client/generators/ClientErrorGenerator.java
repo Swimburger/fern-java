@@ -16,4 +16,41 @@
 
 package com.fern.java.client.generators;
 
-public class ClientErrorGenerator {}
+import com.fern.ir.model.errors.ErrorDeclaration;
+import com.fern.ir.model.types.DeclaredTypeName;
+import com.fern.java.client.ClientGeneratorContext;
+import com.fern.java.generators.AbstractFileGenerator;
+import com.fern.java.generators.SingleTypeGenerator;
+import com.fern.java.output.AbstractGeneratedFileOutput;
+import com.fern.java.output.GeneratedInterfaceOutput;
+import java.util.Map;
+
+public final class ClientErrorGenerator extends AbstractFileGenerator {
+    private final ErrorDeclaration errorDeclaration;
+    private final Map<DeclaredTypeName, GeneratedInterfaceOutput> generatedInterfaces;
+
+    public ClientErrorGenerator(
+            ErrorDeclaration errorDeclaration,
+            ClientGeneratorContext clientGeneratorContext,
+            Map<DeclaredTypeName, GeneratedInterfaceOutput> generatedInterfaces) {
+        super(
+                clientGeneratorContext.getPoetClassNameFactory().getErrorClassName(errorDeclaration),
+                clientGeneratorContext);
+        this.errorDeclaration = errorDeclaration;
+        this.generatedInterfaces = generatedInterfaces;
+    }
+
+    @Override
+    public AbstractGeneratedFileOutput generateFile() {
+        return errorDeclaration
+                .getType()
+                .visit(new SingleTypeGenerator(
+                        generatorContext,
+                        DeclaredTypeName.builder()
+                                .fernFilepath(errorDeclaration.getName().getFernFilepath())
+                                .name(errorDeclaration.getName().getName())
+                                .build(),
+                        className,
+                        generatedInterfaces));
+    }
+}

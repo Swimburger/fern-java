@@ -181,13 +181,13 @@ public final class UnionGenerator extends AbstractFileGenerator {
         private boolean isTypeReferenceAnObject(TypeReference typeReference) {
             Optional<DeclaredTypeName> maybeNamedType = typeReference.getNamed();
             if (maybeNamedType.isPresent()) {
-                TypeDeclaration typeDefinition =
+                TypeDeclaration typeDeclaration =
                         generatorContext.getTypeDefinitionsByName().get(maybeNamedType.get());
-                if (typeDefinition.getShape().isObject()) {
+                if (typeDeclaration.getShape().isObject()) {
                     return true;
-                } else if (typeDefinition.getShape().isAlias()) {
+                } else if (typeDeclaration.getShape().isAlias()) {
                     return isTypeReferenceAnObject(
-                            typeDefinition.getShape().getAlias().get().getAliasOf());
+                            typeDeclaration.getShape().getAlias().get().getAliasOf());
                 }
             }
             return false;

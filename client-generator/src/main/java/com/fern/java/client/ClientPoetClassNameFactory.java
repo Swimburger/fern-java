@@ -20,8 +20,10 @@ import com.fern.ir.model.errors.ErrorDeclaration;
 import com.fern.ir.model.ir.IntermediateRepresentation;
 import com.fern.ir.model.services.commons.DeclaredServiceName;
 import com.fern.ir.model.services.http.HttpEndpoint;
+import com.fern.ir.model.services.http.HttpService;
 import com.fern.java.AbstractPoetClassNameFactory;
 import com.squareup.javapoet.ClassName;
+import java.util.Optional;
 
 public final class ClientPoetClassNameFactory extends AbstractPoetClassNameFactory {
 
@@ -47,5 +49,20 @@ public final class ClientPoetClassNameFactory extends AbstractPoetClassNameFacto
     public ClassName getEndpointExceptionClassName(DeclaredServiceName declaredServiceName, HttpEndpoint httpEndpoint) {
         String packageName = getExceptionsPackageName(declaredServiceName.getFernFilepath());
         return ClassName.get(packageName, httpEndpoint.getName().getPascalCase() + "Exception");
+    }
+
+    public ClassName getServiceInterfaceClassName(HttpService httpService) {
+        String packageName = getPackage(Optional.of(httpService.getName().getFernFilepath()), Optional.empty());
+        return ClassName.get(packageName, httpService.getName().getName());
+    }
+
+    public ClassName getServiceErrorDecoderClassname(HttpService httpService) {
+        String packageName = getPackage(Optional.of(httpService.getName().getFernFilepath()), Optional.empty());
+        return ClassName.get(packageName, httpService.getName().getName() + "ErrorDecoder");
+    }
+
+    public ClassName getServiceClientClassname(HttpService httpService) {
+        String packageName = getPackage(Optional.of(httpService.getName().getFernFilepath()), Optional.empty());
+        return ClassName.get(packageName, httpService.getName().getName() + "Client");
     }
 }

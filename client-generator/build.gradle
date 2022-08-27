@@ -1,6 +1,14 @@
 dependencies {
     implementation project(':generator-utils')
+    implementation project(':runtime-utils:jersey-utils')
 
     implementation 'ch.qos.logback:logback-classic'
     implementation 'org.slf4j:slf4j-api'
+    implementation 'org.glassfish.jersey.core:jersey-common'
+    implementation 'io.github.openfeign:feign-jackson'
+    implementation 'io.github.openfeign:feign-core'
+    implementation 'io.github.openfeign:feign-jaxrs'
+
+    compileOnly 'org.immutables:value::annotations'
+    annotationProcessor 'org.immutables:value'
 }

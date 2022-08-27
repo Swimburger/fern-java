@@ -16,4 +16,4 @@
 
 package com.fern.java.client.generators;
 
-public class ClientExceptionGenerator {}
+public class ClientEndpointRequestGenerator {}

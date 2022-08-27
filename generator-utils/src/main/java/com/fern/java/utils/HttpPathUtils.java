@@ -13,7 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.fern.java.utils;
 
-package com.fern.java.client.generators;
+import com.fern.ir.model.services.http.HttpPath;
+import com.fern.ir.model.services.http.HttpPathPart;
 
-public class ClientServiceClientGenerator {}
+public class HttpPathUtils {
+
+    private HttpPathUtils() {}
+
+    public static String getPathWithCurlyBracedPathParams(HttpPath httpPath) {
+        String result = httpPath.getHead();
+        for (HttpPathPart httpPathPart : httpPath.getParts()) {
+            result += "{" + httpPathPart.getPathParameter() + "}" + httpPathPart.getTail();
+        }
+        return result;
+    }
+}

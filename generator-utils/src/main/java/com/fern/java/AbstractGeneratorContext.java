@@ -17,6 +17,8 @@
 package com.fern.java;
 
 import com.fern.generator.exec.model.config.GeneratorConfig;
+import com.fern.ir.model.errors.DeclaredErrorName;
+import com.fern.ir.model.errors.ErrorDeclaration;
 import com.fern.ir.model.ir.IntermediateRepresentation;
 import com.fern.ir.model.types.DeclaredTypeName;
 import com.fern.ir.model.types.TypeDeclaration;
@@ -24,24 +26,25 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public abstract class AbstractGeneratorContext {
+public abstract class AbstractGeneratorContext<T extends AbstractPoetClassNameFactory> {
 
     private final IntermediateRepresentation ir;
     private final GeneratorConfig generatorConfig;
-    private final AbstractPoetClassNameFactory poetClassNameFactory;
+    private final T poetClassNameFactory;
     private final PoetTypeNameMapper poetTypeNameMapper;
     private final Map<DeclaredTypeName, TypeDeclaration> typeDefinitionsByName;
+    private final Map<DeclaredErrorName, ErrorDeclaration> errorDefinitionsByName;
 
     public AbstractGeneratorContext(
-            IntermediateRepresentation ir,
-            GeneratorConfig generatorConfig,
-            AbstractPoetClassNameFactory poetClassNameFactory) {
+            IntermediateRepresentation ir, GeneratorConfig generatorConfig, T poetClassNameFactory) {
         this.ir = ir;
         this.generatorConfig = generatorConfig;
         this.poetClassNameFactory = poetClassNameFactory;
         this.poetTypeNameMapper = new PoetTypeNameMapper(poetClassNameFactory);
         this.typeDefinitionsByName = ir.getTypes().stream()
                 .collect(Collectors.toUnmodifiableMap(TypeDeclaration::getName, Function.identity()));
+        this.errorDefinitionsByName = ir.getErrors().stream()
+                .collect(Collectors.toUnmodifiableMap(ErrorDeclaration::getName, Function.identity()));
     }
 
     public final IntermediateRepresentation getIr() {
@@ -52,7 +55,7 @@ public abstract class AbstractGeneratorContext {
         return generatorConfig;
     }
 
-    public final AbstractPoetClassNameFactory getPoetClassNameFactory() {
+    public final T getPoetClassNameFactory() {
         return poetClassNameFactory;
     }
 
@@ -62,5 +65,9 @@ public abstract class AbstractGeneratorContext {
 
     public final Map<DeclaredTypeName, TypeDeclaration> getTypeDefinitionsByName() {
         return typeDefinitionsByName;
+    }
+
+    public final Map<DeclaredErrorName, ErrorDeclaration> getErrorDefinitionsByName() {
+        return errorDefinitionsByName;
     }
 }

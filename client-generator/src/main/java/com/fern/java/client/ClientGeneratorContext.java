@@ -25,7 +25,7 @@ import com.fern.java.output.GeneratedInterfaceOutput;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class ClientGeneratorContext extends AbstractGeneratorContext {
+public final class ClientGeneratorContext extends AbstractGeneratorContext<ClientPoetClassNameFactory> {
 
     private final Map<DeclaredTypeName, GeneratedInterfaceOutput> generatedInterfaces = new HashMap<>();
     private final Map<DeclaredTypeName, AbstractGeneratedFileOutput> generatedTypes = new HashMap<>();
