@@ -16,14 +16,18 @@
 
 package com.fern.java.client.generators;
 
+import com.fern.ir.model.auth.ApiAuth;
+import com.fern.ir.model.auth.AuthSchemesRequirement;
 import com.fern.ir.model.errors.DeclaredErrorName;
 import com.fern.ir.model.services.http.HttpEndpoint;
 import com.fern.ir.model.services.http.HttpService;
 import com.fern.java.client.ClientGeneratorContext;
 import com.fern.java.client.GeneratedEndpointRequestOutput;
 import com.fern.java.client.GeneratedJerseyServiceInterfaceOutput;
+import com.fern.java.client.GeneratedServiceClientOutput;
 import com.fern.java.generators.AbstractFileGenerator;
 import com.fern.java.output.AbstractGeneratedFileOutput;
+import com.fern.java.output.GeneratedAuthFilesOutput;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
@@ -32,6 +36,8 @@ import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,24 +50,26 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
     private static final String REQUEST_PARAMETER_NAME = "request";
 
     private final HttpService httpService;
+    private final Optional<GeneratedAuthFilesOutput> maybeAuth;
     private final Map<DeclaredErrorName, AbstractGeneratedFileOutput> generatedErrors;
-    private final JerseyServiceInterfaceGenerator jerseyServiceInterfaceGenerator;
     private final ClientGeneratorContext clientGeneratorContext;
 
     public HttpServiceClientGenerator(
             ClientGeneratorContext clientGeneratorContext,
             HttpService httpService,
-            Map<DeclaredErrorName, AbstractGeneratedFileOutput> generatedErrors) {
+            Map<DeclaredErrorName, AbstractGeneratedFileOutput> generatedErrors,
+            Optional<GeneratedAuthFilesOutput> maybeAuth) {
         super(
                 clientGeneratorContext.getPoetClassNameFactory().getServiceClientClassname(httpService),
                 clientGeneratorContext);
         this.httpService = httpService;
         this.generatedErrors = generatedErrors;
         this.clientGeneratorContext = clientGeneratorContext;
+        this.maybeAuth = maybeAuth;
     }
 
     @Override
-    public AbstractGeneratedFileOutput generateFile() {
+    public GeneratedServiceClientOutput generateFile() {
         JerseyServiceInterfaceGenerator jerseyServiceInterfaceGenerator = new JerseyServiceInterfaceGenerator(
                 clientGeneratorContext, generatedErrors, Optional.empty(), httpService);
         GeneratedJerseyServiceInterfaceOutput jerseyServiceInterfaceOutput =
@@ -76,10 +84,20 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
                         .build())
                 .addMethod(getUrlConstructor(jerseyServiceInterfaceOutput));
         boolean atleastOneEndpointHasAuth = httpService.getEndpoints().stream().anyMatch(HttpEndpoint::getAuth);
-        if (atleastOneEndpointHasAuth) {
-            // add auth field
-            // add url + auth constructor
+        if (maybeAuth.isPresent() && atleastOneEndpointHasAuth) {
+            serviceClientBuilder.addField(FieldSpec.builder(
+                            ParameterizedTypeName.get(
+                                    ClassName.get(Optional.class),
+                                    maybeAuth.get().getClassName()),
+                            AUTH_FIELD_NAME,
+                            Modifier.PRIVATE,
+                            Modifier.FINAL)
+                    .build());
+            MethodSpec urlAuthConstructor = getUrlAuthConstructor(jerseyServiceInterfaceOutput, maybeAuth.get());
+            serviceClientBuilder.addMethod(urlAuthConstructor);
         }
+
+        List<GeneratedEndpointRequestOutput> generatedEndpointRequestOutputs = new ArrayList<>();
         for (HttpEndpoint httpEndpoint : httpService.getEndpoints()) {
             MethodSpec endpointInterfaceMethod =
                     jerseyServiceInterfaceOutput.endpointMethods().get(httpEndpoint.getId());
@@ -89,7 +107,9 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
                     MethodSpec.methodBuilder(httpEndpoint.getId().get()).addModifiers(Modifier.PUBLIC);
 
             if (wrappedRequestFile.isPresent()) {
-
+                generateCallWithWrappedRequest(
+                        httpEndpoint, endpointInterfaceMethod, wrappedRequestFile.get(), endpointMethodBuilder);
+                generatedEndpointRequestOutputs.add(wrappedRequestFile.get());
             } else {
                 generateCallWithoutRequest(endpointMethodBuilder, endpointInterfaceMethod);
             }
@@ -99,59 +119,16 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
             serviceClientBuilder.addMethod(endpointMethodBuilder.build());
         }
 
-        return null;
-    }
-
-    @Override
-    public GeneratedHttpServiceClient generate() {
-        HttpServiceInterfaceGenerator httpServiceInterfaceGenerator = new HttpServiceInterfaceGenerator(
-                generatorContext, generatedEndpointModels, generatedErrors, maybeGeneratedAuthSchemes, httpService);
-        GeneratedHttpServiceInterface generatedHttpServiceInterface = httpServiceInterfaceGenerator.generate();
-        TypeSpec.Builder serviceClientBuilder = TypeSpec.classBuilder(generatedServiceClientClassName)
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addField(FieldSpec.builder(
-                                generatedHttpServiceInterface.className(),
-                                SERVICE_FIELD_NAME,
-                                Modifier.PRIVATE,
-                                Modifier.FINAL)
-                        .build());
-        maybeGeneratedAuthSchemes.ifPresent(generatedAuthSchemes -> serviceClientBuilder.addField(FieldSpec.builder(
-                        ParameterizedTypeName.get(ClassName.get(Optional.class), generatedAuthSchemes.className()),
-                        AUTH_FIELD_NAME,
-                        Modifier.PRIVATE,
-                        Modifier.FINAL)
-                .build()));
-        serviceClientBuilder.addMethod(getUrlConstructor(generatedHttpServiceInterface));
-        maybeGeneratedAuthSchemes.ifPresent(generatedAuthSchemes -> serviceClientBuilder.addMethod(
-                getUrlAuthConstructor(generatedHttpServiceInterface, generatedAuthSchemes)));
-
-        for (HttpEndpoint httpEndpoint : httpService.getEndpoints()) {
-            Optional<GeneratedEndpointClient> endpointFile =
-                    generatedHttpServiceInterface.endpointFiles().get(httpEndpoint.getId());
-            MethodSpec interfaceMethod =
-                    generatedHttpServiceInterface.endpointMethods().get(httpEndpoint.getId());
-            MethodSpec.Builder endpointMethodBuilder =
-                    MethodSpec.methodBuilder(httpEndpoint.getId().get()).addModifiers(Modifier.PUBLIC);
-
-            generateCallWithWrappedRequest(
-                    httpEndpoint,
-                    interfaceMethod,
-                    endpointFile.map(GeneratedEndpointClient::generatedNestedRequest),
-                    endpointMethodBuilder);
-
-            endpointMethodBuilder.addExceptions(interfaceMethod.exceptions);
-            endpointMethodBuilder.returns(interfaceMethod.returnType);
-            serviceClientBuilder.addMethod(endpointMethodBuilder.build());
-        }
-
         TypeSpec serviceClientTypeSpec = serviceClientBuilder.build();
-        JavaFile serviceClientJavaFile = JavaFile.builder(
-                        generatedServiceClientClassName.packageName(), serviceClientTypeSpec)
-                .build();
-        return GeneratedHttpServiceClient.builder()
-                .file(serviceClientJavaFile)
-                .className(generatedServiceClientClassName)
-                .serviceInterface(generatedHttpServiceInterface)
+        JavaFile serviceClientJavaFile =
+                JavaFile.builder(className.packageName(), serviceClientTypeSpec).build();
+
+        return GeneratedServiceClientOutput.builder()
+                .className(className)
+                .javaFile(serviceClientJavaFile)
+                .httpService(httpService)
+                .jerseyServiceInterfaceOutput(jerseyServiceInterfaceOutput)
+                .addAllGeneratedEndpointRequestOutputs(generatedEndpointRequestOutputs)
                 .build();
     }
 
@@ -164,30 +141,29 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
                 jerseyServiceInterfaceOutput.getClassName(),
                 JerseyServiceInterfaceGenerator.GET_CLIENT_METHOD_NAME,
                 "url");
-        // if (maybeGeneratedAuthSchemes.isPresent()) {
-        //     constructorBuilder
-        //             .addStatement("this.$L = $T.empty()", AUTH_FIELD_NAME, Optional.class)
-        //             .build();
-        // }
+        if (maybeAuth.isPresent()) {
+            constructorBuilder
+                    .addStatement("this.$L = $T.empty()", AUTH_FIELD_NAME, Optional.class)
+                    .build();
+        }
         return constructorBuilder.build();
     }
 
-    // private MethodSpec getUrlAuthConstructor(
-    //         GeneratedJerseyServiceInterfaceOutput jerseyServiceInterfaceOutput, GeneratedAuthSchemes
-    // generatedAuthSchemes) {
-    //     return MethodSpec.constructorBuilder()
-    //             .addModifiers(Modifier.PUBLIC)
-    //             .addParameter(String.class, "url")
-    //             .addParameter(generatedAuthSchemes.className(), AUTH_FIELD_NAME)
-    //             .addStatement(
-    //                     "this.$L = $T.$L($L)",
-    //                     SERVICE_FIELD_NAME,
-    //                     generatedHttpServiceInterface.className(),
-    //                     HttpServiceInterfaceGenerator.GET_CLIENT_METHOD_NAME,
-    //                     "url")
-    //             .addStatement("this.$L = $T.of($L)", AUTH_FIELD_NAME, Optional.class, AUTH_FIELD_NAME)
-    //             .build();
-    // }
+    private MethodSpec getUrlAuthConstructor(
+            GeneratedJerseyServiceInterfaceOutput jerseyServiceInterfaceOutput, GeneratedAuthFilesOutput auth) {
+        return MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(String.class, "url")
+                .addParameter(auth.getClassName(), AUTH_FIELD_NAME)
+                .addStatement(
+                        "this.$L = $T.$L($L)",
+                        SERVICE_FIELD_NAME,
+                        jerseyServiceInterfaceOutput.getClassName(),
+                        JerseyServiceInterfaceGenerator.GET_CLIENT_METHOD_NAME,
+                        "url")
+                .addStatement("this.$L = $T.of($L)", AUTH_FIELD_NAME, Optional.class, AUTH_FIELD_NAME)
+                .build();
+    }
 
     private void generateCallWithoutRequest(MethodSpec.Builder endpointMethodBuilder, MethodSpec interfaceMethod) {
         endpointMethodBuilder.addStatement("this.$L.$L()", SERVICE_FIELD_NAME, interfaceMethod.name);
@@ -203,45 +179,50 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
                 ParameterSpec.builder(generatedRequest.requestClassName(), REQUEST_PARAMETER_NAME)
                         .build());
         String args;
-        // if (httpEndpoint.getAuth() && maybeGeneratedAuthSchemes.isPresent()) {
-        //     GeneratedAuthSchemes generatedAuthSchemes = maybeGeneratedAuthSchemes.get();
-        //     endpointMethodBuilder.addStatement(
-        //             "$T authValue = $L.$L().orElseGet(() -> this.$L.orElseThrow(() -> new $T($S)))",
-        //             maybeGeneratedAuthSchemes.get().className(),
-        //             REQUEST_PARAMETER_NAME,
-        //             generatedRequestInfo.authMethodSpec().get().name,
-        //             AUTH_FIELD_NAME,
-        //             RuntimeException.class,
-        //             "Auth is required for " + httpEndpoint.getId().get());
-        //     List<String> argTokens = new ArrayList<>();
-        //     if (generatedAuthSchemes.generatedAuthSchemes().size() == 1) {
-        //         argTokens.add("authValue");
-        //     } else if (generatorContext.getApiAuth().getRequirement().equals(AuthSchemesRequirement.ALL)) {
-        //         generatedAuthSchemes.generatedAuthSchemes().forEach(((authScheme, generatedFile) -> {
-        //             argTokens.add("authValue." + AuthSchemeUtils.getAuthSchemeCamelCaseName(authScheme) + "()");
-        //         }));
-        //     } else if (generatorContext.getApiAuth().getRequirement().equals(AuthSchemesRequirement.ANY)) {
-        //         generatedAuthSchemes
-        //                 .generatedAuthSchemes()
-        //                 .forEach((authScheme, generatedFile) ->
-        //                         argTokens.add("authValue." + AnyAuthGenerator.GET_AUTH_PREFIX
-        //                                 + AuthSchemeUtils.getAuthSchemePascalCaseName(authScheme) + "()"));
-        //     }
-        //     for (int i = generatedAuthSchemes.generatedAuthSchemes().size();
-        //             i < generatedRequestInfo.enrichedObjectProperty().size();
-        //             ++i) {
-        //         MethodSpec propertyMethodSpec =
-        //                 generatedRequestInfo.enrichedObjectProperty().get(i).getterProperty();
-        //         argTokens.add(REQUEST_PARAMETER_NAME + "." + propertyMethodSpec.name + "()");
-        //     }
-        //     args = argTokens.stream().collect(Collectors.joining(", "));
-        // } else {
-        //
-        // }
-        args = generatedRequest.enrichedObjectProperty().stream()
-                .map(enrichedObjectProperty ->
-                        REQUEST_PARAMETER_NAME + "." + enrichedObjectProperty.getterProperty().name + "()")
-                .collect(Collectors.joining(", "));
+        if (httpEndpoint.getAuth()
+                && maybeAuth.isPresent()
+                && generatedRequest.authMethodSpec().isPresent()) {
+            ApiAuth apiAuth = generatorContext.getIr().getAuth();
+            GeneratedAuthFilesOutput auth = maybeAuth.get();
+            endpointMethodBuilder.addStatement(
+                    "$T authValue = $L.$L().orElseGet(() -> this.$L.orElseThrow(() -> new $T($S)))",
+                    auth.getClassName(),
+                    REQUEST_PARAMETER_NAME,
+                    generatedRequest.authMethodSpec().get().name,
+                    AUTH_FIELD_NAME,
+                    RuntimeException.class,
+                    "Auth is required for " + httpEndpoint.getId().get());
+            List<String> argTokens = new ArrayList<>();
+            if (auth.authSchemeFileOutputs().isEmpty()) {
+                argTokens.add("authValue");
+            } else if (apiAuth.getRequirement().equals(AuthSchemesRequirement.ALL)) {
+                // generatedAuthSchemes.generatedAuthSchemes().forEach(((authScheme, generatedFile) -> {
+                //     argTokens.add("authValue." + AuthSchemeUtils.getAuthSchemeCamelCaseName(authScheme) + "()");
+                // }));
+            } else if (apiAuth.getRequirement().equals(AuthSchemesRequirement.ANY)) {
+                // generatedAuthSchemes
+                //         .generatedAuthSchemes()
+                //         .forEach((authScheme, generatedFile) ->
+                //                 argTokens.add("authValue." + AnyAuthGenerator.GET_AUTH_PREFIX
+                //                         + AuthSchemeUtils.getAuthSchemePascalCaseName(authScheme) + "()"));
+            }
+            int startIndex = auth.authSchemeFileOutputs().isEmpty()
+                    ? 1
+                    : auth.authSchemeFileOutputs().get().size();
+            for (int i = startIndex;
+                    i < generatedRequest.enrichedObjectProperties().size();
+                    ++i) {
+                MethodSpec propertyMethodSpec =
+                        generatedRequest.enrichedObjectProperties().get(i).getterProperty();
+                argTokens.add(REQUEST_PARAMETER_NAME + "." + propertyMethodSpec.name + "()");
+            }
+            args = argTokens.stream().collect(Collectors.joining(", "));
+        } else {
+            args = generatedRequest.enrichedObjectProperties().stream()
+                    .map(enrichedObjectProperty ->
+                            REQUEST_PARAMETER_NAME + "." + enrichedObjectProperty.getterProperty().name + "()")
+                    .collect(Collectors.joining(", "));
+        }
         String codeBlockFormat = "this.$L.$L(" + args + ")";
         if (interfaceMethod.returnType.equals(TypeName.VOID)) {
             endpointMethodBuilder.addStatement(codeBlockFormat, SERVICE_FIELD_NAME, interfaceMethod.name);
@@ -256,7 +237,12 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
             return Optional.empty();
         }
         HttpEndpointFileGenerator httpEndpointFileGenerator = new HttpEndpointFileGenerator(
-                clientGeneratorContext, httpService, httpEndpoint, endpointInterfaceMethod.parameters, generatedErrors);
+                clientGeneratorContext,
+                httpService,
+                httpEndpoint,
+                endpointInterfaceMethod.parameters,
+                maybeAuth,
+                generatedErrors);
         return Optional.of(httpEndpointFileGenerator.generateFile());
     }
 }

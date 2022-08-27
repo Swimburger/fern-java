@@ -25,10 +25,12 @@ import com.fern.java.generators.AbstractFileGenerator;
 import com.fern.java.generators.object.EnrichedObjectProperty;
 import com.fern.java.generators.object.ObjectTypeSpecGenerator;
 import com.fern.java.output.AbstractGeneratedFileOutput;
+import com.fern.java.output.GeneratedAuthFilesOutput;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,7 +48,7 @@ public final class HttpEndpointFileGenerator extends AbstractFileGenerator {
     private final HttpEndpoint httpEndpoint;
     private final List<ParameterSpec> serviceInterfaceMethodParameters;
 
-    // private final Optional<GeneratedAuthSchemes> maybeGeneratedAuthSchemes;
+    private final Optional<GeneratedAuthFilesOutput> maybeAuth;
     private final Map<DeclaredErrorName, AbstractGeneratedFileOutput> generatedErrors;
 
     public HttpEndpointFileGenerator(
@@ -54,14 +56,14 @@ public final class HttpEndpointFileGenerator extends AbstractFileGenerator {
             HttpService httpService,
             HttpEndpoint httpEndpoint,
             List<ParameterSpec> serviceInterfaceMethodParameters,
-            // Optional<GeneratedAuthSchemes> maybeGeneratedAuthSchemes,
+            Optional<GeneratedAuthFilesOutput> maybeAuth,
             Map<DeclaredErrorName, AbstractGeneratedFileOutput> generatedErrors) {
         super(
                 generatorContext.getPoetClassNameFactory().getEndpointClassName(httpService.getName(), httpEndpoint),
                 generatorContext);
         this.httpEndpoint = httpEndpoint;
         this.serviceInterfaceMethodParameters = serviceInterfaceMethodParameters;
-        // this.maybeGeneratedAuthSchemes = maybeGeneratedAuthSchemes;
+        this.maybeAuth = maybeAuth;
         this.generatedErrors = generatedErrors;
     }
 
@@ -93,10 +95,9 @@ public final class HttpEndpointFileGenerator extends AbstractFileGenerator {
         ObjectTypeSpecGenerator objectTypeSpecGenerator =
                 new ObjectTypeSpecGenerator(requestClassName, enrichedObjectProperties, Collections.emptyList(), false);
         TypeSpec requestTypeSpec = objectTypeSpecGenerator.generate();
-        Optional<MethodSpec> authMethodSpec = Optional.empty();
-        // if (httpEndpoint.getAuth() && maybeGeneratedAuthSchemes.isPresent()) {
-        //     authMethodSpec = Optional.of(enrichedObjectProperties.get(0).getterProperty());
-        // }
+        if (httpEndpoint.getAuth() && maybeAuth.isPresent()) {
+            outputBuilder.authMethodSpec(enrichedObjectProperties.get(0).getterProperty());
+        }
         outputBuilder.requestClassName(requestClassName);
         outputBuilder.addAllEnrichedObjectProperties(enrichedObjectProperties);
         outputBuilder.requestTypeSpec(requestTypeSpec);
@@ -106,22 +107,21 @@ public final class HttpEndpointFileGenerator extends AbstractFileGenerator {
 
     private List<ParameterSpec> getRequestParameters() {
         List<ParameterSpec> requestParameters = new ArrayList<>();
-        // if (httpEndpoint.getAuth() && maybeGeneratedAuthSchemes.isPresent()) {
-        //     GeneratedAuthSchemes generatedAuthSchemes = maybeGeneratedAuthSchemes.get();
-        //     requestParameters.add(ParameterSpec.builder(
-        //                     ParameterizedTypeName.get(ClassName.get(Optional.class),
-        // generatedAuthSchemes.className()),
-        //                     AUTH_REQUEST_PARAMETER)
-        //             .build());
-        //     for (int i = generatedAuthSchemes.generatedAuthSchemes().size();
-        //             i < serviceInterfaceMethodParameters.size();
-        //             ++i) {
-        //         requestParameters.add(serviceInterfaceMethodParameters.get(i));
-        //     }
-        // } else {
-        //     requestParameters.addAll(serviceInterfaceMethodParameters);
-        // }
-        requestParameters.addAll(serviceInterfaceMethodParameters);
+        if (httpEndpoint.getAuth() && maybeAuth.isPresent()) {
+            GeneratedAuthFilesOutput auth = maybeAuth.get();
+            requestParameters.add(ParameterSpec.builder(
+                            ParameterizedTypeName.get(ClassName.get(Optional.class), auth.getClassName()),
+                            AUTH_REQUEST_PARAMETER)
+                    .build());
+            int startIndex = auth.authSchemeFileOutputs().isEmpty()
+                    ? 1
+                    : auth.authSchemeFileOutputs().get().size();
+            for (int i = startIndex; i < serviceInterfaceMethodParameters.size(); ++i) {
+                requestParameters.add(serviceInterfaceMethodParameters.get(i));
+            }
+        } else {
+            requestParameters.addAll(serviceInterfaceMethodParameters);
+        }
         return requestParameters;
     }
 }

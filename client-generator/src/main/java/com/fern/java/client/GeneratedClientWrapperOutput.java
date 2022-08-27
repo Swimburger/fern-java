@@ -14,6 +14,20 @@
  * limitations under the License.
  */
 
-package com.fern.java.client.generators;
+package com.fern.java.client;
 
-public class ClientEndpointRequestGenerator {}
+import com.fern.java.immutables.StagedBuilderImmutablesStyle;
+import com.fern.java.output.AbstractGeneratedFileOutput;
+import java.util.List;
+import org.immutables.value.Value;
+
+@Value.Immutable
+@StagedBuilderImmutablesStyle
+public abstract class GeneratedClientWrapperOutput extends AbstractGeneratedFileOutput {
+
+    public abstract List<AbstractGeneratedFileOutput> nestedClients();
+
+    public static ImmutableGeneratedClientWrapperOutput.ClassNameBuildStage builder() {
+        return ImmutableGeneratedClientWrapperOutput.builder();
+    }
+}

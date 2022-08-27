@@ -17,19 +17,31 @@
 package com.fern.java;
 
 import com.fern.generator.exec.model.config.GeneratorConfig;
+import com.fern.generator.exec.model.config.MavenRegistryConfigV2;
 import com.fern.generator.exec.model.logging.ErrorExitStatusUpdate;
 import com.fern.generator.exec.model.logging.ExitStatusUpdate;
 import com.fern.generator.exec.model.logging.GeneratorUpdate;
 import com.fern.ir.model.ir.IntermediateRepresentation;
 import com.fern.java.jackson.ClientObjectMappers;
 import com.fern.java.output.AbstractGeneratedFileOutput;
+import com.squareup.javapoet.JavaFile;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractGeneratorCli {
+
+    private static final Logger log = LoggerFactory.getLogger(AbstractGeneratorCli.class);
+
+    private static final String SRC_MAIN_JAVA = "src/main/java";
+    private static final String BUILD_GRADLE = "build.gradle";
 
     private final List<AbstractGeneratedFileOutput> generatedFiles = new ArrayList<>();
 
@@ -47,7 +59,16 @@ public abstract class AbstractGeneratorCli {
         try {
             IntermediateRepresentation ir = getIr(generatorConfig);
             run(generatorExecClient, generatorConfig, ir);
+
+            String outputDirectory = generatorConfig.getOutput().getPath();
+
+            BuildGradleConfig buildGradleConfig = getBuildGradle(generatorConfig);
+            writeFileContents(Paths.get(outputDirectory, BUILD_GRADLE), buildGradleConfig.getFileContents());
+
+            generatedFiles.forEach(generatedFileOutput ->
+                    writeFile(Paths.get(outputDirectory, SRC_MAIN_JAVA), generatedFileOutput.javaFile()));
         } catch (Exception e) {
+            log.error("Encountered fatal error", e);
             generatorExecClient.sendUpdate(GeneratorUpdate.exitStatusUpdate(ExitStatusUpdate.error(
                     ErrorExitStatusUpdate.builder().message(e.getMessage()).build())));
             throw new RuntimeException(e);
@@ -58,6 +79,32 @@ public abstract class AbstractGeneratorCli {
             DefaultGeneratorExecClient generatorExecClient,
             GeneratorConfig generatorConfig,
             IntermediateRepresentation ir);
+
+    public abstract List<String> getBuildGradleDependencies();
+
+    private BuildGradleConfig getBuildGradle(GeneratorConfig generatorConfig) {
+        return BuildGradleConfig.builder()
+                .addAllDependencies(getBuildGradleDependencies())
+                .publishing(generatorConfig.getPublish().map(generatorPublishConfig -> {
+                    MavenRegistryConfigV2 mavenRegistryConfigV2 =
+                            generatorPublishConfig.getRegistriesV2().getMaven();
+                    String[] splitCoordinate =
+                            mavenRegistryConfigV2.getCoordinate().split(":");
+                    if (splitCoordinate.length < 2) {
+                        throw new IllegalStateException(
+                                "Received invalid maven coordinate: " + mavenRegistryConfigV2.getCoordinate());
+                    }
+                    return ImmutablePublishingConfig.builder()
+                            .version(generatorPublishConfig.getVersion())
+                            .registryUrl(mavenRegistryConfigV2.getRegistryUrl())
+                            .registryUsername(mavenRegistryConfigV2.getUsername())
+                            .registryPassword(mavenRegistryConfigV2.getPassword())
+                            .group(splitCoordinate[0])
+                            .artifact(splitCoordinate[1])
+                            .build();
+                }))
+                .build();
+    }
 
     private static GeneratorConfig getGeneratorConfig(String pluginPath) {
         try {
@@ -73,6 +120,22 @@ public abstract class AbstractGeneratorCli {
                     new File(generatorConfig.getIrFilepath()), IntermediateRepresentation.class);
         } catch (IOException e) {
             throw new RuntimeException("Failed to read ir", e);
+        }
+    }
+
+    private static void writeFile(Path path, JavaFile javaFile) {
+        try {
+            javaFile.writeToFile(path.toFile());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write generated java file: " + javaFile.typeSpec.name, e);
+        }
+    }
+
+    private static void writeFileContents(Path path, String contents) {
+        try {
+            Files.writeString(path, contents);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write .gitignore ", e);
         }
     }
 }

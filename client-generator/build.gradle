@@ -1,9 +1,15 @@
+plugins {
+    id 'java-library-distribution'
+    id "com.palantir.docker" version "0.33.0"
+    id "org.unbroken-dome.test-sets" version "4.0.0"
+    id 'java'
+}
+
 dependencies {
     implementation project(':generator-utils')
     implementation project(':runtime-utils:jersey-utils')
 
     implementation 'ch.qos.logback:logback-classic'
-    implementation 'org.slf4j:slf4j-api'
     implementation 'org.glassfish.jersey.core:jersey-common'
     implementation 'io.github.openfeign:feign-jackson'
     implementation 'io.github.openfeign:feign-core'
@@ -12,3 +18,39 @@ dependencies {
     compileOnly 'org.immutables:value::annotations'
     annotationProcessor 'org.immutables:value'
 }
+
+
+distributions {
+    main {
+        distributionBaseName = project.name
+    }
+}
+
+docker {
+    name "java-client-generator:${project.version}"
+    tags 'latest', "${project.version}"
+    files tasks.distTar.outputs, './init.sh', './gradle-cache-project/build.gradle'
+    buildArgs([BUILD_VERSION: "${project.version}"])
+}
+
+task dockerTagVersion {
+    dependsOn ":cli:dockerTag${project.version}"
+}
+
+testSets {
+    eteTest
+}
+
+eteTest {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+task deleteClientSnapshot(type: Exec) {
+    commandLine 'rm', '-rf', 'src/eteTest/java/com/fern/java/client/cli/__snapshots__/CliEteTest.snap'
+}
+
+rootProject.tasks.build.dependsOn eteTest
+tasks.eteTest.dependsOn ':client-generator:dockerTagLatest'

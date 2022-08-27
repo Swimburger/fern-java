@@ -24,13 +24,14 @@ import com.fern.ir.model.services.http.HttpResponse;
 import com.fern.ir.model.services.http.HttpService;
 import com.fern.java.client.ClientGeneratorContext;
 import com.fern.java.client.GeneratedJerseyServiceInterfaceOutput;
+import com.fern.java.client.generators.jersey.AuthToJerseyParameterSpecConverter;
 import com.fern.java.client.generators.jersey.JerseyHttpMethodToAnnotationSpec;
 import com.fern.java.client.generators.jersey.JerseyParameterSpecFactory;
 import com.fern.java.generators.AbstractFileGenerator;
 import com.fern.java.jackson.ClientObjectMappers;
 import com.fern.java.jersey.contracts.OptionalAwareContract;
 import com.fern.java.output.AbstractGeneratedFileOutput;
-import com.fern.java.output.GeneratedFileOutput;
+import com.fern.java.output.GeneratedAuthFilesOutput;
 import com.fern.java.utils.HttpPathUtils;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.CodeBlock;
@@ -60,14 +61,14 @@ public final class JerseyServiceInterfaceGenerator extends AbstractFileGenerator
 
     private final HttpService httpService;
     private final Map<DeclaredErrorName, AbstractGeneratedFileOutput> generatedErrors;
-    private final Optional<GeneratedFileOutput> maybeGeneratedAuthSchemes;
+    private final Optional<GeneratedAuthFilesOutput> maybeAuth;
     private final ClientGeneratorContext clientGeneratorContext;
     private final JerseyParameterSpecFactory jerseyParameterSpecFactory;
 
     public JerseyServiceInterfaceGenerator(
             ClientGeneratorContext clientGeneratorContext,
             Map<DeclaredErrorName, AbstractGeneratedFileOutput> generatedErrors,
-            Optional<GeneratedFileOutput> maybeGeneratedAuthSchemes,
+            Optional<GeneratedAuthFilesOutput> maybeAuth,
             HttpService httpService) {
         super(
                 clientGeneratorContext.getPoetClassNameFactory().getServiceInterfaceClassName(httpService),
@@ -75,7 +76,7 @@ public final class JerseyServiceInterfaceGenerator extends AbstractFileGenerator
         this.clientGeneratorContext = clientGeneratorContext;
         this.httpService = httpService;
         this.generatedErrors = generatedErrors;
-        this.maybeGeneratedAuthSchemes = maybeGeneratedAuthSchemes;
+        this.maybeAuth = maybeAuth;
         this.jerseyParameterSpecFactory = new JerseyParameterSpecFactory(clientGeneratorContext);
     }
 
@@ -147,7 +148,13 @@ public final class JerseyServiceInterfaceGenerator extends AbstractFileGenerator
 
     private List<ParameterSpec> getEndpointMethodParameters(HttpEndpoint httpEndpoint) {
         List<ParameterSpec> parameters = new ArrayList<>();
-        // TODO(dsinghvi): add auth parameter
+
+        // auth
+        maybeAuth.ifPresent(auth -> {
+            AuthToJerseyParameterSpecConverter authToJerseyParameterSpecConverter =
+                    new AuthToJerseyParameterSpecConverter(generatorContext, auth);
+            parameters.addAll(authToJerseyParameterSpecConverter.getAuthParameters(httpEndpoint));
+        });
 
         // headers
         httpService.getHeaders().stream()

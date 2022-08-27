@@ -1,6 +1,5 @@
 dependencies {
     implementation project(':runtime-utils:immutables-utils')
-    implementation 'org.slf4j:slf4j-api'
 
     api 'com.squareup:javapoet'
     api 'com.fern.fern:ir-model'
@@ -8,6 +7,8 @@ dependencies {
     api 'com.fasterxml.jackson.core:jackson-annotations'
     api 'com.fasterxml.jackson.core:jackson-databind'
     api 'org.apache.commons:commons-lang3'
+    api 'com.palantir.common:streams'
+    api 'org.slf4j:slf4j-api'
 
     compileOnly 'org.immutables:value::annotations'
     annotationProcessor 'org.immutables:value'
