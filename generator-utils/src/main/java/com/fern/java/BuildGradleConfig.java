@@ -74,7 +74,7 @@ public interface BuildGradleConfig {
                     + "            }\n"
                     + "        }\n"
                     + "    }\n"
-                    + "}"
+                    + "}\n"
                     + "\n";
         }
         return "plugins {\n"
