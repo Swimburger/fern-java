@@ -51,11 +51,28 @@ public interface BuildGradleConfig {
     }
 
     default String getFileContents() {
-        String dependencies = "dependencies {\n" + dependencies().stream().collect(Collectors.joining("\n")) + "}\n";
-        String publishing = "";
+        String dependencies = "dependencies {\n" + dependencies().stream().collect(Collectors.joining("\n")) + "\n}\n";
+        String result = "plugins {\n"
+                + "    id 'java-library'\n"
+                + "    id 'maven-publish'\n"
+                + "}\n"
+                + "\n"
+                + "java {\n"
+                + "    withSourcesJar()\n"
+                + "    withJavadocJar()\n"
+                + "}\n"
+                + "\n"
+                + "repositories {\n"
+                + "    mavenCentral()\n"
+                + "    maven {\n"
+                + "        url \"https://s01.oss.sonatype.org/content/repositories/releases/\"\n"
+                + "    }\n"
+                + "}\n"
+                + "\n"
+                + dependencies;
         if (publishing().isPresent()) {
             PublishingConfig publishingConfig = publishing().get();
-            publishing = "publishing {\n"
+            result += "publishing {\n"
                     + "    publications {\n"
                     + "        maven(MavenPublication) {\n"
                     + "            groupId = '" + publishingConfig.group() + "'\n"
@@ -77,26 +94,7 @@ public interface BuildGradleConfig {
                     + "}\n"
                     + "\n";
         }
-        return "plugins {\n"
-                + "    id 'java-library'\n"
-                + "    id 'maven-publish'\n"
-                + "}\n"
-                + "\n"
-                + "java {\n"
-                + "    withSourcesJar()\n"
-                + "    withJavadocJar()\n"
-                + "}\n"
-                + "\n"
-                + "repositories {\n"
-                + "    mavenCentral()\n"
-                + "    maven {\n"
-                + "        url \"https://s01.oss.sonatype.org/content/repositories/releases/\"\n"
-                + "    }\n"
-                + "}\n"
-                + "\n"
-                + dependencies
-                + "\n"
-                + publishing;
+        return result;
     }
 
     static ImmutableBuildGradleConfig.Builder builder() {

@@ -23,8 +23,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.12.3'
     implementation 'io.github.openfeign:feign-jackson:11.8'
     implementation 'io.github.openfeign:feign-core:11.8'
-    implementation 'io.github.openfeign:feign-jaxrs2:11.8'}
-
+    implementation 'io.github.openfeign:feign-jaxrs2:11.8'
+}
 
 ]
 
