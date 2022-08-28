@@ -61,7 +61,6 @@ public class CliEteTest {
                     expect.scenario(relativizedPath.toString()).toMatchSnapshot(relativizedPath.toString());
                 } else {
                     String fileContents = Files.readString(path);
-
                     expect.scenario(relativizedPath.toString()).toMatchSnapshot(fileContents);
                 }
             } catch (IOException e) {
