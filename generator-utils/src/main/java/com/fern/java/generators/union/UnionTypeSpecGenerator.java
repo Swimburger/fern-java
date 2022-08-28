@@ -151,23 +151,30 @@ public abstract class UnionTypeSpecGenerator {
         allSubTypes.addAll(subTypes);
         allSubTypes.add(unknownSubType);
         return allSubTypes.stream()
-                .map(subType -> {
-                    String isTypeMethodName = IS_METHOD_NAME_PREFIX + subType.getPascalCaseName();
-                    return MethodSpec.methodBuilder("get" + subType.getPascalCaseName())
-                            .addModifiers(Modifier.PUBLIC)
-                            .returns(ParameterizedTypeName.get(
-                                    ClassName.get(Optional.class), subType.getUnionSubTypeTypeName()))
-                            .beginControlFlow("if ($L())", isTypeMethodName)
-                            .addStatement(
-                                    "return $T.of((($T) value).$L)",
-                                    Optional.class,
-                                    subType.getUnionSubTypeWrapperClass(),
-                                    subType.getValueFieldName())
-                            .endControlFlow()
-                            .addStatement("return $T.empty()", Optional.class)
-                            .build();
-                })
+                .map(this::getIsTypeMethod)
+                .flatMap(Optional::stream)
                 .collect(Collectors.toList());
+    }
+
+    private Optional<MethodSpec> getIsTypeMethod(UnionSubType subType) {
+        if (subType.getUnionSubTypeTypeName().isPresent()) {
+            String isTypeMethodName = IS_METHOD_NAME_PREFIX + subType.getPascalCaseName();
+            return Optional.of(MethodSpec.methodBuilder("get" + subType.getPascalCaseName())
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(ParameterizedTypeName.get(
+                            ClassName.get(Optional.class),
+                            subType.getUnionSubTypeTypeName().get()))
+                    .beginControlFlow("if ($L())", isTypeMethodName)
+                    .addStatement(
+                            "return $T.of((($T) value).$L)",
+                            Optional.class,
+                            subType.getUnionSubTypeWrapperClass(),
+                            subType.getValueFieldName())
+                    .endControlFlow()
+                    .addStatement("return $T.empty()", Optional.class)
+                    .build());
+        }
+        return Optional.empty();
     }
 
     public final TypeSpec generateVisitorInterface() {
@@ -175,9 +182,9 @@ public abstract class UnionTypeSpecGenerator {
                 .addModifiers(Modifier.PUBLIC)
                 .addTypeVariable(VISITOR_RETURN_TYPE)
                 .addMethods(subTypes.stream()
-                        .map(UnionSubType::getVisitorMethodInterface)
+                        .map(UnionSubType::getVisitorInterfaceVisitMethod)
                         .collect(Collectors.toList()))
-                .addMethod(unknownSubType.getVisitorMethodInterface())
+                .addMethod(unknownSubType.getVisitorInterfaceVisitMethod())
                 .build();
     }
 

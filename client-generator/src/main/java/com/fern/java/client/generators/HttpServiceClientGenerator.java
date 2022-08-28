@@ -53,6 +53,7 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
     private final Optional<GeneratedAuthFilesOutput> maybeAuth;
     private final Map<DeclaredErrorName, AbstractGeneratedFileOutput> generatedErrors;
     private final ClientGeneratorContext clientGeneratorContext;
+    private final boolean atleastOneEndpointHasAuth;
 
     public HttpServiceClientGenerator(
             ClientGeneratorContext clientGeneratorContext,
@@ -66,6 +67,7 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
         this.generatedErrors = generatedErrors;
         this.clientGeneratorContext = clientGeneratorContext;
         this.maybeAuth = maybeAuth;
+        this.atleastOneEndpointHasAuth = httpService.getEndpoints().stream().anyMatch(HttpEndpoint::getAuth);
     }
 
     @Override
@@ -83,7 +85,6 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
                                 Modifier.FINAL)
                         .build())
                 .addMethod(getUrlConstructor(jerseyServiceInterfaceOutput));
-        boolean atleastOneEndpointHasAuth = httpService.getEndpoints().stream().anyMatch(HttpEndpoint::getAuth);
         if (maybeAuth.isPresent() && atleastOneEndpointHasAuth) {
             serviceClientBuilder.addField(FieldSpec.builder(
                             ParameterizedTypeName.get(
@@ -141,7 +142,7 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
                 jerseyServiceInterfaceOutput.getClassName(),
                 JerseyServiceInterfaceGenerator.GET_CLIENT_METHOD_NAME,
                 "url");
-        if (maybeAuth.isPresent()) {
+        if (maybeAuth.isPresent() && atleastOneEndpointHasAuth) {
             constructorBuilder
                     .addStatement("this.$L = $T.empty()", AUTH_FIELD_NAME, Optional.class)
                     .build();

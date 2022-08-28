@@ -42,6 +42,7 @@ public abstract class AbstractGeneratorCli {
 
     private static final String SRC_MAIN_JAVA = "src/main/java";
     private static final String BUILD_GRADLE = "build.gradle";
+    private static final String SETTINGS_GRADLE = "settings.gradle";
 
     private final List<AbstractGeneratedFileOutput> generatedFiles = new ArrayList<>();
 
@@ -64,6 +65,7 @@ public abstract class AbstractGeneratorCli {
 
             BuildGradleConfig buildGradleConfig = getBuildGradle(generatorConfig);
             writeFileContents(Paths.get(outputDirectory, BUILD_GRADLE), buildGradleConfig.getFileContents());
+            writeFileContents(Paths.get(outputDirectory, SETTINGS_GRADLE), "");
 
             generatedFiles.forEach(generatedFileOutput ->
                     writeFile(Paths.get(outputDirectory, SRC_MAIN_JAVA), generatedFileOutput.javaFile()));

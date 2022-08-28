@@ -187,13 +187,24 @@ public final class ClientWrapperGenerator extends AbstractFileGenerator {
                 .addParameter(String.class, URL_PARAMETER_NAME)
                 .addParameter(auth.getClassName(), AUTH_PARAMETER_NAME);
         KeyedStream.stream(supplierFields).forEach((fieldName, httpClient) -> {
-            constructorBuilder.addStatement(
-                    "this.$L = $L(() -> new $T($L, $L))",
-                    fieldName,
-                    MEMOIZE_METHOD_NAME,
-                    httpClient.getClassName(),
-                    URL_PARAMETER_NAME,
-                    AUTH_PARAMETER_NAME);
+            boolean hasAuthParameter = httpClient.javaFile().typeSpec.fieldSpecs.stream()
+                    .anyMatch(fieldSpec -> fieldSpec.name.equals(AUTH_PARAMETER_NAME));
+            if (hasAuthParameter) {
+                constructorBuilder.addStatement(
+                        "this.$L = $L(() -> new $T($L, $L))",
+                        fieldName,
+                        MEMOIZE_METHOD_NAME,
+                        httpClient.getClassName(),
+                        URL_PARAMETER_NAME,
+                        AUTH_PARAMETER_NAME);
+            } else {
+                constructorBuilder.addStatement(
+                        "this.$L = $L(() -> new $T($L))",
+                        fieldName,
+                        MEMOIZE_METHOD_NAME,
+                        httpClient.getClassName(),
+                        URL_PARAMETER_NAME);
+            }
         });
         KeyedStream.stream(nestedClientFields).forEach((fieldName, nestedClientCLassName) -> {
             constructorBuilder.addStatement(

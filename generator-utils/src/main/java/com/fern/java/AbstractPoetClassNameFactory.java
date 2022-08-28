@@ -40,7 +40,7 @@ public abstract class AbstractPoetClassNameFactory {
     public abstract String rootPackageName();
 
     public final ClassName getTypeClassName(DeclaredTypeName declaredTypeName) {
-        String packageName = getExceptionsPackageName(declaredTypeName.getFernFilepath());
+        String packageName = getTypesPackageName(declaredTypeName.getFernFilepath());
         return ClassName.get(packageName, declaredTypeName.getName());
     }
 

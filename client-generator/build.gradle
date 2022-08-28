@@ -55,7 +55,7 @@ eteTest {
     }
 }
 
-task deleteClientSnapshot(type: Exec) {
+task deleteSnapshot(type: Exec) {
     commandLine 'rm', '-rf', 'src/eteTest/java/com/fern/java/client/cli/__snapshots__/CliEteTest.snap'
 }
 

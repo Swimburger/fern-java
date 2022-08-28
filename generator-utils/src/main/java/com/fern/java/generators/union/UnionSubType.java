@@ -57,7 +57,7 @@ public abstract class UnionSubType {
 
     public abstract Optional<String> getDiscriminantValue();
 
-    public abstract TypeName getUnionSubTypeTypeName();
+    public abstract Optional<TypeName> getUnionSubTypeTypeName();
 
     public abstract ClassName getUnionSubTypeWrapperClass();
 
@@ -72,40 +72,57 @@ public abstract class UnionSubType {
 
     @SuppressWarnings("checkstyle:DesignForExtension")
     public Optional<MethodSpec> getStaticFactory() {
-        return Optional.of(MethodSpec.methodBuilder(getCamelCaseName())
+        MethodSpec.Builder staticFactoryBuilder = MethodSpec.methodBuilder(getCamelCaseName())
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .returns(unionClassName)
-                .addParameter(getUnionSubTypeTypeName(), getValueFieldName())
-                .addStatement("new $T(new $T($L))", unionClassName, getUnionSubTypeWrapperClass(), getValueFieldName())
-                .build());
+                .returns(unionClassName);
+        if (getUnionSubTypeTypeName().isPresent()) {
+            staticFactoryBuilder
+                    .addParameter(getUnionSubTypeTypeName().get(), getValueFieldName())
+                    .addStatement(
+                            "return new $T(new $T($L))",
+                            unionClassName,
+                            getUnionSubTypeWrapperClass(),
+                            getValueFieldName());
+        } else {
+            staticFactoryBuilder.addStatement("return new $T(new $T())", unionClassName, getUnionSubTypeWrapperClass());
+        }
+        return Optional.of(staticFactoryBuilder.build());
     }
 
-    public final MethodSpec getVisitorMethodInterface() {
-        return MethodSpec.methodBuilder("visit" + getPascalCaseName())
+    public final MethodSpec getVisitorInterfaceVisitMethod() {
+        MethodSpec.Builder visitMethodBuilder = MethodSpec.methodBuilder("visit" + getPascalCaseName())
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                .returns(TypeVariableName.get("T"))
-                .addParameter(ParameterSpec.builder(getUnionSubTypeTypeName(), getCamelCaseName())
-                        .build())
-                .build();
+                .returns(TypeVariableName.get("T"));
+        if (getUnionSubTypeTypeName().isPresent()) {
+            visitMethodBuilder.addParameter(
+                    ParameterSpec.builder(getUnionSubTypeTypeName().get(), getCamelCaseName())
+                            .build());
+        }
+        return visitMethodBuilder.build();
     }
 
     public final MethodSpec getVisitMethod() {
-        return MethodSpec.methodBuilder("visit")
+        MethodSpec.Builder visitMethodBuilder = MethodSpec.methodBuilder("visit")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
                 .addTypeVariable(VISITOR_RETURN_TYPE)
                 .returns(VISITOR_RETURN_TYPE)
                 .addParameter(ParameterSpec.builder(visitorInterfaceClassName, "visitor")
-                        .build())
-                .addStatement("return $L.$N($L)", "visitor", getVisitorMethodInterface(), getValueFieldName())
-                .build();
+                        .build());
+        if (getUnionSubTypeTypeName().isPresent()) {
+            visitMethodBuilder.addStatement(
+                    "return $L.$N($L)", "visitor", getVisitorInterfaceVisitMethod(), getValueFieldName());
+        } else {
+            visitMethodBuilder.addStatement("return $L.$N()", "visitor", getVisitorInterfaceVisitMethod());
+        }
+        return visitMethodBuilder.build();
     }
 
     public final EqualsMethod getEqualsMethod() {
         return ObjectMethodFactory.createEqualsMethod(getUnionSubTypeWrapperClass(), getFieldSpecs());
     }
 
-    public final MethodSpec getHashCodeMethod() {
+    public final Optional<MethodSpec> getHashCodeMethod() {
         return ObjectMethodFactory.createHashCodeMethod(getFieldSpecs(), false);
     }
 
@@ -120,18 +137,17 @@ public abstract class UnionSubType {
                 .addSuperinterface(unionWrapperInterface);
         if (getDiscriminantValue().isPresent()) {
             unionSubTypeBuilder.addAnnotation(AnnotationSpec.builder(JsonTypeName.class)
-                    .addMember("value", "$S", getDiscriminantValue())
+                    .addMember("value", "$S", getDiscriminantValue().get())
                     .build());
         }
         EqualsMethod equalsMethod = getEqualsMethod();
-        return unionSubTypeBuilder
+        unionSubTypeBuilder
                 .addFields(getFieldSpecs())
                 .addMethods(getConstructors())
                 .addMethod(getVisitMethod())
-                .addMethod(equalsMethod.getEqualsMethodSpec())
-                .addMethod(equalsMethod.getEqualToMethodSpec())
-                .addMethod(getHashCodeMethod())
-                .addMethod(getToStringMethod())
-                .build();
+                .addMethod(equalsMethod.getEqualsMethodSpec());
+        equalsMethod.getEqualToMethodSpec().ifPresent(unionSubTypeBuilder::addMethod);
+        getHashCodeMethod().ifPresent(unionSubTypeBuilder::addMethod);
+        return unionSubTypeBuilder.addMethod(getToStringMethod()).build();
     }
 }

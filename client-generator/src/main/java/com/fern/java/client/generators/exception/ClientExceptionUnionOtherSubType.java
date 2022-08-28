@@ -58,8 +58,8 @@ public final class ClientExceptionUnionOtherSubType extends UnionSubType {
     }
 
     @Override
-    public TypeName getUnionSubTypeTypeName() {
-        return ClassName.get(Object.class);
+    public Optional<TypeName> getUnionSubTypeTypeName() {
+        return Optional.of(ClassName.get(Object.class));
     }
 
     @Override
@@ -82,7 +82,7 @@ public final class ClientExceptionUnionOtherSubType extends UnionSubType {
         return Optional.of(MethodSpec.methodBuilder(getCamelCaseName())
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .returns(getUnionClassName())
-                .addParameter(getUnionSubTypeTypeName(), getValueFieldName())
+                .addParameter(getUnionSubTypeTypeName().get(), getValueFieldName())
                 .addParameter(int.class, "statusCode")
                 .addStatement(
                         "return new $T(new $T($L), $L)",
@@ -94,7 +94,7 @@ public final class ClientExceptionUnionOtherSubType extends UnionSubType {
     }
 
     private FieldSpec getValueField() {
-        return FieldSpec.builder(getUnionSubTypeTypeName(), getValueFieldName(), Modifier.PRIVATE)
+        return FieldSpec.builder(getUnionSubTypeTypeName().get(), getValueFieldName(), Modifier.PRIVATE)
                 .build();
     }
 
@@ -108,7 +108,7 @@ public final class ClientExceptionUnionOtherSubType extends UnionSubType {
                                 JsonCreator.Mode.class.getSimpleName(),
                                 Mode.DELEGATING.name())
                         .build())
-                .addParameter(ParameterSpec.builder(getUnionSubTypeTypeName(), getValueFieldName())
+                .addParameter(ParameterSpec.builder(getUnionSubTypeTypeName().get(), getValueFieldName())
                         .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
                                 .addMember("value", "$S", getValueFieldName())
                                 .build())

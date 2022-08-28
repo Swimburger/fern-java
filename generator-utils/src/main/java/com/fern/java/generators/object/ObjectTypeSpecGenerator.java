@@ -67,10 +67,10 @@ public final class ObjectTypeSpecGenerator {
                 .addMethods(allEnrichedProperties.stream()
                         .map(EnrichedObjectProperty::getterProperty)
                         .collect(Collectors.toList()))
-                .addMethod(equalsMethod.getEqualsMethodSpec())
-                .addMethod(equalsMethod.getEqualToMethodSpec())
-                .addMethod(generateHashCode())
-                .addMethod(generateToString());
+                .addMethod(equalsMethod.getEqualsMethodSpec());
+        equalsMethod.getEqualToMethodSpec().ifPresent(typeSpecBuilder::addMethod);
+        generateHashCode().ifPresent(typeSpecBuilder::addMethod);
+        typeSpecBuilder.addMethod(generateToString());
         if (maybeObjectBuilder.isPresent()) {
             ObjectBuilder objectBuilder = maybeObjectBuilder.get();
             typeSpecBuilder.addMethod(objectBuilder.getBuilderStaticMethod());
@@ -108,7 +108,7 @@ public final class ObjectTypeSpecGenerator {
                         .collect(Collectors.toList()));
     }
 
-    private MethodSpec generateHashCode() {
+    private Optional<MethodSpec> generateHashCode() {
         return ObjectMethodFactory.createHashCodeMethod(
                 allEnrichedProperties.stream()
                         .map(EnrichedObjectProperty::fieldSpec)

@@ -29,6 +29,7 @@ import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeSpec;
 import java.util.ArrayList;
 import java.util.List;
@@ -223,6 +224,8 @@ public final class EnumGenerator extends AbstractFileGenerator {
                 .addAnnotation(FernJavaAnnotations.jacksonDelegatingCreator())
                 .addCode(valueOfCodeBlock)
                 .returns(className)
+                .addParameter(ParameterSpec.builder(ClassName.get(String.class), "value")
+                        .build())
                 .build();
     }
 

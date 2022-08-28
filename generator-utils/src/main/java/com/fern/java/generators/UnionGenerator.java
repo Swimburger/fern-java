@@ -107,14 +107,17 @@ public final class UnionGenerator extends AbstractFileGenerator {
     private final class ModelUnionSubTypes extends UnionSubType {
 
         private final SingleUnionType singleUnionType;
-        private final TypeName unionSubTypeTypeName;
-        private final FieldSpec valueFieldSpec;
+        private final Optional<TypeName> unionSubTypeTypeName;
+        private final Optional<FieldSpec> valueFieldSpec;
 
         private ModelUnionSubTypes(ClassName unionClassName, SingleUnionType singleUnionType) {
             super(unionClassName);
             this.singleUnionType = singleUnionType;
-            this.unionSubTypeTypeName =
-                    generatorContext.getPoetTypeNameMapper().convertToTypeName(true, singleUnionType.getValueType());
+            this.unionSubTypeTypeName = singleUnionType.getValueType().isVoid()
+                    ? Optional.empty()
+                    : Optional.of(generatorContext
+                            .getPoetTypeNameMapper()
+                            .convertToTypeName(true, singleUnionType.getValueType()));
             this.valueFieldSpec = getValueField();
         }
 
@@ -125,7 +128,7 @@ public final class UnionGenerator extends AbstractFileGenerator {
 
         @Override
         public String getPascalCaseName() {
-            return singleUnionType.getDiscriminantValue().getCamelCase();
+            return singleUnionType.getDiscriminantValue().getPascalCase();
         }
 
         @Override
@@ -134,7 +137,7 @@ public final class UnionGenerator extends AbstractFileGenerator {
         }
 
         @Override
-        public TypeName getUnionSubTypeTypeName() {
+        public Optional<TypeName> getUnionSubTypeTypeName() {
             return unionSubTypeTypeName;
         }
 
@@ -146,7 +149,7 @@ public final class UnionGenerator extends AbstractFileGenerator {
 
         @Override
         public List<FieldSpec> getFieldSpecs() {
-            return Collections.singletonList(valueFieldSpec);
+            return valueFieldSpec.map(Collections::singletonList).orElseGet(Collections::emptyList);
         }
 
         @Override
@@ -154,10 +157,14 @@ public final class UnionGenerator extends AbstractFileGenerator {
             MethodSpec.Builder fromJsonConstructorBuilder = MethodSpec.constructorBuilder()
                     .addModifiers(Modifier.PRIVATE)
                     .addAnnotation(FernJavaAnnotations.jacksonPropertiesCreator());
-            boolean errorIsObject = isTypeReferenceAnObject(singleUnionType.getValueType());
+            if (getUnionSubTypeTypeName().isEmpty()) {
+                return Collections.singletonList(fromJsonConstructorBuilder.build());
+            }
+            TypeName unionSubTypeName = getUnionSubTypeTypeName().get();
+            boolean isObject = isTypeReferenceAnObject(singleUnionType.getValueType());
             List<ParameterSpec> parameterSpecs = new ArrayList<>();
-            if (!errorIsObject) {
-                parameterSpecs.add(ParameterSpec.builder(getUnionSubTypeTypeName(), getValueFieldName())
+            if (!isObject) {
+                parameterSpecs.add(ParameterSpec.builder(unionSubTypeName, getValueFieldName())
                         .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
                                 .addMember("value", "$S", getValueFieldName())
                                 .build())
@@ -168,14 +175,17 @@ public final class UnionGenerator extends AbstractFileGenerator {
                     fromJsonConstructorBuilder.addParameters(parameterSpecs).build());
         }
 
-        private FieldSpec getValueField() {
+        private Optional<FieldSpec> getValueField() {
+            if (singleUnionType.getValueType().isVoid()) {
+                return Optional.empty();
+            }
             boolean errorIsObject = isTypeReferenceAnObject(singleUnionType.getValueType());
             FieldSpec.Builder valueFieldSpecBuilder =
-                    FieldSpec.builder(getUnionSubTypeTypeName(), getValueFieldName(), Modifier.PRIVATE);
+                    FieldSpec.builder(getUnionSubTypeTypeName().get(), getValueFieldName(), Modifier.PRIVATE);
             if (errorIsObject) {
                 valueFieldSpecBuilder.addAnnotation(JsonUnwrapped.class);
             }
-            return valueFieldSpecBuilder.build();
+            return Optional.of(valueFieldSpecBuilder.build());
         }
 
         private boolean isTypeReferenceAnObject(TypeReference typeReference) {
@@ -216,8 +226,8 @@ public final class UnionGenerator extends AbstractFileGenerator {
         }
 
         @Override
-        public TypeName getUnionSubTypeTypeName() {
-            return ClassName.get(Object.class);
+        public Optional<TypeName> getUnionSubTypeTypeName() {
+            return Optional.of(ClassName.get(Object.class));
         }
 
         @Override
@@ -228,9 +238,8 @@ public final class UnionGenerator extends AbstractFileGenerator {
         @Override
         public List<FieldSpec> getFieldSpecs() {
             return List.of(
-                    FieldSpec.builder(String.class, "type", Modifier.PRIVATE, Modifier.FINAL)
-                            .build(),
-                    FieldSpec.builder(String.class, getValueFieldName(), Modifier.PRIVATE, Modifier.FINAL)
+                    FieldSpec.builder(String.class, "type", Modifier.PRIVATE).build(),
+                    FieldSpec.builder(Object.class, getValueFieldName(), Modifier.PRIVATE)
                             .addAnnotation(JsonValue.class)
                             .build());
         }
@@ -241,9 +250,9 @@ public final class UnionGenerator extends AbstractFileGenerator {
                     .addModifiers(Modifier.PRIVATE)
                     .addAnnotation(FernJavaAnnotations.jacksonPropertiesCreator());
             List<ParameterSpec> parameterSpecs = new ArrayList<>();
-            parameterSpecs.add(ParameterSpec.builder(getUnionSubTypeTypeName(), getValueFieldName())
+            parameterSpecs.add(ParameterSpec.builder(getUnionSubTypeTypeName().get(), getValueFieldName())
                     .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
-                            .addMember("type", "$S", getValueFieldName())
+                            .addMember("value", "$S", getValueFieldName())
                             .build())
                     .build());
             return Collections.singletonList(

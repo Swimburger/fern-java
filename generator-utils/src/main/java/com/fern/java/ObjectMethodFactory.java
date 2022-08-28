@@ -22,6 +22,7 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 
@@ -30,6 +31,17 @@ public class ObjectMethodFactory {
     private ObjectMethodFactory() {}
 
     public static EqualsMethod createEqualsMethod(ClassName className, List<FieldSpec> fieldSpecs) {
+        if (fieldSpecs.isEmpty()) {
+            MethodSpec equalsMethod = MethodSpec.methodBuilder(EqualsConstants.EQUALS_METHOD_NAME)
+                    .addAnnotation(Override.class)
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(boolean.class)
+                    .addParameter(Object.class, EqualsConstants.OTHER_PARAMETER)
+                    .addStatement("if (this == $L) return true", EqualsConstants.OTHER_PARAMETER)
+                    .addStatement("return $L instanceof $T", EqualsConstants.OTHER_PARAMETER, className)
+                    .build();
+            return new EqualsMethod(equalsMethod);
+        }
         MethodSpec equalToMethod = createEqualToMethod(className, fieldSpecs);
         MethodSpec equalsMethod = MethodSpec.methodBuilder(EqualsConstants.EQUALS_METHOD_NAME)
                 .addAnnotation(Override.class)
@@ -74,7 +86,10 @@ public class ObjectMethodFactory {
         return equalToMethodBuilder.addStatement("return " + expression).build();
     }
 
-    public static MethodSpec createHashCodeMethod(List<FieldSpec> fieldSpecs, boolean caching) {
+    public static Optional<MethodSpec> createHashCodeMethod(List<FieldSpec> fieldSpecs, boolean caching) {
+        if (fieldSpecs.isEmpty()) {
+            return Optional.empty();
+        }
         String commaDelimitedFields =
                 fieldSpecs.stream().map(fieldSpec -> "this." + fieldSpec.name).collect(Collectors.joining(", "));
         MethodSpec.Builder hashCodeBuilder = MethodSpec.methodBuilder(HashCodeConstants.HASHCODE_METHOD_NAME)
@@ -94,7 +109,7 @@ public class ObjectMethodFactory {
         } else {
             hashCodeBuilder.addStatement("return $T.hash($L)", Objects.class, commaDelimitedFields);
         }
-        return hashCodeBuilder.build();
+        return Optional.of(hashCodeBuilder.build());
     }
 
     public static MethodSpec createToStringMethod(ClassName className, List<FieldSpec> fieldSpecs) {
@@ -133,18 +148,23 @@ public class ObjectMethodFactory {
     public static final class EqualsMethod {
 
         private final MethodSpec equalsMethodSpec;
-        private final MethodSpec equalToMethodSpec;
+        private final Optional<MethodSpec> equalToMethodSpec;
 
         public EqualsMethod(MethodSpec equalsMethodSpec, MethodSpec equalToMethodSpec) {
             this.equalsMethodSpec = equalsMethodSpec;
-            this.equalToMethodSpec = equalToMethodSpec;
+            this.equalToMethodSpec = Optional.of(equalToMethodSpec);
+        }
+
+        public EqualsMethod(MethodSpec equalsMethodSpec) {
+            this.equalsMethodSpec = equalsMethodSpec;
+            this.equalToMethodSpec = Optional.empty();
         }
 
         public MethodSpec getEqualsMethodSpec() {
             return equalsMethodSpec;
         }
 
-        public MethodSpec getEqualToMethodSpec() {
+        public Optional<MethodSpec> getEqualToMethodSpec() {
             return equalToMethodSpec;
         }
     }

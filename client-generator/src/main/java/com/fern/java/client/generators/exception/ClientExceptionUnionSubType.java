@@ -79,8 +79,8 @@ public final class ClientExceptionUnionSubType extends UnionSubType {
     }
 
     @Override
-    public TypeName getUnionSubTypeTypeName() {
-        return generatedError.getClassName();
+    public Optional<TypeName> getUnionSubTypeTypeName() {
+        return Optional.of(generatedError.getClassName());
     }
 
     @Override
@@ -103,7 +103,7 @@ public final class ClientExceptionUnionSubType extends UnionSubType {
         return Optional.of(MethodSpec.methodBuilder(getCamelCaseName())
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .returns(getUnionClassName())
-                .addParameter(getUnionSubTypeTypeName(), getValueFieldName())
+                .addParameter(getUnionSubTypeTypeName().get(), getValueFieldName())
                 .addStatement(
                         "return new $T(new $T($L), $L)",
                         getUnionClassName(),
@@ -119,7 +119,7 @@ public final class ClientExceptionUnionSubType extends UnionSubType {
     private FieldSpec getValueField() {
         boolean errorIsObject = errorDeclaration.getType().isObject();
         FieldSpec.Builder valueFieldSpec =
-                FieldSpec.builder(getUnionSubTypeTypeName(), getValueFieldName(), Modifier.PRIVATE);
+                FieldSpec.builder(getUnionSubTypeTypeName().get(), getValueFieldName(), Modifier.PRIVATE);
         if (errorIsObject) {
             valueFieldSpec.addAnnotation(JsonUnwrapped.class);
         }
@@ -146,7 +146,7 @@ public final class ClientExceptionUnionSubType extends UnionSubType {
         boolean errorIsObject = errorDeclaration.getType().isObject();
         List<ParameterSpec> parameterSpecs = new ArrayList<>();
         if (!errorIsObject) {
-            parameterSpecs.add(ParameterSpec.builder(getUnionSubTypeTypeName(), getValueFieldName())
+            parameterSpecs.add(ParameterSpec.builder(getUnionSubTypeTypeName().get(), getValueFieldName())
                     .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
                             .addMember("value", "$S", getValueFieldName())
                             .build())
@@ -167,7 +167,7 @@ public final class ClientExceptionUnionSubType extends UnionSubType {
     private MethodSpec getInitConstructor() {
         return MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PRIVATE)
-                .addParameter(ParameterSpec.builder(getUnionSubTypeTypeName(), getValueFieldName())
+                .addParameter(ParameterSpec.builder(getUnionSubTypeTypeName().get(), getValueFieldName())
                         .build())
                 .addStatement("this.$L = $L", getValueFieldName(), getValueFieldName())
                 .addStatement("this.$L = $T.randomUUID().toString()", ERROR_INSTANCE_ID_FIELD_NAME, UUID.class)
