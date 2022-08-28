@@ -381,7 +381,8 @@ public final class UnionGenerator extends Generator {
         KeyedStream.stream(internalValueClassNames).forEach((singleUnionType, unionTypeClassName) -> {
             AnnotationSpec subTypeAnnotation = AnnotationSpec.builder(JsonSubTypes.Type.class)
                     .addMember("value", "$T.class", unionTypeClassName)
-                    .addMember("name", "$S", singleUnionType.getDiscriminantValue())
+                    .addMember(
+                            "name", "$S", singleUnionType.getDiscriminantValue().getWireValue())
                     .build();
             jsonSubTypeAnnotationBuilder.addMember("value", "$L", subTypeAnnotation);
         });
@@ -406,7 +407,10 @@ public final class UnionGenerator extends Generator {
             TypeSpec.Builder typeSpecBuilder = TypeSpec.interfaceBuilder(internalValueClassName)
                     .addAnnotation(Value.Immutable.class)
                     .addAnnotation(AnnotationSpec.builder(JsonTypeName.class)
-                            .addMember("value", "$S", singleUnionType.getDiscriminantValue())
+                            .addMember(
+                                    "value",
+                                    "$S",
+                                    singleUnionType.getDiscriminantValue().getWireValue())
                             .build())
                     .addAnnotation(AnnotationSpec.builder(JsonDeserialize.class)
                             .addMember(
