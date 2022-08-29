@@ -101,6 +101,11 @@ public abstract class UnionSubType {
         return "is" + getPascalCaseName();
     }
 
+    @SuppressWarnings("checkstyle:DesignForExtension")
+    public String getGetMethodName() {
+        return "get" + getPascalCaseName();
+    }
+
     public final MethodSpec getVisitorInterfaceVisitMethod() {
         MethodSpec.Builder visitMethodBuilder = MethodSpec.methodBuilder(getVisitMethodName())
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)

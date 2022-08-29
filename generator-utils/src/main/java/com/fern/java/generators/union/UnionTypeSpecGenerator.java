@@ -150,14 +150,14 @@ public abstract class UnionTypeSpecGenerator {
         allSubTypes.addAll(subTypes);
         allSubTypes.add(unknownSubType);
         return allSubTypes.stream()
-                .map(this::getIsTypeMethod)
+                .map(this::getSubTypeMethodSpec)
                 .flatMap(Optional::stream)
                 .collect(Collectors.toList());
     }
 
-    private Optional<MethodSpec> getIsTypeMethod(UnionSubType subType) {
+    private Optional<MethodSpec> getSubTypeMethodSpec(UnionSubType subType) {
         if (subType.getUnionSubTypeTypeName().isPresent()) {
-            return Optional.of(MethodSpec.methodBuilder("get" + subType.getPascalCaseName())
+            return Optional.of(MethodSpec.methodBuilder(subType.getGetMethodName())
                     .addModifiers(Modifier.PUBLIC)
                     .returns(ParameterizedTypeName.get(
                             ClassName.get(Optional.class),

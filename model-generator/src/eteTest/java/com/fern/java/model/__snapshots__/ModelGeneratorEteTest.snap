@@ -135,7 +135,7 @@ public final class Author {
     return Optional.empty();
   }
 
-  public Optional<Object> getUnknown() {
+  public Optional<Object> _getUnknown() {
     if (_isUnknown()) {
       return Optional.of(((_UnknownValue) value).value);
     }
@@ -1064,7 +1064,7 @@ public final class ContainerType {
     return Optional.empty();
   }
 
-  public Optional<Object> getUnknown() {
+  public Optional<Object> _getUnknown() {
     if (_isUnknown()) {
       return Optional.of(((_UnknownValue) value).value);
     }
@@ -1852,7 +1852,7 @@ public final class TypeReference {
     return Optional.empty();
   }
 
-  public Optional<Object> getUnknown() {
+  public Optional<Object> _getUnknown() {
     if (_isUnknown()) {
       return Optional.of(((_UnknownValue) value).value);
     }

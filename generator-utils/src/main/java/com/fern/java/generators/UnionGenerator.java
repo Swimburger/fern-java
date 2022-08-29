@@ -241,6 +241,11 @@ public final class UnionGenerator extends AbstractFileGenerator {
         }
 
         @Override
+        public String getGetMethodName() {
+            return "_getUnknown";
+        }
+
+        @Override
         public Optional<String> getDiscriminantValue() {
             return Optional.empty();
         }
