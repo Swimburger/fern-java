@@ -20,9 +20,6 @@ import com.fern.generator.exec.model.config.GeneratorPublishConfig;
 import com.fern.generator.exec.model.config.MavenRegistryConfig;
 import com.fern.java.client.cli.CustomPluginConfig.Mode;
 import com.fern.java.client.cli.CustomPluginConfig.ServerFramework;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Style.ImplementationVisibility;
@@ -213,20 +210,32 @@ public abstract class CodeGenerationResult {
     }
 
     public static String getGitignore() {
-        return readFileFromResources(".gitignore");
+        return "*.class\n"
+                + ".project\n"
+                + ".gradle\n"
+                + ".classpath\n"
+                + ".checkstyle\n"
+                + ".settings\n"
+                + ".node\n"
+                + "build\n"
+                + "\n"
+                + "# IntelliJ\n"
+                + "*.iml\n"
+                + "*.ipr\n"
+                + "*.iws\n"
+                + ".idea/\n"
+                + "out/\n"
+                + "\n"
+                + "# Eclipse/IntelliJ APT\n"
+                + "generated_src/\n"
+                + "generated_testSrc/\n"
+                + "generated/\n"
+                + "\n"
+                + "bin\n"
+                + "build";
     }
 
     static ImmutableCodeGenerationResult.Builder builder() {
         return ImmutableCodeGenerationResult.builder();
-    }
-
-    private static String readFileFromResources(String filename) {
-        try {
-            InputStream solutionStream =
-                    CodeGenerationResult.class.getClassLoader().getResourceAsStream(filename);
-            return new String(solutionStream.readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 }
