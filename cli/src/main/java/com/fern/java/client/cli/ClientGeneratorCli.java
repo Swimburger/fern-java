@@ -434,6 +434,9 @@ public final class ClientGeneratorCli {
                     Paths.get(outputDirectory, "build.gradle"),
                     CodeGenerationResult.getBuildDotGradle(
                             fernPluginConfig.generatorConfig().getPublish().get()));
+            writeFileContents(
+                    Paths.get(outputDirectory, ".gitignore"),
+                    CodeGenerationResult.getGitignore());
         }
     }
 
