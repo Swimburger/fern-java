@@ -429,9 +429,7 @@ public final class ClientGeneratorCli {
         writeFileContents(
                 Paths.get(outputDirectory, "settings.gradle"),
                 CodeGenerationResult.getSettingsDotGradle(fernPluginConfig));
-        writeFileContents(
-                Paths.get(outputDirectory, ".gitignore"),
-                CodeGenerationResult.getGitignore());
+        writeFileContents(Paths.get(outputDirectory, ".gitignore"), CodeGenerationResult.getGitignore());
         if (fernPluginConfig.generatorConfig().getPublish().isPresent()) {
             writeFileContents(
                     Paths.get(outputDirectory, "build.gradle"),
