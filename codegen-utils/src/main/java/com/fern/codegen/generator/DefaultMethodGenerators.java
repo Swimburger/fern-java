@@ -72,7 +72,7 @@ public final class DefaultMethodGenerators {
                     "return $L instanceof $T && $N(($T) $L)",
                     EqualsConstants.OTHER_PARAMETER,
                     className,
-                    equalToMethod,
+                    equalToMethod.get(),
                     className,
                     EqualsConstants.OTHER_PARAMETER);
         } else {
