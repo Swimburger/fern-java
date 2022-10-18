@@ -57,6 +57,7 @@ public class ModelGeneratorEteTest {
         runCommand(generatedJavaPath, new String[] {"git", "add", "-A"});
         runCommand(generatedJavaPath, new String[] {"git", "commit", "-m", "generate"});
         runCommand(generatedJavaPath, new String[] {"git", "clean", "-fdx"});
+        runCommand(generatedJavaPath, new String[] {"rm", "-rf", ".git"});
 
         boolean filesGenerated = false;
         List<Path> paths = Files.walk(dotFernProjectPath.resolve(Paths.get("basic/generated-java")))
