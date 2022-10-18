@@ -49,8 +49,6 @@ public class ModelGeneratorEteTest {
                 ? currentPath.resolve(Paths.get("src/eteTest/.fern"))
                 : currentPath.resolve(Paths.get("model-generator/src/eteTest/.fern"));
         runCommand(dotFernProjectPath, new String[] {"fern-dev", "generate", "--local", "--keepDocker"});
-        List<Path> paths = Files.walk(dotFernProjectPath.resolve(Paths.get("basic/generated-java")))
-                .collect(Collectors.toList());
 
         Path basicApiPath = dotFernProjectPath.resolve("basic");
         Path generatedJavaPath = basicApiPath.resolve("generated-java");
@@ -61,6 +59,8 @@ public class ModelGeneratorEteTest {
         runCommand(generatedJavaPath, new String[] {"git", "clean", "-fdx"});
 
         boolean filesGenerated = false;
+        List<Path> paths = Files.walk(dotFernProjectPath.resolve(Paths.get("basic/generated-java")))
+                .collect(Collectors.toList());
         for (Path path : paths) {
             if (path.toFile().isDirectory()) {
                 continue;

@@ -48,8 +48,6 @@ public class ClientGeneratorEteTest {
                 ? currentPath.resolve(Paths.get("src/eteTest/.fern"))
                 : currentPath.resolve(Paths.get("client-generator/src/eteTest/.fern"));
         runCommand(dotFernProjectPath, new String[] {"fern-dev", "generate", "--local", "--keepDocker"});
-        List<Path> paths = Files.walk(dotFernProjectPath.resolve(Paths.get("basic/generated-java")))
-                .collect(Collectors.toList());
 
         Path basicApiPath = dotFernProjectPath.resolve("basic");
         Path generatedJavaPath = basicApiPath.resolve("generated-java");
@@ -59,6 +57,8 @@ public class ClientGeneratorEteTest {
         runCommand(generatedJavaPath, new String[] {"git", "commit", "-m", "generate"});
         runCommand(generatedJavaPath, new String[] {"git", "clean", "-fdx"});
 
+        List<Path> paths = Files.walk(dotFernProjectPath.resolve(Paths.get("basic/generated-java")))
+                .collect(Collectors.toList());
         boolean filesGenerated = false;
         for (Path path : paths) {
             if (path.toFile().isDirectory()) {
