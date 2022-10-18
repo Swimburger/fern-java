@@ -130,7 +130,6 @@ public abstract class AbstractGeneratorCli {
                     }
                     return ImmutablePublishingConfig.builder()
                             .version(generatorPublishConfig.getVersion())
-                            .registryUrl(mavenRegistryConfigV2.getRegistryUrl())
                             .group(splitCoordinate[0])
                             .artifact(splitCoordinate[1])
                             .build();
