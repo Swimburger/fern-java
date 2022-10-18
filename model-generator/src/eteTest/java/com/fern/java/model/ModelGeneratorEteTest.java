@@ -51,6 +51,15 @@ public class ModelGeneratorEteTest {
         runCommand(dotFernProjectPath, new String[] {"fern-dev", "generate", "--local", "--keepDocker"});
         List<Path> paths = Files.walk(dotFernProjectPath.resolve(Paths.get("basic/generated-java")))
                 .collect(Collectors.toList());
+
+        Path basicApiPath = dotFernProjectPath.resolve("basic");
+        Path generatedJavaPath = basicApiPath.resolve("generated-java");
+
+        runCommand(generatedJavaPath, new String[] {"git", "init"});
+        runCommand(generatedJavaPath, new String[] {"git", "add", "-A"});
+        runCommand(generatedJavaPath, new String[] {"git", "commit", "-m", "generate"});
+        runCommand(generatedJavaPath, new String[] {"git", "clean", "-fdx"});
+
         boolean filesGenerated = false;
         for (Path path : paths) {
             if (path.toFile().isDirectory()) {
@@ -70,10 +79,6 @@ public class ModelGeneratorEteTest {
             throw new RuntimeException("Failed to generate any files!");
         }
 
-        Path basicApiPath = dotFernProjectPath.resolve("basic");
-        Path generatedJavaPath = basicApiPath.resolve("generated-java");
-        runCommand(basicApiPath, new String[] {"cp", "gradlew", "generated-java/"});
-        runCommand(basicApiPath, new String[] {"cp", "-R", "gradle-wrapper/.", "generated-java/"});
         runCommand(generatedJavaPath, new String[] {"./gradlew", "compileJava"});
     }
 
