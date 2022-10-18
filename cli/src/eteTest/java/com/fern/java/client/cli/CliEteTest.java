@@ -73,8 +73,6 @@ public class CliEteTest {
             throw new RuntimeException("Failed to generate any files!");
         }
 
-
-
         Path basicApiPath = dotFernProjectPath.resolve("basic");
         Path generatedJavaPath = basicApiPath.resolve("generated-java");
         runCommand(basicApiPath, new String[] {"cp", "gradlew", "generated-java/"});
