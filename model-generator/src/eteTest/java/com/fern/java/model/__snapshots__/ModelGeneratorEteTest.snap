@@ -2,6 +2,7 @@ basic[basic/generated-java/.gitignore]=[
 *.class
 .project
 .gradle
+**/.gradle/**
 .classpath
 .checkstyle
 .settings

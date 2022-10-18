@@ -24,6 +24,7 @@ public final class GitIgnoreGenerator {
         return "*.class\n"
                 + ".project\n"
                 + ".gradle\n"
+                + "**/.gradle/**\n"
                 + ".classpath\n"
                 + ".checkstyle\n"
                 + ".settings\n"
