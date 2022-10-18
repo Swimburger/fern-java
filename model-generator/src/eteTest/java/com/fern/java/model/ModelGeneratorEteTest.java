@@ -63,7 +63,7 @@ public class ModelGeneratorEteTest {
         List<Path> paths = Files.walk(dotFernProjectPath.resolve(Paths.get("basic/generated-java")))
                 .collect(Collectors.toList());
         for (Path path : paths) {
-            if (path.toFile().isDirectory()) {
+            if (path.toFile().isDirectory() || path.toAbsolutePath().toString().endsWith(".bat")) {
                 continue;
             }
             Path relativizedPath = dotFernProjectPath.relativize(path);

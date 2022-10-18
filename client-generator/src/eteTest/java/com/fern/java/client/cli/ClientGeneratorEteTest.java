@@ -62,7 +62,7 @@ public class ClientGeneratorEteTest {
                 .collect(Collectors.toList());
         boolean filesGenerated = false;
         for (Path path : paths) {
-            if (path.toFile().isDirectory()) {
+            if (path.toFile().isDirectory() || path.toAbsolutePath().toString().endsWith(".bat")) {
                 continue;
             }
 
