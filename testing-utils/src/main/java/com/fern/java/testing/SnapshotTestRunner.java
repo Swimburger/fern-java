@@ -38,12 +38,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class SnapshotTestRunner {
 
-    private SnapshotTestRunner() {
-    }
-
+    private SnapshotTestRunner() {}
 
     public static void snapshotTest(Path fernDir, Expect expect, String docker) throws IOException {
 
@@ -61,7 +60,8 @@ public final class SnapshotTestRunner {
                         .mode(OutputMode.publish(GeneratorPublishConfig.builder()
                                 .registries(GeneratorRegistriesConfig.builder()
                                         .maven(MavenRegistryConfig.builder()
-                                                .registryUrl("https://s01.oss.sonatype.org/content/repositories/releases/")
+                                                .registryUrl(
+                                                        "https://s01.oss.sonatype.org/content/repositories/releases/")
                                                 .username("fake")
                                                 .password("fake")
                                                 .group("com.fern")
@@ -74,7 +74,8 @@ public final class SnapshotTestRunner {
                                         .build())
                                 .registriesV2(GeneratorRegistriesConfigV2.builder()
                                         .maven(MavenRegistryConfigV2.builder()
-                                                .registryUrl("https://s01.oss.sonatype.org/content/repositories/releases/")
+                                                .registryUrl(
+                                                        "https://s01.oss.sonatype.org/content/repositories/releases/")
                                                 .username("fake")
                                                 .password("fake")
                                                 .coordinate("com.fern:basic")
@@ -102,11 +103,7 @@ public final class SnapshotTestRunner {
         Files.writeString(pathToConfig, ClientObjectMappers.JSON_MAPPER.writeValueAsString(generatorConfig));
 
         runCommand(fernDir, new String[] {
-            "npx",
-            "--yes",
-            "fern-api",
-            "ir",
-            pathToIr.toAbsolutePath().toString()
+            "npx", "--yes", "fern-api", "ir", pathToIr.toAbsolutePath().toString()
         });
 
         runCommand(fernDir, new String[] {
@@ -128,25 +125,28 @@ public final class SnapshotTestRunner {
         runCommand(pathToOutput, new String[] {"git", "clean", "-fdx"});
         runCommand(pathToOutput, new String[] {"rm", "-rf", ".git"});
 
-        List<Path> paths = Files.walk(pathToOutput).collect(Collectors.toList());
-        boolean filesGenerated = false;
-        for (Path path : paths) {
-            if (path.toFile().isDirectory() || path.toAbsolutePath().toString().endsWith(".bat")) {
-                continue;
-            }
+        try (Stream<Path> pathStream = Files.walk(pathToOutput)) {
+            List<Path> paths = pathStream.collect(Collectors.toList());
+            boolean filesGenerated = false;
+            for (Path path : paths) {
+                if (path.toFile().isDirectory()
+                        || path.toAbsolutePath().toString().endsWith(".bat")) {
+                    continue;
+                }
 
-            Path relativizedPath = pathToOutput.relativize(path);
-            filesGenerated = true;
-            try {
-                String fileContents = Files.readString(path);
-                expect.scenario(relativizedPath.toString()).toMatchSnapshot(fileContents);
-            } catch (IOException e) {
-                // log.error("Encountered error while reading file {}", relativizedPath, e);
-                expect.scenario(relativizedPath.toString()).toMatchSnapshot(relativizedPath.toString());
+                Path relativizedPath = pathToOutput.relativize(path);
+                filesGenerated = true;
+                try {
+                    String fileContents = Files.readString(path);
+                    expect.scenario(relativizedPath.toString()).toMatchSnapshot(fileContents);
+                } catch (IOException e) {
+                    // log.error("Encountered error while reading file {}", relativizedPath, e);
+                    expect.scenario(relativizedPath.toString()).toMatchSnapshot(relativizedPath.toString());
+                }
             }
-        }
-        if (!filesGenerated) {
-            throw new RuntimeException("Failed to generate any files!");
+            if (!filesGenerated) {
+                throw new RuntimeException("Failed to generate any files!");
+            }
         }
 
         runCommand(pathToOutput, new String[] {"./gradlew", "compileJava"});
