@@ -157,7 +157,9 @@ public final class SnapshotTestRunner {
             }
         }
 
-        runCommand(pathToOutput, new String[] {"./gradlew", "compileJava"});
+        if (!System.getenv().containsKey("CIRCLECI")) {
+            runCommand(pathToOutput, new String[] {"./gradlew", "compileJava"});
+        }
     }
 
     private static void runCommand(Path projectPath, String[] command) {
