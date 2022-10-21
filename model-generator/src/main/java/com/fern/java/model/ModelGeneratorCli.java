@@ -24,11 +24,11 @@ import com.fern.java.AbstractGeneratorCli;
 import com.fern.java.DefaultGeneratorExecClient;
 import com.fern.java.generators.TypesGenerator;
 import com.fern.java.generators.TypesGenerator.Result;
+import com.fern.java.output.gradle.AbstractGradleDependency.DependencyType;
+import com.fern.java.output.gradle.GradleDependency;
 import java.util.List;
 
 public final class ModelGeneratorCli extends AbstractGeneratorCli {
-
-    private static final String UTILS_VERSION = "0.0.82";
 
     @Override
     public void runInDownloadFilesModeHook(
@@ -67,10 +67,20 @@ public final class ModelGeneratorCli extends AbstractGeneratorCli {
     }
 
     @Override
-    public List<String> getBuildGradleDependencies() {
+    public List<GradleDependency> getBuildGradleDependencies() {
         return List.of(
-                "    api 'io.github.fern-api:jackson-utils:" + UTILS_VERSION + "'",
-                "    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.12.3'");
+                GradleDependency.builder()
+                        .type(DependencyType.API)
+                        .group("io.github.fern-api")
+                        .artifact("jackson-utils")
+                        .version(GradleDependency.UTILS_VERSION)
+                        .build(),
+                GradleDependency.builder()
+                        .type(DependencyType.API)
+                        .group("com.fasterxml.jackson.datatype")
+                        .artifact("jackson-datatype-jdk8")
+                        .version(GradleDependency.JACKSON_VERSION)
+                        .build());
     }
 
     public static void main(String... args) {
