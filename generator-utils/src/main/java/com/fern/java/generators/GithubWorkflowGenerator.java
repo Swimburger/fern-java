@@ -20,8 +20,7 @@ import com.fern.java.output.RawGeneratedFile;
 
 public final class GithubWorkflowGenerator {
 
-    private GithubWorkflowGenerator() {
-    }
+    private GithubWorkflowGenerator() {}
 
     public static RawGeneratedFile getGithubWorkflow(String registryUrl) {
         return RawGeneratedFile.builder()
