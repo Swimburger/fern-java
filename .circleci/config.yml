@@ -85,6 +85,7 @@ jobs:
       - run:
           name: Install Fern Dev
           command: |
+            npm install -g @fern-api/fern-api-dev@0.0.184-12-gdba76681
             npm install -g fern-api@0.0.215
       - run: docker network prune -f
       - run: ./gradlew --parallel --stacktrace build -x test -x check
