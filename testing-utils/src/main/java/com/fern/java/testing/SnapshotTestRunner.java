@@ -102,9 +102,8 @@ public final class SnapshotTestRunner {
 
         Files.writeString(pathToConfig, ClientObjectMappers.JSON_MAPPER.writeValueAsString(generatorConfig));
 
-        runCommand(fernDir, new String[] {
-            "fern", "ir", pathToIr.toAbsolutePath().toString()
-        });
+        runCommand(
+                fernDir, new String[] {"fern", "ir", pathToIr.toAbsolutePath().toString()});
 
         runCommand(fernDir, new String[] {
             "docker",
