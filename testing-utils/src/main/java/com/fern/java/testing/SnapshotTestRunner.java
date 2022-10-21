@@ -118,18 +118,27 @@ public final class SnapshotTestRunner {
             "/fern/config.json",
         });
 
-        runCommand(pathToOutput, new String[] {"sudo", "git", "init"});
-        runCommand(pathToOutput, new String[] {"sudo", "git", "add", "-A"});
-        runCommand(pathToOutput, new String[] {"sudo", "git", "commit", "-m", "generate"});
-        runCommand(pathToOutput, new String[] {"sudo", "git", "clean", "-fdx"});
-        runCommand(pathToOutput, new String[] {"sudo", "rm", "-rf", ".git"});
+        if (System.getenv().containsKey("CIRCLECI")) {
+            runCommand(pathToOutput, new String[] {"sudo", "git", "init"});
+            runCommand(pathToOutput, new String[] {"sudo", "git", "add", "-A"});
+            runCommand(pathToOutput, new String[] {"sudo", "git", "commit", "-m", "generate"});
+            runCommand(pathToOutput, new String[] {"sudo", "git", "clean", "-fdx"});
+            runCommand(pathToOutput, new String[] {"sudo", "rm", "-rf", ".git"});
+        } else {
+            runCommand(pathToOutput, new String[] {"git", "init"});
+            runCommand(pathToOutput, new String[] {"git", "add", "-A"});
+            runCommand(pathToOutput, new String[] {"git", "commit", "-m", "generate"});
+            runCommand(pathToOutput, new String[] {"git", "clean", "-fdx"});
+            runCommand(pathToOutput, new String[] {"rm", "-rf", ".git"});
+        }
 
         try (Stream<Path> pathStream = Files.walk(pathToOutput)) {
             List<Path> paths = pathStream.collect(Collectors.toList());
             boolean filesGenerated = false;
             for (Path path : paths) {
                 if (path.toFile().isDirectory()
-                        || path.toAbsolutePath().toString().endsWith(".bat")) {
+                        || path.toAbsolutePath().toString().endsWith(".bat")
+                        || path.toAbsolutePath().toString().endsWith(".gradle")) {
                     continue;
                 }
 

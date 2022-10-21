@@ -26,57 +26,6 @@ build
 ]
 
 
-basic[build.gradle]=[
-plugins {
-    id 'java-library'
-    id 'maven-publish'
-}
-
-java {
-    withSourcesJar()
-    withJavadocJar()
-}
-
-repositories {
-    mavenCentral()
-    maven {
-        url "https://s01.oss.sonatype.org/content/repositories/releases/"
-    }
-}
-
-dependencies {
-    api 'io.github.fern-api:jackson-utils:0.0.82'
-    implementation 'io.github.fern-api:jersey-utils:0.0.82'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.12.3'
-    implementation 'io.github.openfeign:feign-jackson:11.8'
-    implementation 'io.github.openfeign:feign-core:11.8'
-    implementation 'io.github.openfeign:feign-jaxrs2:11.8'
-}
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId = 'com.fern'
-            artifactId = 'basic'
-            version = '0.0.0'
-
-            from components.java
-        }
-    }
-    repositories {
-        maven {
-            url "$System.env.MAVEN_PUBLISH_REGISTRY_URL"
-            credentials {
-                username "$System.env.MAVEN_USERNAME"
-                password "$System.env.MAVEN_PASSWORD"
-            }
-        }
-    }
-}
-
-]
-
-
 basic[gradle/wrapper/gradle-wrapper.jar]=[
 gradle/wrapper/gradle-wrapper.jar
 ]
@@ -327,11 +276,6 @@ eval "set -- $(
     )" '"$@"'
 
 exec "$JAVACMD" "$@"
-
-]
-
-
-basic[settings.gradle]=[
 
 ]
 
