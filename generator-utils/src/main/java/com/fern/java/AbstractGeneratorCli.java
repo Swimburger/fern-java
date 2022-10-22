@@ -235,7 +235,9 @@ public abstract class AbstractGeneratorCli {
         addGeneratedFile(buildGradle);
         addGeneratedFile(RawGeneratedFile.builder()
                 .filename("settings.gradle")
-                .contents(getSubProjects().stream().map(project -> "include '" + project + "'").collect(Collectors.joining("\n")))
+                .contents(getSubProjects().stream()
+                        .map(project -> "include '" + project + "'")
+                        .collect(Collectors.joining("\n")))
                 .build());
         addGeneratedFile(GitIgnoreGenerator.getGitignore());
     }

@@ -38,7 +38,8 @@ public final class SampleAppGenerator extends AbstractFilesGenerator {
 
     public static final String SAMPLE_APP_DIRECTORY = "sample-app";
 
-    public SampleAppGenerator(AbstractGeneratorContext<?> generatorContext, GeneratedClientWrapper generatedClientWrapper) {
+    public SampleAppGenerator(
+            AbstractGeneratorContext<?> generatorContext, GeneratedClientWrapper generatedClientWrapper) {
         super(generatorContext);
         this.generatedClientWrapper = generatedClientWrapper;
     }
@@ -47,8 +48,7 @@ public final class SampleAppGenerator extends AbstractFilesGenerator {
     public List<GeneratedFile> generateFiles() {
         GeneratedBuildGradle buildGradle = GeneratedBuildGradle.builder()
                 .directoryPrefix(SAMPLE_APP_DIRECTORY)
-                .addAllPluginIds(List.of(
-                        GeneratedBuildGradle.JAVA_LIBRARY_PLUGIN_ID))
+                .addAllPluginIds(List.of(GeneratedBuildGradle.JAVA_LIBRARY_PLUGIN_ID))
                 .addCustomRepositories(GradleRepository.builder()
                         .url("https://s01.oss.sonatype.org/content/repositories/releases/")
                         .build())
@@ -66,7 +66,8 @@ public final class SampleAppGenerator extends AbstractFilesGenerator {
         GeneratedJavaFile appJava = GeneratedJavaFile.builder()
                 .className(appClassName)
                 .javaFile(JavaFile.builder(appClassName.packageName(), appTypeSpec)
-                        .addFileComment("import " + generatedClientWrapper.getClassName().toString())
+                        .addFileComment("import "
+                                + generatedClientWrapper.getClassName().toString())
                         .build())
                 .directoryPrefix(SAMPLE_APP_DIRECTORY)
                 .build();

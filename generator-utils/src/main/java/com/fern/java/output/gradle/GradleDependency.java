@@ -21,7 +21,7 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @StagedBuilderImmutablesStyle
-public abstract class GradleDependency extends AbstractGradleDependency{
+public abstract class GradleDependency extends AbstractGradleDependency {
 
     public static final String JACKSON_VERSION = "2.12.3";
     public static final String UTILS_VERSION = "0.0.82";

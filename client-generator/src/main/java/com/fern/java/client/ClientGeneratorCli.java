@@ -80,9 +80,7 @@ public final class ClientGeneratorCli extends AbstractGeneratorCli {
         generateClient(context, ir);
     }
 
-    public GeneratedClientWrapper generateClient(
-            ClientGeneratorContext context,
-            IntermediateRepresentation ir) {
+    public GeneratedClientWrapper generateClient(ClientGeneratorContext context, IntermediateRepresentation ir) {
 
         // auth
         AuthGenerator authGenerator = new AuthGenerator(context);
