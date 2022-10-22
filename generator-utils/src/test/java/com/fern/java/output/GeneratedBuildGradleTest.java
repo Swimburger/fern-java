@@ -35,12 +35,13 @@ public class GeneratedBuildGradleTest {
                 .artifact("fern")
                 .version("0.0.0")
                 .build();
-        List<AbstractGradleDependency> deps = List.of(GradleDependency.builder()
-                .type(DependencyType.IMPLEMENTATION)
-                .group("io.github.fern-api")
-                .artifact("jersy-utils")
-                .version(GradleDependency.UTILS_VERSION)
-                .build(),
+        List<AbstractGradleDependency> deps = List.of(
+                GradleDependency.builder()
+                        .type(DependencyType.IMPLEMENTATION)
+                        .group("io.github.fern-api")
+                        .artifact("jersy-utils")
+                        .version(GradleDependency.UTILS_VERSION)
+                        .build(),
                 RootProjectGradleDependency.INSTANCE);
         GeneratedBuildGradle buildGradle = GeneratedBuildGradle.builder()
                 .addAllPluginIds(List.of(
