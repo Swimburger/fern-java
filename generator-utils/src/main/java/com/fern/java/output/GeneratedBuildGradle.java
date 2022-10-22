@@ -21,6 +21,7 @@ import com.fern.java.output.gradle.AbstractGradleDependency;
 import com.fern.java.output.gradle.GradlePublishingConfig;
 import com.fern.java.output.gradle.GradleRepository;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -109,6 +110,8 @@ public abstract class GeneratedBuildGradle extends GeneratedFile {
             writer.endControlFlow();
             writer.addNewLine();
         }
+
+        Files.writeString(directory.resolve("build.gradle"), writer.getContents());
     }
 
     public static ImmutableGeneratedBuildGradle.Builder builder() {
