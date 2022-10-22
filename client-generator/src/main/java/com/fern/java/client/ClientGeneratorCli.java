@@ -35,6 +35,7 @@ import com.fern.java.output.GeneratedAuthFiles;
 import com.fern.java.output.GeneratedJavaFile;
 import com.fern.java.output.gradle.AbstractGradleDependency.DependencyType;
 import com.fern.java.output.gradle.GradleDependency;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -45,6 +46,8 @@ import org.slf4j.LoggerFactory;
 public final class ClientGeneratorCli extends AbstractGeneratorCli {
 
     private static final Logger log = LoggerFactory.getLogger(ClientGeneratorCli.class);
+
+    private final List<String> subprojects = new ArrayList<>();
 
     @Override
     public void runInDownloadFilesModeHook(
@@ -64,6 +67,7 @@ public final class ClientGeneratorCli extends AbstractGeneratorCli {
         GeneratedClientWrapper generatedClientWrapper = generateClient(context, ir);
         SampleAppGenerator sampleAppGenerator = new SampleAppGenerator(context, generatedClientWrapper);
         sampleAppGenerator.generateFiles().forEach(this::addGeneratedFile);
+        subprojects.add(SampleAppGenerator.SAMPLE_APP_DIRECTORY);
     }
 
     @Override
@@ -177,6 +181,11 @@ public final class ClientGeneratorCli extends AbstractGeneratorCli {
                         .artifact("feign-jaxrs2")
                         .version(GradleDependency.FEIGN_VERSION)
                         .build());
+    }
+
+    @Override
+    public List<String> getSubProjects() {
+        return subprojects;
     }
 
     public static void main(String... args) {

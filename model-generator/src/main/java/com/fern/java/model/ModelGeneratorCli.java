@@ -26,6 +26,7 @@ import com.fern.java.generators.TypesGenerator;
 import com.fern.java.generators.TypesGenerator.Result;
 import com.fern.java.output.gradle.AbstractGradleDependency.DependencyType;
 import com.fern.java.output.gradle.GradleDependency;
+import java.util.Collections;
 import java.util.List;
 
 public final class ModelGeneratorCli extends AbstractGeneratorCli {
@@ -81,6 +82,11 @@ public final class ModelGeneratorCli extends AbstractGeneratorCli {
                         .artifact("jackson-datatype-jdk8")
                         .version(GradleDependency.JACKSON_VERSION)
                         .build());
+    }
+
+    @Override
+    public List<String> getSubProjects() {
+        return Collections.emptyList();
     }
 
     public static void main(String... args) {

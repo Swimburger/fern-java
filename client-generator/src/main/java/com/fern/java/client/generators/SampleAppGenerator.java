@@ -36,7 +36,7 @@ public final class SampleAppGenerator extends AbstractFilesGenerator {
 
     private final GeneratedClientWrapper generatedClientWrapper;
 
-    private static final String SAMPLE_APP_DIRECTORY = "sample-app";
+    public static final String SAMPLE_APP_DIRECTORY = "sample-app";
 
     public SampleAppGenerator(AbstractGeneratorContext<?> generatorContext, GeneratedClientWrapper generatedClientWrapper) {
         super(generatorContext);
