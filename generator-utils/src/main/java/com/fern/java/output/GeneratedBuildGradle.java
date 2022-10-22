@@ -52,12 +52,12 @@ public abstract class GeneratedBuildGradle extends GeneratedFile {
         return "build.gradle";
     }
 
-    public final void writeToFile(Path directory) throws IOException {
+    public final String getContents() {
         RawFileWriter writer = new RawFileWriter();
         if (!pluginIds().isEmpty()) {
             writer.beginControlFlow("plugins");
             for (String pluginId : pluginIds()) {
-                writer.addLine("id '" + pluginId + "'\n");
+                writer.addLine("id '" + pluginId + "'");
             }
             writer.endControlFlow();
         }
@@ -77,7 +77,7 @@ public abstract class GeneratedBuildGradle extends GeneratedFile {
         // add dependencies
         writer.beginControlFlow("dependencies");
         for (AbstractGradleDependency gradleDependency : dependencies()) {
-            writer.append(gradleDependency.toString());
+            writer.addLine(gradleDependency.toString());
         }
         writer.endControlFlow();
         writer.addNewLine();
@@ -110,8 +110,11 @@ public abstract class GeneratedBuildGradle extends GeneratedFile {
             writer.endControlFlow();
             writer.addNewLine();
         }
+        return writer.getContents();
+    }
 
-        Files.writeString(directory.resolve("build.gradle"), writer.getContents());
+    public final void writeToFile(Path directory) throws IOException {
+        Files.writeString(directory.resolve("build.gradle"), getContents());
     }
 
     public static ImmutableGeneratedBuildGradle.Builder builder() {
