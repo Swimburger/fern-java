@@ -559,9 +559,6 @@ public final class GetAuthException extends Exception {
 
   private int statusCode;
 
-  @JsonCreator(
-      mode = JsonCreator.Mode.DELEGATING
-  )
   private GetAuthException(Value value, int statusCode) {
     this.value = value;
     this.statusCode = statusCode;
@@ -1129,9 +1126,6 @@ public final class CreatePostException extends Exception {
 
   private int statusCode;
 
-  @JsonCreator(
-      mode = JsonCreator.Mode.DELEGATING
-  )
   private CreatePostException(Value value, int statusCode) {
     this.value = value;
     this.statusCode = statusCode;
@@ -1258,9 +1252,6 @@ public final class GetPostException extends Exception {
 
   private int statusCode;
 
-  @JsonCreator(
-      mode = JsonCreator.Mode.DELEGATING
-  )
   private GetPostException(Value value, int statusCode) {
     this.value = value;
     this.statusCode = statusCode;
@@ -2785,9 +2776,6 @@ public final class GetDummyException extends Exception {
 
   private int statusCode;
 
-  @JsonCreator(
-      mode = JsonCreator.Mode.DELEGATING
-  )
   private GetDummyException(Value value, int statusCode) {
     this.value = value;
     this.statusCode = statusCode;
@@ -2910,9 +2898,6 @@ public final class HealthException extends Exception {
 
   private int statusCode;
 
-  @JsonCreator(
-      mode = JsonCreator.Mode.DELEGATING
-  )
   private HealthException(Value value, int statusCode) {
     this.value = value;
     this.statusCode = statusCode;
