@@ -53,7 +53,7 @@ public final class SnapshotTestRunner {
         Path pathToConfig = tmpDir.resolve("config.json");
 
         if (pathToOutput.toFile().exists()) {
-            runCommand(fernDir, new String[]{"rm", "-rf", "generated-java/"});
+            runCommand(fernDir, new String[] {"rm", "-rf", "generated-java/"});
         } else {
             pathToOutput.toFile().mkdirs();
         }
