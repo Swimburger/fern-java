@@ -1944,7 +1944,7 @@ public final class Author {
 
     T visitName(String value);
 
-    T visitUnknown(String unknownType);
+    T _visitUnknown(Object unknownType);
   }
 
   @JsonTypeInfo(
@@ -2942,7 +2942,7 @@ public final class PostType {
 
     T visitMedium();
 
-    T visitUnknown(String unknownType);
+    T _visitUnknown(Object unknownType);
   }
 }
 

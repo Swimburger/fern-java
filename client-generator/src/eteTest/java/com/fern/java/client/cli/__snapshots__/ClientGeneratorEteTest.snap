@@ -2439,7 +2439,7 @@ public final class PostType {
 
     T visitMedium();
 
-    T visitUnknown(String unknownType);
+    T _visitUnknown(Object unknownType);
   }
 }
 
