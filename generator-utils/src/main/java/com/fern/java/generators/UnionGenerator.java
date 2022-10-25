@@ -20,20 +20,30 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fern.ir.model.ir.FernConstants;
-import com.fern.ir.model.types.*;
+import com.fern.ir.model.types.DeclaredTypeName;
+import com.fern.ir.model.types.SingleUnionType;
+import com.fern.ir.model.types.TypeDeclaration;
+import com.fern.ir.model.types.TypeReference;
+import com.fern.ir.model.types.UnionTypeDeclaration;
 import com.fern.java.AbstractGeneratorContext;
 import com.fern.java.FernJavaAnnotations;
 import com.fern.java.generators.union.UnionSubType;
 import com.fern.java.generators.union.UnionTypeSpecGenerator;
 import com.fern.java.output.GeneratedJavaFile;
-import com.squareup.javapoet.*;
-
-import javax.lang.model.element.Modifier;
+import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.TypeName;
+import com.squareup.javapoet.TypeSpec;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.lang.model.element.Modifier;
 
 public final class UnionGenerator extends AbstractFileGenerator {
 
