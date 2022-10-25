@@ -51,10 +51,10 @@ public class CliEteTest {
                         "serverFrameworks", "spring,jersey"
                 )
         ));
-        Path pathToOutput = fernDirPath.resolve("generated-java");
-        runCommand(fernDirPath, new String[] {"cp", "gradlew", "generated-java/"});
-        runCommand(fernDirPath, new String[] {"cp", "-R", "gradle-wrapper/.", "generated-java/"});
-        runCommand(pathToOutput, new String[] {"./gradlew", "compileJava"});
+        // Path pathToOutput = fernDirPath.resolve("generated-java");
+        // runCommand(fernDirPath, new String[] {"cp", "gradlew", "generated-java/"});
+        // runCommand(fernDirPath, new String[] {"cp", "-R", "gradle-wrapper/.", "generated-java/"});
+        // runCommand(pathToOutput, new String[] {"./gradlew", "compileJava"});
     }
 
     private static void runCommand(Path projectPath, String[] command) {

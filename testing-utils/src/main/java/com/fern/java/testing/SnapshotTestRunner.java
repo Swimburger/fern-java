@@ -106,7 +106,7 @@ public final class SnapshotTestRunner {
                                 .version("0.0.0")
                                 .build()))
                         .build())
-                .workspaceName("")
+                .workspaceName("fern")
                 .organization("fern")
                 .environment(GeneratorEnvironment.local())
                 .customConfig(customConfig)
