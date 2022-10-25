@@ -280,7 +280,7 @@ exec "$JAVACMD" "$@"
 ]
 
 
-basic[src/main/java/com/fern/basic/FernClient.java]=[
+basic[src/main/java/com/fern/basic/FernFernClient.java]=[
 package com.fern.basic;
 
 import com.fern.basic.client.auth.AuthServiceClient;
@@ -292,20 +292,20 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-public final class FernClient {
+public final class FernFernClient {
   private final Supplier<AuthServiceClient> authServiceClient;
 
   private final Supplier<PostsServiceClient> postsServiceClient;
 
   private final Supplier<DummyServiceClient> dummyServiceClient;
 
-  public FernClient(String url) {
+  public FernFernClient(String url) {
     this.postsServiceClient = memoize(() -> new PostsServiceClient(url));
     this.dummyServiceClient = memoize(() -> new DummyServiceClient(url));
     this.authServiceClient = memoize(() -> new AuthServiceClient(url));
   }
 
-  public FernClient(String url, BearerAuth auth) {
+  public FernFernClient(String url, BearerAuth auth) {
     this.postsServiceClient = memoize(() -> new PostsServiceClient(url));
     this.dummyServiceClient = memoize(() -> new DummyServiceClient(url));
     this.authServiceClient = memoize(() -> new AuthServiceClient(url, auth));
