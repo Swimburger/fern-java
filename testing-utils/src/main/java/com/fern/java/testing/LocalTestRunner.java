@@ -39,8 +39,7 @@ import java.util.Map;
 
 public final class LocalTestRunner {
 
-    private LocalTestRunner() {
-    }
+    private LocalTestRunner() {}
 
     public static void test(Path fernDir, AbstractGeneratorCli generator) throws IOException {
 
