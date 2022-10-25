@@ -64,6 +64,10 @@ jobs:
           key: 'unit-test-gradle-cache-v2-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}'
           paths: [ ~/.gradle/caches ]
       - run:
+          name: Install Fern Dev
+          command: |
+            npm install -g fern-api@0.0.215
+      - run:
           command: mkdir -p ~/junit && find . -type f -regex ".*/build/.*TEST.*xml" -exec cp --parents {} ~/junit/ \;
           when: always
       - store_test_results: { path: ~/junit }

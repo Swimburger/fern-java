@@ -37,7 +37,10 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
 
-public class LocalTestRunner {
+public final class LocalTestRunner {
+
+    private LocalTestRunner() {
+    }
 
     public static void test(Path fernDir, AbstractGeneratorCli generator) throws IOException {
 

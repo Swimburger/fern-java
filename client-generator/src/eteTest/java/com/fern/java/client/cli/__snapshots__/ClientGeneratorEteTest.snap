@@ -2355,9 +2355,9 @@ import java.lang.String;
 import java.util.Locale;
 
 public final class PostType {
-  public static final PostType LONG = new PostType(Value.LONG, "LONG");
-
   public static final PostType SHORT = new PostType(Value.SHORT, "SHORT");
+
+  public static final PostType LONG = new PostType(Value.LONG, "LONG");
 
   public static final PostType MEDIUM = new PostType(Value.MEDIUM, "med.med");
 
@@ -2393,10 +2393,10 @@ public final class PostType {
 
   public <T> T visit(Visitor<T> visitor) {
     switch (value) {
-      case LONG:
-        return visitor.visitLong();
       case SHORT:
         return visitor.visitShort();
+      case LONG:
+        return visitor.visitLong();
       case MEDIUM:
         return visitor.visitMedium();
       case UNKNOWN:
@@ -2411,10 +2411,10 @@ public final class PostType {
   public static PostType valueOf(String value) {
     String upperCasedValue = value.toUpperCase(Locale.ROOT);
     switch (upperCasedValue) {
-      case "LONG":
-        return LONG;
       case "SHORT":
         return SHORT;
+      case "LONG":
+        return LONG;
       case "med.med":
         return MEDIUM;
       default:
@@ -2439,7 +2439,7 @@ public final class PostType {
 
     T visitMedium();
 
-    T _visitUnknown(Object unknownType);
+    T visitUnknown(String unknownType);
   }
 }
 
