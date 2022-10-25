@@ -48,7 +48,8 @@ jobs:
       - store_artifacts: { path: ~/artifacts }
 
   unit-test:
-    docker: [ { image: 'cimg/openjdk:11.0.10-node' } ]
+    machine:
+      image: ubuntu-2004:current
     environment:
       CIRCLE_TEST_REPORTS: /home/circleci/junit
       CIRCLE_ARTIFACTS: /home/circleci/artifacts
@@ -62,7 +63,7 @@ jobs:
       - run:
           name: Install Fern
           command: |
-            sudo npm install -g fern-api@0.0.215
+            npm install -g fern-api@0.0.215
       - run: ./gradlew --parallel --stacktrace --continue --max-workers=2 test
       - save_cache:
           key: 'unit-test-gradle-cache-v2-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}'
