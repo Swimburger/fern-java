@@ -49,7 +49,8 @@ public final class SnapshotTestRunner {
         snapshotTest(fernDir, expect, docker, Optional.empty());
     }
 
-    public static void snapshotTest(Path fernDir, Expect expect, String docker, Optional<Object> customConfig) throws IOException {
+    public static void snapshotTest(Path fernDir, Expect expect, String docker, Optional<Object> customConfig)
+            throws IOException {
 
         Path tmpDir = Files.createTempDirectory("fern");
 

@@ -45,12 +45,13 @@ public class CliEteTest {
         Path fernDirPath = currentPath.endsWith("cli")
                 ? currentPath.resolve(Paths.get("src/eteTest"))
                 : currentPath.resolve(Paths.get("cli/src/eteTest"));
-        SnapshotTestRunner.snapshotTest(fernDirPath, expect, "fern-java:latest", Optional.of(
-                Map.of(
+        SnapshotTestRunner.snapshotTest(
+                fernDirPath,
+                expect,
+                "fern-java:latest",
+                Optional.of(Map.of(
                         "mode", "client_and_server",
-                        "serverFrameworks", "spring,jersey"
-                )
-        ));
+                        "serverFrameworks", "spring,jersey")));
         // Path pathToOutput = fernDirPath.resolve("generated-java");
         // runCommand(fernDirPath, new String[] {"cp", "gradlew", "generated-java/"});
         // runCommand(fernDirPath, new String[] {"cp", "-R", "gradle-wrapper/.", "generated-java/"});
