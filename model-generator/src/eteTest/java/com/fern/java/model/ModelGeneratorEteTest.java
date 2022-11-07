@@ -45,7 +45,7 @@ public class ModelGeneratorEteTest {
         Path eteTestDirectory = currentPath.endsWith("model-generator")
                 ? currentPath.resolve(Paths.get("src/eteTest"))
                 : currentPath.resolve(Paths.get("model-generator/src/eteTest"));
-        SnapshotTestRunner.snapshotTest(eteTestDirectory, expect, "java-model:latest",
-                Optional.of(Map.of("wrapped-aliases", true)));
+        SnapshotTestRunner.snapshotTest(
+                eteTestDirectory, expect, "java-model:latest", Optional.of(Map.of("wrapped-aliases", true)));
     }
 }
