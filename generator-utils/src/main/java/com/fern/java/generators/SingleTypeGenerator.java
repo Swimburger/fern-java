@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public final class SingleTypeGenerator implements Type.Visitor<GeneratedJavaFile> {
+public final class SingleTypeGenerator implements Type.Visitor<Optional<GeneratedJavaFile>> {
 
     private final AbstractGeneratorContext generatorContext;
     private final DeclaredTypeName declaredTypeName;
@@ -51,19 +51,22 @@ public final class SingleTypeGenerator implements Type.Visitor<GeneratedJavaFile
     }
 
     @Override
-    public GeneratedJavaFile visitAlias(AliasTypeDeclaration value) {
-        AliasGenerator aliasGenerator = new AliasGenerator(className, generatorContext, value);
-        return aliasGenerator.generateFile();
+    public Optional<GeneratedJavaFile> visitAlias(AliasTypeDeclaration value) {
+        if (generatorContext.getCustomConfig().wrappedAliases()) {
+            AliasGenerator aliasGenerator = new AliasGenerator(className, generatorContext, value);
+            return Optional.of(aliasGenerator.generateFile());
+        }
+        return Optional.empty();
     }
 
     @Override
-    public GeneratedJavaFile visitEnum(EnumTypeDeclaration value) {
+    public Optional<GeneratedJavaFile> visitEnum(EnumTypeDeclaration value) {
         EnumGenerator enumGenerator = new EnumGenerator(className, generatorContext, value);
-        return enumGenerator.generateFile();
+        return Optional.of(enumGenerator.generateFile());
     }
 
     @Override
-    public GeneratedJavaFile visitObject(ObjectTypeDeclaration value) {
+    public Optional<GeneratedJavaFile> visitObject(ObjectTypeDeclaration value) {
         List<GeneratedJavaInterface> extendedInterfaces = value.getExtends().stream()
                 .map(allGeneratedInterfaces::get)
                 .sorted(Comparator.comparing(
@@ -75,17 +78,17 @@ public final class SingleTypeGenerator implements Type.Visitor<GeneratedJavaFile
                 extendedInterfaces,
                 generatorContext,
                 className);
-        return objectGenerator.generateFile();
+        return Optional.of(objectGenerator.generateFile());
     }
 
     @Override
-    public GeneratedJavaFile visitUnion(UnionTypeDeclaration value) {
+    public Optional<GeneratedJavaFile> visitUnion(UnionTypeDeclaration value) {
         UnionGenerator unionGenerator = new UnionGenerator(className, generatorContext, value);
-        return unionGenerator.generateFile();
+        return Optional.of(unionGenerator.generateFile());
     }
 
     @Override
-    public GeneratedJavaFile _visitUnknown(Object unknown) {
+    public Optional<GeneratedJavaFile> _visitUnknown(Object unknown) {
         throw new RuntimeException("Encountered unknown type: " + unknown);
     }
 }
