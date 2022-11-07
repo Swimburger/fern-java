@@ -38,21 +38,24 @@ public final class SingleTypeGenerator implements Type.Visitor<Optional<Generate
     private final DeclaredTypeName declaredTypeName;
     private final ClassName className;
     private final Map<DeclaredTypeName, GeneratedJavaInterface> allGeneratedInterfaces;
+    private final boolean fromErrorDeclaration;
 
     public SingleTypeGenerator(
             AbstractGeneratorContext generatorContext,
             DeclaredTypeName declaredTypeName,
             ClassName className,
-            Map<DeclaredTypeName, GeneratedJavaInterface> allGeneratedInterfaces) {
+            Map<DeclaredTypeName, GeneratedJavaInterface> allGeneratedInterfaces,
+            boolean fromErrorDeclaration) {
         this.generatorContext = generatorContext;
         this.className = className;
         this.allGeneratedInterfaces = allGeneratedInterfaces;
         this.declaredTypeName = declaredTypeName;
+        this.fromErrorDeclaration = fromErrorDeclaration;
     }
 
     @Override
     public Optional<GeneratedJavaFile> visitAlias(AliasTypeDeclaration value) {
-        if (generatorContext.getCustomConfig().wrappedAliases()) {
+        if (generatorContext.getCustomConfig().wrappedAliases() || fromErrorDeclaration) {
             AliasGenerator aliasGenerator = new AliasGenerator(className, generatorContext, value);
             return Optional.of(aliasGenerator.generateFile());
         }
