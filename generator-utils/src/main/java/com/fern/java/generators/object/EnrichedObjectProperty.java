@@ -73,8 +73,7 @@ public interface EnrichedObjectProperty {
         return ImmutableEnrichedObjectProperty.builder();
     }
 
-    static EnrichedObjectProperty of(
-            NameAndWireValue nameAndWireValue, boolean fromInterface, TypeName poetTypeName) {
+    static EnrichedObjectProperty of(NameAndWireValue nameAndWireValue, boolean fromInterface, TypeName poetTypeName) {
         return EnrichedObjectProperty.builder()
                 .camelCaseKey(nameAndWireValue.getName().getSafeName().getCamelCase())
                 .pascalCaseKey(nameAndWireValue.getName().getSafeName().getPascalCase())
