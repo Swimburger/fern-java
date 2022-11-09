@@ -23,7 +23,6 @@ import com.fern.java.client.GeneratedEnvironmentsClass;
 import com.fern.java.client.GeneratedServiceClient;
 import com.fern.java.generators.AbstractFileGenerator;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
-import com.fern.java.output.AbstractGeneratedJavaFile;
 import com.fern.java.output.GeneratedAuthFiles;
 import com.fern.java.output.GeneratedJavaFile;
 import com.fern.java.utils.CasingUtils;
@@ -56,6 +55,7 @@ public final class ClientWrapperGenerator extends AbstractFileGenerator {
 
     private static final String MEMOIZE_METHOD_NAME = "memoize";
     private static final String ENVIRONMENT_PARAMETER_NAME = "environment";
+    private static final String URL_PARAMETER_NAME = "url";
     private static final String AUTH_PARAMETER_NAME = "auth";
     private final List<GeneratedServiceClient> generatedHttpServiceClients;
     private final ClientConfig rootClientConfig;
@@ -217,27 +217,24 @@ public final class ClientWrapperGenerator extends AbstractFileGenerator {
 
     private MethodSpec createNoAuthAndEnvironmentConstructor(
             Map<String, GeneratedServiceClient> supplierFields, Map<String, ClassName> nestedClientFields) {
-        ClassName environmentClassName = maybeGeneratedEnvironmentsClass
-                .map(AbstractGeneratedJavaFile::getClassName)
-                .orElseGet(() -> ClassName.get(String.class));
+        EnvironmentConstructorParam environmentConstructorParam = getEnvironmentConstructorParam();
         MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
-                .addParameter(environmentClassName, ENVIRONMENT_PARAMETER_NAME);
-        CodeBlock urlCodeBlock = maybeGeneratedEnvironmentsClass
-                .map(generatedEnvironmentsClass ->
-                        CodeBlock.of("$L.$N()", ENVIRONMENT_PARAMETER_NAME, generatedEnvironmentsClass.getUrlMethod()))
-                .orElseGet(() -> CodeBlock.of("$L", ENVIRONMENT_PARAMETER_NAME));
+                .addParameter(environmentConstructorParam.paramType, environmentConstructorParam.paramName);
         KeyedStream.stream(supplierFields).forEach((fieldName, httpClient) -> {
             constructorBuilder.addStatement(
                     "this.$L = $L(() -> new $T($L))",
                     fieldName,
                     MEMOIZE_METHOD_NAME,
                     httpClient.getClassName(),
-                    urlCodeBlock.toString());
+                    environmentConstructorParam.urlGetterCodeBlock);
         });
         KeyedStream.stream(nestedClientFields).forEach((fieldName, nestedClientCLassName) -> {
             constructorBuilder.addStatement(
-                    "this.$L = new $T($L)", fieldName, nestedClientCLassName, urlCodeBlock.toString());
+                    "this.$L = new $T($L)",
+                    fieldName,
+                    nestedClientCLassName,
+                    environmentConstructorParam.urlGetterCodeBlock);
         });
         return constructorBuilder.build();
     }
@@ -247,17 +244,11 @@ public final class ClientWrapperGenerator extends AbstractFileGenerator {
         if (maybeAuth.isEmpty()) {
             return Optional.empty();
         }
-        ClassName environmentClassName = maybeGeneratedEnvironmentsClass
-                .map(AbstractGeneratedJavaFile::getClassName)
-                .orElseGet(() -> ClassName.get(String.class));
+        EnvironmentConstructorParam environmentConstructorParam = getEnvironmentConstructorParam();
         MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
-                .addParameter(environmentClassName, ENVIRONMENT_PARAMETER_NAME)
+                .addParameter(environmentConstructorParam.paramType, environmentConstructorParam.paramName)
                 .addParameter(maybeAuth.get().getClassName(), AUTH_PARAMETER_NAME);
-        CodeBlock urlCodeBlock = maybeGeneratedEnvironmentsClass
-                .map(generatedEnvironmentsClass ->
-                        CodeBlock.of("$L.$N()", ENVIRONMENT_PARAMETER_NAME, generatedEnvironmentsClass.getUrlMethod()))
-                .orElseGet(() -> CodeBlock.of("$L", ENVIRONMENT_PARAMETER_NAME));
         KeyedStream.stream(supplierFields).forEach((fieldName, httpClient) -> {
             boolean hasAuthParameter = httpClient.javaFile().typeSpec.fieldSpecs.stream()
                     .anyMatch(fieldSpec -> fieldSpec.name.equals(AUTH_PARAMETER_NAME));
@@ -267,7 +258,7 @@ public final class ClientWrapperGenerator extends AbstractFileGenerator {
                         fieldName,
                         MEMOIZE_METHOD_NAME,
                         httpClient.getClassName(),
-                        urlCodeBlock.toString(),
+                        environmentConstructorParam.urlGetterCodeBlock,
                         AUTH_PARAMETER_NAME);
             } else {
                 constructorBuilder.addStatement(
@@ -275,7 +266,7 @@ public final class ClientWrapperGenerator extends AbstractFileGenerator {
                         fieldName,
                         MEMOIZE_METHOD_NAME,
                         httpClient.getClassName(),
-                        urlCodeBlock.toString());
+                        environmentConstructorParam.urlGetterCodeBlock);
             }
         });
         KeyedStream.stream(nestedClientFields).forEach((fieldName, nestedClientCLassName) -> {
@@ -283,10 +274,37 @@ public final class ClientWrapperGenerator extends AbstractFileGenerator {
                     "this.$L = new $T($L, $L)",
                     fieldName,
                     nestedClientCLassName,
-                    urlCodeBlock.toString(),
+                    environmentConstructorParam.urlGetterCodeBlock,
                     AUTH_PARAMETER_NAME);
         });
         return Optional.of(constructorBuilder.build());
+    }
+
+    private EnvironmentConstructorParam getEnvironmentConstructorParam() {
+        if (maybeGeneratedEnvironmentsClass.isPresent()) {
+            return new EnvironmentConstructorParam(
+                    ENVIRONMENT_PARAMETER_NAME,
+                    maybeGeneratedEnvironmentsClass.get().getClassName(),
+                    CodeBlock.of(
+                                    "$L.$N()",
+                                    ENVIRONMENT_PARAMETER_NAME,
+                                    maybeGeneratedEnvironmentsClass.get().getUrlMethod())
+                            .toString());
+        } else {
+            return new EnvironmentConstructorParam(URL_PARAMETER_NAME, ClassName.get(String.class), URL_PARAMETER_NAME);
+        }
+    }
+
+    private static class EnvironmentConstructorParam {
+        private final String paramName;
+        private final ClassName paramType;
+        private final String urlGetterCodeBlock;
+
+        private EnvironmentConstructorParam(String paramName, ClassName paramType, String urlGetterCodeBlock) {
+            this.paramName = paramName;
+            this.paramType = paramType;
+            this.urlGetterCodeBlock = urlGetterCodeBlock;
+        }
     }
 
     private MethodSpec createMemoizeMethod() {

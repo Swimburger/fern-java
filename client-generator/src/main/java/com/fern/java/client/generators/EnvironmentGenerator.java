@@ -43,6 +43,7 @@ public final class EnvironmentGenerator extends AbstractOptionalFileGenerator {
         }
 
         MethodSpec getUrlMethod = MethodSpec.methodBuilder("getUrl")
+                .addModifiers(Modifier.PUBLIC)
                 .returns(String.class)
                 .addStatement("return this.$L", URL_FIELD_NAME)
                 .build();
