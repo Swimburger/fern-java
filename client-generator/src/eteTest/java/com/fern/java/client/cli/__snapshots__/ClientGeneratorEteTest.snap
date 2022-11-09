@@ -299,16 +299,16 @@ public final class FernFernClient {
 
   private final Supplier<DummyServiceClient> dummyServiceClient;
 
-  public FernFernClient(String url) {
-    this.postsServiceClient = memoize(() -> new PostsServiceClient(url));
-    this.dummyServiceClient = memoize(() -> new DummyServiceClient(url));
-    this.authServiceClient = memoize(() -> new AuthServiceClient(url));
+  public FernFernClient(String environment) {
+    this.postsServiceClient = memoize(() -> new PostsServiceClient(environment));
+    this.dummyServiceClient = memoize(() -> new DummyServiceClient(environment));
+    this.authServiceClient = memoize(() -> new AuthServiceClient(environment));
   }
 
-  public FernFernClient(String url, BearerAuth auth) {
-    this.postsServiceClient = memoize(() -> new PostsServiceClient(url));
-    this.dummyServiceClient = memoize(() -> new DummyServiceClient(url));
-    this.authServiceClient = memoize(() -> new AuthServiceClient(url, auth));
+  public FernFernClient(String environment, BearerAuth auth) {
+    this.postsServiceClient = memoize(() -> new PostsServiceClient(environment));
+    this.dummyServiceClient = memoize(() -> new DummyServiceClient(environment));
+    this.authServiceClient = memoize(() -> new AuthServiceClient(environment, auth));
   }
 
   public final AuthServiceClient auth() {
