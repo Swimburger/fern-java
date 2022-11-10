@@ -95,11 +95,15 @@ public final class HttpEndpointFileGenerator extends AbstractFileGenerator {
         ObjectTypeSpecGenerator objectTypeSpecGenerator =
                 new ObjectTypeSpecGenerator(requestClassName, enrichedObjectProperties, Collections.emptyList(), false);
         TypeSpec requestTypeSpec = objectTypeSpecGenerator.generate();
-        if (httpEndpoint.getAuth() && maybeAuth.isPresent()) {
+        boolean isAuthPresent = httpEndpoint.getAuth() && maybeAuth.isPresent();
+        if (isAuthPresent) {
             outputBuilder.authMethodSpec(enrichedObjectProperties.get(0).getterProperty());
         }
         outputBuilder.requestClassName(requestClassName);
-        outputBuilder.addAllEnrichedObjectProperties(enrichedObjectProperties);
+        outputBuilder.addAllNonAuthProperties(
+                isAuthPresent
+                        ? enrichedObjectProperties.subList(1, enrichedObjectProperties.size() - 1)
+                        : enrichedObjectProperties);
         outputBuilder.requestTypeSpec(requestTypeSpec);
 
         return requestTypeSpec;
