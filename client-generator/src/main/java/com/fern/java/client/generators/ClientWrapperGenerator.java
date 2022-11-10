@@ -192,30 +192,30 @@ public final class ClientWrapperGenerator extends AbstractFileGenerator {
                         .get()
                         .defaultEnvironmentConstant()
                         .get();
-                createDefaultEnvironmentAuthConstructor(
-                        maybeGeneratedEnvironmentsClass.get(),
+                constructors.add(createDefaultEnvironmentAuthConstructor(
+                        maybeGeneratedEnvironmentsClass.get().getClassName(),
                         defaultEnvironmentConstant,
                         maybeAuth.get(),
-                        globalHeaders);
+                        globalHeaders));
                 if (isClientOptionsPresent) {
-                    createDefaultEnvironmentAuthOptionsConstructor(
-                            maybeGeneratedEnvironmentsClass.get(),
+                    constructors.add(createDefaultEnvironmentAuthOptionsConstructor(
+                            maybeGeneratedEnvironmentsClass.get().getClassName(),
                             defaultEnvironmentConstant,
                             maybeAuth.get(),
                             globalHeaders,
-                            generatedClientOptionsClass.get());
+                            generatedClientOptionsClass.get()));
                 }
             }
-            createEnvironmentAuthConstructor(
-                    environmentConstructorParam, maybeAuth.get(), globalHeaders, supplierFields, nestedClientFields);
+            constructors.add(createEnvironmentAuthConstructor(
+                    environmentConstructorParam, maybeAuth.get(), globalHeaders, supplierFields, nestedClientFields));
             if (isClientOptionsPresent) {
-                createEnvironmentAuthOptionsConstructor(
+                constructors.add(createEnvironmentAuthOptionsConstructor(
                         environmentConstructorParam,
                         maybeAuth.get(),
                         generatedClientOptionsClass.get(),
                         globalHeaders,
                         supplierFields,
-                        nestedClientFields);
+                        nestedClientFields));
             }
         }
         if (isAuthMandatory) {
@@ -227,26 +227,28 @@ public final class ClientWrapperGenerator extends AbstractFileGenerator {
                     .get()
                     .defaultEnvironmentConstant()
                     .get();
-            createDefaultEnvironmentNoAuthConstructor(
-                    maybeGeneratedEnvironmentsClass.get(), defaultEnvironmentConstant, globalHeaders);
+            constructors.add(createDefaultEnvironmentNoAuthConstructor(
+                    maybeGeneratedEnvironmentsClass.get(), defaultEnvironmentConstant, globalHeaders));
             if (isClientOptionsPresent) {
-                createDefaultEnvironmentNoAuthOptionsConstructor(
+                constructors.add(createDefaultEnvironmentNoAuthOptionsConstructor(
                         maybeGeneratedEnvironmentsClass.get(),
                         defaultEnvironmentConstant,
                         globalHeaders,
-                        generatedClientOptionsClass.get());
+                        generatedClientOptionsClass.get()));
             }
         }
-        createEnvironmentNoAuthConstructor(
-                environmentConstructorParam, globalHeaders, supplierFields, nestedClientFields);
+        constructors.add(createEnvironmentNoAuthConstructor(
+                environmentConstructorParam, globalHeaders, supplierFields, nestedClientFields));
         if (isClientOptionsPresent) {
-            createEnvironmentNoAuthOptionsConstructor(
+            constructors.add(createEnvironmentNoAuthOptionsConstructor(
                     environmentConstructorParam,
                     generatedClientOptionsClass.get(),
                     globalHeaders,
                     supplierFields,
-                    nestedClientFields);
+                    nestedClientFields));
         }
+
+        constructors.sort(Comparator.comparingInt(methodSpec -> methodSpec.parameters.size()));
 
         return constructors;
     }
@@ -282,7 +284,7 @@ public final class ClientWrapperGenerator extends AbstractFileGenerator {
     }
 
     private static MethodSpec createDefaultEnvironmentAuthConstructor(
-            GeneratedEnvironmentsClass generatedEnvironmentsClass,
+            ClassName generatedEnvironmentsClass,
             String defaultEnvironmentConstant,
             GeneratedAuthFiles generatedAuth,
             GlobalHeaders globalHeaders) {
@@ -299,7 +301,7 @@ public final class ClientWrapperGenerator extends AbstractFileGenerator {
     }
 
     private static MethodSpec createDefaultEnvironmentAuthOptionsConstructor(
-            GeneratedEnvironmentsClass generatedEnvironmentsClass,
+            ClassName generatedEnvironmentsClass,
             String defaultEnvironmentConstant,
             GeneratedAuthFiles generatedAuth,
             GlobalHeaders globalHeaders,
