@@ -30,7 +30,9 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +44,10 @@ import org.apache.commons.lang3.StringUtils;
 public final class HttpEndpointFileGenerator extends AbstractFileGenerator {
 
     private static final String REQUEST_CLASS_NAME = "Request";
-    private static final String AUTH_REQUEST_PARAMETER = "authOverride";
+
+    private static final String AUTH_REQUEST_PARAMETER_CAMEL_CASE = "authOverride";
+    private static final String AUTH_REQUEST_PARAMETER_PASCAL_CASE = "AuthOverride";
+
     private final HttpEndpoint httpEndpoint;
     private final List<ParameterSpec> parametersToInclude;
 
@@ -90,21 +95,29 @@ public final class HttpEndpointFileGenerator extends AbstractFileGenerator {
                         .fromInterface(false)
                         .build())
                 .collect(Collectors.toList());
+        Optional<EnrichedObjectProperty> maybeAuthProperty = Optional.empty();
+        if (maybeAuth.isPresent()) {
+            maybeAuthProperty = Optional.of(EnrichedObjectProperty.builder()
+                    .camelCaseKey(AUTH_REQUEST_PARAMETER_CAMEL_CASE)
+                    .pascalCaseKey(AUTH_REQUEST_PARAMETER_PASCAL_CASE)
+                    .poetTypeName(ParameterizedTypeName.get(
+                            ClassName.get(Optional.class), maybeAuth.get().getClassName()))
+                    .fromInterface(false)
+                    .build());
+            outputBuilder.authMethodSpec(maybeAuthProperty.get().getterProperty());
+        }
+        List<EnrichedObjectProperty> allProperties = new ArrayList<>();
+        allProperties.addAll(enrichedObjectProperties);
+        maybeAuthProperty.ifPresent(allProperties::add);
+
         ObjectTypeSpecGenerator objectTypeSpecGenerator =
-                new ObjectTypeSpecGenerator(requestClassName, enrichedObjectProperties, Collections.emptyList(), false);
+                new ObjectTypeSpecGenerator(requestClassName, allProperties, Collections.emptyList(), false);
         TypeSpec requestTypeSpec = objectTypeSpecGenerator.generate();
-        boolean isAuthPresent = httpEndpoint.getAuth() && maybeAuth.isPresent();
-        if (isAuthPresent) {
-            outputBuilder.authMethodSpec(enrichedObjectProperties.get(0).getterProperty());
-        }
-        outputBuilder.requestClassName(requestClassName);
-        if (isAuthPresent && enrichedObjectProperties.size() > 1) {
-            outputBuilder.addAllNonAuthProperties(
-                    enrichedObjectProperties.subList(1, enrichedObjectProperties.size() - 1));
-        } else if (!isAuthPresent) {
-            outputBuilder.addAllNonAuthProperties(enrichedObjectProperties);
-        }
-        outputBuilder.requestTypeSpec(requestTypeSpec);
+
+        outputBuilder
+                .requestClassName(requestClassName)
+                .addAllNonAuthProperties(enrichedObjectProperties)
+                .requestTypeSpec(requestTypeSpec);
 
         return requestTypeSpec;
     }

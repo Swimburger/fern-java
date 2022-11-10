@@ -395,6 +395,7 @@ interface AuthService {
 basic[src/main/java/com/fern/basic/client/auth/AuthServiceClient.java]=[
 package com.fern.basic.client.auth;
 
+import com.fern.basic.client.auth.endpoints.GetAuth;
 import com.fern.basic.client.auth.exceptions.GetAuthException;
 import com.fern.basic.core.BearerAuth;
 import java.util.Optional;
@@ -418,8 +419,11 @@ public final class AuthServiceClient {
     this.apiVersion = apiVersion;
   }
 
-  public void getAuth() throws GetAuthException {
-    BearerAuth authValue = this.auth.orElseThrow(() -> new RuntimeException("Auth is required"));
+  public void getAuth(GetAuth.Request request) throws GetAuthException {
+    BearerAuth authValue =
+        request
+            .getAuthOverride()
+            .orElseGet(() -> this.auth.orElseThrow(() -> new RuntimeException("Auth is required")));
     this.service.getAuth(authValue, apiVersion);
   }
 }
@@ -458,6 +462,86 @@ final class AuthServiceErrorDecoder implements ErrorDecoder {
         .reader()
         .withAttribute("statusCode", response.status())
         .readValue(response.body().asInputStream(), clazz);
+  }
+}
+
+]
+
+
+basic[src/main/java/com/fern/basic/client/auth/endpoints/GetAuth.java]=[
+package com.fern.basic.client.auth.endpoints;
+
+import com.fern.basic.core.BearerAuth;
+import java.util.Objects;
+import java.util.Optional;
+
+public final class GetAuth {
+  private GetAuth() {}
+
+  public static final class Request {
+    private final Optional<BearerAuth> authOverride;
+
+    private int _cachedHashCode;
+
+    Request(Optional<BearerAuth> authOverride) {
+      this.authOverride = authOverride;
+    }
+
+    public Optional<BearerAuth> getAuthOverride() {
+      return authOverride;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+      if (this == other) return true;
+      return other instanceof Request && equalTo((Request) other);
+    }
+
+    private boolean equalTo(Request other) {
+      return authOverride.equals(other.authOverride);
+    }
+
+    @Override
+    public int hashCode() {
+      if (_cachedHashCode == 0) {
+        _cachedHashCode = Objects.hash(this.authOverride);
+      }
+      return _cachedHashCode;
+    }
+
+    @Override
+    public String toString() {
+      return "GetAuth.Request{" + "authOverride: " + authOverride + "}";
+    }
+
+    public static Builder builder() {
+      return new Builder();
+    }
+
+    public static final class Builder {
+      private Optional<BearerAuth> authOverride = Optional.empty();
+
+      private Builder() {}
+
+      public Builder from(Request other) {
+        authOverride(other.getAuthOverride());
+        return this;
+      }
+
+      public Builder authOverride(Optional<BearerAuth> authOverride) {
+        this.authOverride = authOverride;
+        return this;
+      }
+
+      public Builder authOverride(BearerAuth authOverride) {
+        this.authOverride = Optional.of(authOverride);
+        return this;
+      }
+
+      public Request build() {
+        return new Request(authOverride);
+      }
+    }
   }
 }
 
@@ -701,7 +785,9 @@ basic[src/main/java/com/fern/basic/client/blog/endpoints/CreatePost.java]=[
 package com.fern.basic.client.blog.endpoints;
 
 import com.fern.basic.client.blog.types.CreatePostRequest;
+import com.fern.basic.core.BearerAuth;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class CreatePost {
   private CreatePost() {}
@@ -709,14 +795,21 @@ public final class CreatePost {
   public static final class Request {
     private final CreatePostRequest body;
 
+    private final Optional<BearerAuth> authOverride;
+
     private int _cachedHashCode;
 
-    Request(CreatePostRequest body) {
+    Request(CreatePostRequest body, Optional<BearerAuth> authOverride) {
       this.body = body;
+      this.authOverride = authOverride;
     }
 
     public CreatePostRequest getBody() {
       return body;
+    }
+
+    public Optional<BearerAuth> getAuthOverride() {
+      return authOverride;
     }
 
     @Override
@@ -726,20 +819,20 @@ public final class CreatePost {
     }
 
     private boolean equalTo(Request other) {
-      return body.equals(other.body);
+      return body.equals(other.body) && authOverride.equals(other.authOverride);
     }
 
     @Override
     public int hashCode() {
       if (_cachedHashCode == 0) {
-        _cachedHashCode = Objects.hash(this.body);
+        _cachedHashCode = Objects.hash(this.body, this.authOverride);
       }
       return _cachedHashCode;
     }
 
     @Override
     public String toString() {
-      return "CreatePost.Request{" + "body: " + body + "}";
+      return "CreatePost.Request{" + "body: " + body + ", authOverride: " + authOverride + "}";
     }
 
     public static BodyStage builder() {
@@ -754,16 +847,23 @@ public final class CreatePost {
 
     public interface _FinalStage {
       Request build();
+
+      _FinalStage authOverride(Optional<BearerAuth> authOverride);
+
+      _FinalStage authOverride(BearerAuth authOverride);
     }
 
     static final class Builder implements BodyStage, _FinalStage {
       private CreatePostRequest body;
+
+      private Optional<BearerAuth> authOverride = Optional.empty();
 
       private Builder() {}
 
       @Override
       public Builder from(Request other) {
         body(other.getBody());
+        authOverride(other.getAuthOverride());
         return this;
       }
 
@@ -774,8 +874,20 @@ public final class CreatePost {
       }
 
       @Override
+      public _FinalStage authOverride(BearerAuth authOverride) {
+        this.authOverride = Optional.of(authOverride);
+        return this;
+      }
+
+      @Override
+      public _FinalStage authOverride(Optional<BearerAuth> authOverride) {
+        this.authOverride = authOverride;
+        return this;
+      }
+
+      @Override
       public Request build() {
-        return new Request(body);
+        return new Request(body, authOverride);
       }
     }
   }
@@ -787,7 +899,9 @@ public final class CreatePost {
 basic[src/main/java/com/fern/basic/client/blog/endpoints/GetPost.java]=[
 package com.fern.basic.client.blog.endpoints;
 
+import com.fern.basic.core.BearerAuth;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class GetPost {
   private GetPost() {}
@@ -795,14 +909,21 @@ public final class GetPost {
   public static final class Request {
     private final String postId;
 
+    private final Optional<BearerAuth> authOverride;
+
     private int _cachedHashCode;
 
-    Request(String postId) {
+    Request(String postId, Optional<BearerAuth> authOverride) {
       this.postId = postId;
+      this.authOverride = authOverride;
     }
 
     public String getPostId() {
       return postId;
+    }
+
+    public Optional<BearerAuth> getAuthOverride() {
+      return authOverride;
     }
 
     @Override
@@ -812,20 +933,20 @@ public final class GetPost {
     }
 
     private boolean equalTo(Request other) {
-      return postId.equals(other.postId);
+      return postId.equals(other.postId) && authOverride.equals(other.authOverride);
     }
 
     @Override
     public int hashCode() {
       if (_cachedHashCode == 0) {
-        _cachedHashCode = Objects.hash(this.postId);
+        _cachedHashCode = Objects.hash(this.postId, this.authOverride);
       }
       return _cachedHashCode;
     }
 
     @Override
     public String toString() {
-      return "GetPost.Request{" + "postId: " + postId + "}";
+      return "GetPost.Request{" + "postId: " + postId + ", authOverride: " + authOverride + "}";
     }
 
     public static PostIdStage builder() {
@@ -840,16 +961,23 @@ public final class GetPost {
 
     public interface _FinalStage {
       Request build();
+
+      _FinalStage authOverride(Optional<BearerAuth> authOverride);
+
+      _FinalStage authOverride(BearerAuth authOverride);
     }
 
     static final class Builder implements PostIdStage, _FinalStage {
       private String postId;
+
+      private Optional<BearerAuth> authOverride = Optional.empty();
 
       private Builder() {}
 
       @Override
       public Builder from(Request other) {
         postId(other.getPostId());
+        authOverride(other.getAuthOverride());
         return this;
       }
 
@@ -860,8 +988,20 @@ public final class GetPost {
       }
 
       @Override
+      public _FinalStage authOverride(BearerAuth authOverride) {
+        this.authOverride = Optional.of(authOverride);
+        return this;
+      }
+
+      @Override
+      public _FinalStage authOverride(Optional<BearerAuth> authOverride) {
+        this.authOverride = authOverride;
+        return this;
+      }
+
+      @Override
       public Request build() {
-        return new Request(postId);
+        return new Request(postId, authOverride);
       }
     }
   }
@@ -2425,7 +2565,9 @@ final class DummyServiceErrorDecoder implements ErrorDecoder {
 basic[src/main/java/com/fern/basic/client/dummy/service/endpoints/GetDummy.java]=[
 package com.fern.basic.client.dummy.service.endpoints;
 
+import com.fern.basic.core.BearerAuth;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class GetDummy {
   private GetDummy() {}
@@ -2433,14 +2575,21 @@ public final class GetDummy {
   public static final class Request {
     private final String body;
 
+    private final Optional<BearerAuth> authOverride;
+
     private int _cachedHashCode;
 
-    Request(String body) {
+    Request(String body, Optional<BearerAuth> authOverride) {
       this.body = body;
+      this.authOverride = authOverride;
     }
 
     public String getBody() {
       return body;
+    }
+
+    public Optional<BearerAuth> getAuthOverride() {
+      return authOverride;
     }
 
     @Override
@@ -2450,20 +2599,20 @@ public final class GetDummy {
     }
 
     private boolean equalTo(Request other) {
-      return body.equals(other.body);
+      return body.equals(other.body) && authOverride.equals(other.authOverride);
     }
 
     @Override
     public int hashCode() {
       if (_cachedHashCode == 0) {
-        _cachedHashCode = Objects.hash(this.body);
+        _cachedHashCode = Objects.hash(this.body, this.authOverride);
       }
       return _cachedHashCode;
     }
 
     @Override
     public String toString() {
-      return "GetDummy.Request{" + "body: " + body + "}";
+      return "GetDummy.Request{" + "body: " + body + ", authOverride: " + authOverride + "}";
     }
 
     public static BodyStage builder() {
@@ -2478,16 +2627,23 @@ public final class GetDummy {
 
     public interface _FinalStage {
       Request build();
+
+      _FinalStage authOverride(Optional<BearerAuth> authOverride);
+
+      _FinalStage authOverride(BearerAuth authOverride);
     }
 
     static final class Builder implements BodyStage, _FinalStage {
       private String body;
+
+      private Optional<BearerAuth> authOverride = Optional.empty();
 
       private Builder() {}
 
       @Override
       public Builder from(Request other) {
         body(other.getBody());
+        authOverride(other.getAuthOverride());
         return this;
       }
 
@@ -2498,8 +2654,20 @@ public final class GetDummy {
       }
 
       @Override
+      public _FinalStage authOverride(BearerAuth authOverride) {
+        this.authOverride = Optional.of(authOverride);
+        return this;
+      }
+
+      @Override
+      public _FinalStage authOverride(Optional<BearerAuth> authOverride) {
+        this.authOverride = authOverride;
+        return this;
+      }
+
+      @Override
       public Request build() {
-        return new Request(body);
+        return new Request(body, authOverride);
       }
     }
   }

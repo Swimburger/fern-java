@@ -36,6 +36,7 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -135,7 +136,7 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
                         httpEndpoint, endpointInterfaceMethod, wrappedRequestFile.get(), endpointMethodBuilder);
                 generatedEndpointRequests.add(wrappedRequestFile.get());
             } else {
-                generateCallWithoutRequest(httpEndpoint, endpointMethodBuilder, endpointInterfaceMethod);
+                generateCallWithoutRequest(endpointMethodBuilder, endpointInterfaceMethod);
             }
 
             endpointMethodBuilder.addExceptions(endpointInterfaceMethod.exceptions);
@@ -253,18 +254,8 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
         return constructorBuilder;
     }
 
-    private void generateCallWithoutRequest(
-            HttpEndpoint httpEndpoint, MethodSpec.Builder endpointMethodBuilder, MethodSpec interfaceMethod) {
+    private void generateCallWithoutRequest(MethodSpec.Builder endpointMethodBuilder, MethodSpec interfaceMethod) {
         List<String> arguments = new ArrayList<>();
-        if (httpEndpoint.getAuth() && maybeAuth.isPresent()) {
-            endpointMethodBuilder.addStatement(
-                    "$T authValue = this.$L.orElseThrow(() -> new $T($S))",
-                    maybeAuth.get().getClassName(),
-                    AUTH_FIELD_NAME,
-                    RuntimeException.class,
-                    "Auth is required");
-            arguments.add("authValue");
-        }
         for (ParameterSpec headerParameter : generatorContext.getGlobalHeaders().getRequiredGlobalHeaderParameters()) {
             arguments.add(headerParameter.name);
         }
@@ -323,22 +314,26 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
 
     private Optional<GeneratedEndpointRequest> getWrappedRequest(
             HttpEndpoint httpEndpoint, MethodSpec endpointInterfaceMethod) {
-        int numParametersToSkip = generatorContext
+        int numRequiredHeaders = generatorContext
                 .getGlobalHeaders()
                 .getRequiredGlobalHeaderParameters()
                 .size();
+        if (endpointInterfaceMethod.parameters.size() <= numRequiredHeaders) {
+            return Optional.empty();
+        }
+
+        int numParametersToSkip = numRequiredHeaders;
         if (httpEndpoint.getAuth()) {
             numParametersToSkip += 1;
-        }
-        if (endpointInterfaceMethod.parameters.size() <= numParametersToSkip) {
-            return Optional.empty();
         }
         HttpEndpointFileGenerator httpEndpointFileGenerator = new HttpEndpointFileGenerator(
                 clientGeneratorContext,
                 httpService,
                 httpEndpoint,
-                endpointInterfaceMethod.parameters.subList(
-                        numParametersToSkip, endpointInterfaceMethod.parameters.size()),
+                numParametersToSkip == endpointInterfaceMethod.parameters.size()
+                        ? Collections.emptyList()
+                        : endpointInterfaceMethod.parameters.subList(
+                                numParametersToSkip, endpointInterfaceMethod.parameters.size()),
                 maybeAuth,
                 generatedErrors);
         return Optional.of(httpEndpointFileGenerator.generateFile());
