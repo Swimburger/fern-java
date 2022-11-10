@@ -299,24 +299,29 @@ public final class FernFernClient {
 
   private final Supplier<DummyServiceClient> dummyServiceClient;
 
-  public FernFernClient() {
-    this(Environment.PROD);
+  public FernFernClient(String apiVersion) {
+    this(Environment.PROD, apiVersion);
   }
 
-  public FernFernClient(BearerAuth auth) {
-    this(Environment.PROD, auth);
+  public FernFernClient(BearerAuth auth, String apiVersion) {
+    this(Environment.PROD, auth, apiVersion);
   }
 
-  public FernFernClient(Environment environment) {
-    this.postsServiceClient = memoize(() -> new PostsServiceClient(environment.getUrl()));
-    this.dummyServiceClient = memoize(() -> new DummyServiceClient(environment.getUrl()));
-    this.authServiceClient = memoize(() -> new AuthServiceClient(environment.getUrl()));
+  public FernFernClient(Environment environment, String apiVersion) {
+    this.postsServiceClient =
+        memoize(() -> new PostsServiceClient(environment.getUrl(), apiVersion));
+    this.dummyServiceClient =
+        memoize(() -> new DummyServiceClient(environment.getUrl(), apiVersion));
+    this.authServiceClient = memoize(() -> new AuthServiceClient(environment.getUrl(), apiVersion));
   }
 
-  public FernFernClient(Environment environment, BearerAuth auth) {
-    this.postsServiceClient = memoize(() -> new PostsServiceClient(environment.getUrl()));
-    this.dummyServiceClient = memoize(() -> new DummyServiceClient(environment.getUrl()));
-    this.authServiceClient = memoize(() -> new AuthServiceClient(environment.getUrl(), auth));
+  public FernFernClient(Environment environment, BearerAuth auth, String apiVersion) {
+    this.postsServiceClient =
+        memoize(() -> new PostsServiceClient(environment.getUrl(), apiVersion));
+    this.dummyServiceClient =
+        memoize(() -> new DummyServiceClient(environment.getUrl(), apiVersion));
+    this.authServiceClient =
+        memoize(() -> new AuthServiceClient(environment.getUrl(), auth, apiVersion));
   }
 
   public final AuthServiceClient auth() {
@@ -370,7 +375,9 @@ import javax.ws.rs.core.MediaType;
 interface AuthService {
   @GET
   @Path("/")
-  void getAuth(@HeaderParam("Authorization") BearerAuth auth) throws GetAuthException;
+  void getAuth(
+      @HeaderParam("Authorization") BearerAuth auth, @HeaderParam("API-VERSION") String apiVersion)
+      throws GetAuthException;
 
   static AuthService getClient(String url) {
     return Feign.builder()
@@ -388,7 +395,6 @@ interface AuthService {
 basic[src/main/java/com/fern/basic/client/auth/AuthServiceClient.java]=[
 package com.fern.basic.client.auth;
 
-import com.fern.basic.client.auth.endpoints.GetAuth;
 import com.fern.basic.client.auth.exceptions.GetAuthException;
 import com.fern.basic.core.BearerAuth;
 import java.util.Optional;
@@ -396,24 +402,25 @@ import java.util.Optional;
 public final class AuthServiceClient {
   private final AuthService service;
 
+  private final String apiVersion;
+
   private final Optional<BearerAuth> auth;
 
-  public AuthServiceClient(String url) {
+  public AuthServiceClient(String url, String apiVersion) {
     this.service = AuthService.getClient(url);
+    this.apiVersion = apiVersion;
     this.auth = Optional.empty();
   }
 
-  public AuthServiceClient(String url, BearerAuth auth) {
+  public AuthServiceClient(String url, BearerAuth auth, String apiVersion) {
     this.service = AuthService.getClient(url);
     this.auth = Optional.of(auth);
+    this.apiVersion = apiVersion;
   }
 
-  public void getAuth(GetAuth.Request request) throws GetAuthException {
-    BearerAuth authValue =
-        request
-            .getAuthOverride()
-            .orElseGet(() -> this.auth.orElseThrow(() -> new RuntimeException("Auth is required")));
-    this.service.getAuth(authValue);
+  public void getAuth() throws GetAuthException {
+    BearerAuth authValue = this.auth.orElseThrow(() -> new RuntimeException("Auth is required"));
+    this.service.getAuth(authValue, apiVersion);
   }
 }
 
@@ -451,86 +458,6 @@ final class AuthServiceErrorDecoder implements ErrorDecoder {
         .reader()
         .withAttribute("statusCode", response.status())
         .readValue(response.body().asInputStream(), clazz);
-  }
-}
-
-]
-
-
-basic[src/main/java/com/fern/basic/client/auth/endpoints/GetAuth.java]=[
-package com.fern.basic.client.auth.endpoints;
-
-import com.fern.basic.core.BearerAuth;
-import java.util.Objects;
-import java.util.Optional;
-
-public final class GetAuth {
-  private GetAuth() {}
-
-  public static final class Request {
-    private final Optional<BearerAuth> authOverride;
-
-    private int _cachedHashCode;
-
-    Request(Optional<BearerAuth> authOverride) {
-      this.authOverride = authOverride;
-    }
-
-    public Optional<BearerAuth> getAuthOverride() {
-      return authOverride;
-    }
-
-    @Override
-    public boolean equals(Object other) {
-      if (this == other) return true;
-      return other instanceof Request && equalTo((Request) other);
-    }
-
-    private boolean equalTo(Request other) {
-      return authOverride.equals(other.authOverride);
-    }
-
-    @Override
-    public int hashCode() {
-      if (_cachedHashCode == 0) {
-        _cachedHashCode = Objects.hash(this.authOverride);
-      }
-      return _cachedHashCode;
-    }
-
-    @Override
-    public String toString() {
-      return "GetAuth.Request{" + "authOverride: " + authOverride + "}";
-    }
-
-    public static Builder builder() {
-      return new Builder();
-    }
-
-    public static final class Builder {
-      private Optional<BearerAuth> authOverride = Optional.empty();
-
-      private Builder() {}
-
-      public Builder from(Request other) {
-        authOverride(other.getAuthOverride());
-        return this;
-      }
-
-      public Builder authOverride(Optional<BearerAuth> authOverride) {
-        this.authOverride = authOverride;
-        return this;
-      }
-
-      public Builder authOverride(BearerAuth authOverride) {
-        this.authOverride = Optional.of(authOverride);
-        return this;
-      }
-
-      public Request build() {
-        return new Request(authOverride);
-      }
-    }
   }
 }
 
@@ -663,6 +590,7 @@ import feign.jackson.JacksonEncoder;
 import feign.jaxrs.JAXRSContract;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -675,11 +603,14 @@ import javax.ws.rs.core.MediaType;
 interface PostsService {
   @POST
   @Path("/create")
-  void createPost(CreatePostRequest body) throws CreatePostException;
+  void createPost(@HeaderParam("API-VERSION") String apiVersion, CreatePostRequest body)
+      throws CreatePostException;
 
   @GET
   @Path("/{postId}")
-  BlogPost getPost(@PathParam("postId") String postId) throws GetPostException;
+  BlogPost getPost(
+      @HeaderParam("API-VERSION") String apiVersion, @PathParam("postId") String postId)
+      throws GetPostException;
 
   static PostsService getClient(String url) {
     return Feign.builder()
@@ -706,16 +637,19 @@ import com.fern.basic.client.blog.types.BlogPost;
 public final class PostsServiceClient {
   private final PostsService service;
 
-  public PostsServiceClient(String url) {
+  private final String apiVersion;
+
+  public PostsServiceClient(String url, String apiVersion) {
     this.service = PostsService.getClient(url);
+    this.apiVersion = apiVersion;
   }
 
   public void createPost(CreatePost.Request request) throws CreatePostException {
-    this.service.createPost(request.getBody());
+    this.service.createPost(apiVersion, request.getBody());
   }
 
   public BlogPost getPost(GetPost.Request request) throws GetPostException {
-    return this.service.getPost(request.getPostId());
+    return this.service.getPost(apiVersion, request.getPostId());
   }
 }
 
@@ -2386,6 +2320,7 @@ import feign.jackson.JacksonEncoder;
 import feign.jaxrs.JAXRSContract;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -2397,11 +2332,12 @@ import javax.ws.rs.core.MediaType;
 interface DummyService {
   @POST
   @Path("/")
-  void getDummy(String body) throws GetDummyException;
+  void getDummy(@HeaderParam("API-VERSION") String apiVersion, String body)
+      throws GetDummyException;
 
   @GET
   @Path("/health")
-  void health() throws HealthException;
+  void health(@HeaderParam("API-VERSION") String apiVersion) throws HealthException;
 
   static DummyService getClient(String url) {
     return Feign.builder()
@@ -2426,16 +2362,19 @@ import com.fern.basic.client.dummy.service.exceptions.HealthException;
 public final class DummyServiceClient {
   private final DummyService service;
 
-  public DummyServiceClient(String url) {
+  private final String apiVersion;
+
+  public DummyServiceClient(String url, String apiVersion) {
     this.service = DummyService.getClient(url);
+    this.apiVersion = apiVersion;
   }
 
   public void getDummy(GetDummy.Request request) throws GetDummyException {
-    this.service.getDummy(request.getBody());
+    this.service.getDummy(apiVersion, request.getBody());
   }
 
   public void health() throws HealthException {
-    this.service.health();
+    this.service.health(apiVersion);
   }
 }
 

@@ -76,6 +76,6 @@ public final class GlobalHeaders {
         if (commaDelimitedGlobalHeaderParams.isBlank()) {
             return params;
         }
-        return params + ", " + commaDelimitedGlobalHeaderParams + ", ";
+        return params + ", " + commaDelimitedGlobalHeaderParams;
     }
 }

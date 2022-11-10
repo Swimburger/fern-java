@@ -30,9 +30,7 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
-import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +44,7 @@ public final class HttpEndpointFileGenerator extends AbstractFileGenerator {
     private static final String REQUEST_CLASS_NAME = "Request";
     private static final String AUTH_REQUEST_PARAMETER = "authOverride";
     private final HttpEndpoint httpEndpoint;
-    private final List<ParameterSpec> serviceInterfaceMethodParameters;
+    private final List<ParameterSpec> parametersToInclude;
 
     private final Optional<GeneratedAuthFiles> maybeAuth;
     private final Map<DeclaredErrorName, GeneratedJavaFile> generatedErrors;
@@ -55,14 +53,14 @@ public final class HttpEndpointFileGenerator extends AbstractFileGenerator {
             ClientGeneratorContext generatorContext,
             HttpService httpService,
             HttpEndpoint httpEndpoint,
-            List<ParameterSpec> serviceInterfaceMethodParameters,
+            List<ParameterSpec> parametersToInclude,
             Optional<GeneratedAuthFiles> maybeAuth,
             Map<DeclaredErrorName, GeneratedJavaFile> generatedErrors) {
         super(
                 generatorContext.getPoetClassNameFactory().getEndpointClassName(httpService.getName(), httpEndpoint),
                 generatorContext);
         this.httpEndpoint = httpEndpoint;
-        this.serviceInterfaceMethodParameters = serviceInterfaceMethodParameters;
+        this.parametersToInclude = parametersToInclude;
         this.maybeAuth = maybeAuth;
         this.generatedErrors = generatedErrors;
     }
@@ -84,7 +82,7 @@ public final class HttpEndpointFileGenerator extends AbstractFileGenerator {
 
     private TypeSpec generateNestedRequestType(GeneratedEndpointRequest.Builder outputBuilder) {
         ClassName requestClassName = className.nestedClass(REQUEST_CLASS_NAME);
-        List<EnrichedObjectProperty> enrichedObjectProperties = getRequestParameters().stream()
+        List<EnrichedObjectProperty> enrichedObjectProperties = parametersToInclude.stream()
                 .map(parameterSpec -> EnrichedObjectProperty.builder()
                         .camelCaseKey(parameterSpec.name)
                         .pascalCaseKey(StringUtils.capitalize(parameterSpec.name))
@@ -109,25 +107,5 @@ public final class HttpEndpointFileGenerator extends AbstractFileGenerator {
         outputBuilder.requestTypeSpec(requestTypeSpec);
 
         return requestTypeSpec;
-    }
-
-    private List<ParameterSpec> getRequestParameters() {
-        List<ParameterSpec> requestParameters = new ArrayList<>();
-        if (httpEndpoint.getAuth() && maybeAuth.isPresent()) {
-            GeneratedAuthFiles auth = maybeAuth.get();
-            requestParameters.add(ParameterSpec.builder(
-                            ParameterizedTypeName.get(ClassName.get(Optional.class), auth.getClassName()),
-                            AUTH_REQUEST_PARAMETER)
-                    .build());
-            int startIndex = auth.authSchemeFileOutputs().isEmpty()
-                    ? 1
-                    : auth.authSchemeFileOutputs().get().size();
-            for (int i = startIndex; i < serviceInterfaceMethodParameters.size(); ++i) {
-                requestParameters.add(serviceInterfaceMethodParameters.get(i));
-            }
-        } else {
-            requestParameters.addAll(serviceInterfaceMethodParameters);
-        }
-        return requestParameters;
     }
 }
