@@ -24,15 +24,12 @@ import com.fern.ir.model.types.DeclaredTypeName;
 import com.fern.ir.model.types.SingleUnionType;
 import com.fern.ir.model.types.SingleUnionTypeProperties;
 import com.fern.ir.model.types.SingleUnionTypeProperty;
-import com.fern.ir.model.types.TypeDeclaration;
-import com.fern.ir.model.types.TypeReference;
 import com.fern.ir.model.types.UnionTypeDeclaration;
 import com.fern.java.AbstractGeneratorContext;
 import com.fern.java.FernJavaAnnotations;
 import com.fern.java.generators.union.UnionSubType;
 import com.fern.java.generators.union.UnionTypeSpecGenerator;
 import com.fern.java.output.GeneratedJavaFile;
-import com.fern.java.utils.KeyWordUtils;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
@@ -154,40 +151,72 @@ public final class UnionGenerator extends AbstractFileGenerator {
         @Override
         public List<MethodSpec> getConstructors() {
             List<MethodSpec> constructors = new ArrayList<>();
-            MethodSpec.Builder fromJsonConstructorBuilder = MethodSpec.constructorBuilder()
-                    .addModifiers(Modifier.PRIVATE)
-                    .addAnnotation(FernJavaAnnotations.jacksonPropertiesCreator());
-            if (getUnionSubTypeTypeName().isEmpty()) {
-                constructors.add(fromJsonConstructorBuilder.build());
-            } else {
-                TypeName unionSubTypeName = getUnionSubTypeTypeName().get();
-                boolean isObject = isTypeReferenceAnObject(singleUnionType.getValueType());
-                List<ParameterSpec> parameterSpecs = new ArrayList<>();
-                if (isObject) {
+            singleUnionType.getShape().visit(new SingleUnionTypeProperties.Visitor<Void>() {
+
+                @Override
+                public Void visitSamePropertiesAsObject(DeclaredTypeName samePropertiesAsObject) {
                     constructors.add(MethodSpec.constructorBuilder()
                             .addModifiers(Modifier.PRIVATE)
-                            .addParameter(ParameterSpec.builder(unionSubTypeName, getValueFieldName())
-                                    .build())
-                            .addStatement("this.$L = $L", getValueFieldName(), getValueFieldName())
+                            .addAnnotation(FernJavaAnnotations.jacksonPropertiesCreator())
                             .build());
-                } else {
-                    parameterSpecs.add(ParameterSpec.builder(unionSubTypeName, getValueFieldName())
-                            .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
-                                    .addMember("value", "$S", getValueFieldName())
+                    constructors.add(MethodSpec.constructorBuilder()
+                            .addModifiers(Modifier.PRIVATE)
+                            .addParameter(ParameterSpec.builder(
+                                            generatorContext
+                                                    .getPoetTypeNameMapper()
+                                                    .convertToTypeName(true, singleUnionType.getValueType()),
+                                            "value")
                                     .build())
+                            .addStatement("this.$L = $L", "value", "value")
                             .build());
-                    fromJsonConstructorBuilder.addStatement("this.$L = $L", getValueFieldName(), getValueFieldName());
+                    return null;
                 }
-                constructors.add(
-                        fromJsonConstructorBuilder.addParameters(parameterSpecs).build());
-            }
+
+                @Override
+                public Void visitSingleProperty(SingleUnionTypeProperty singleProperty) {
+                    String parameterName =
+                            singleProperty.getNameV2().getName().getSafeName().getCamelCase();
+                    constructors.add(MethodSpec.constructorBuilder()
+                            .addModifiers(Modifier.PRIVATE)
+                            .addAnnotation(FernJavaAnnotations.jacksonPropertiesCreator())
+                            .addParameter(ParameterSpec.builder(
+                                            generatorContext
+                                                    .getPoetTypeNameMapper()
+                                                    .convertToTypeName(true, singleUnionType.getValueType()),
+                                            parameterName)
+                                    .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
+                                            .addMember(
+                                                    "value",
+                                                    "$S",
+                                                    singleProperty.getNameV2().getWireValue())
+                                            .build())
+                                    .build())
+                            .addStatement("this.$L = $L", parameterName, parameterName)
+                            .build());
+                    return null;
+                }
+
+                @Override
+                public Void visitNoProperties() {
+                    constructors.add(MethodSpec.constructorBuilder()
+                            .addModifiers(Modifier.PRIVATE)
+                            .addAnnotation(FernJavaAnnotations.jacksonPropertiesCreator())
+                            .build());
+                    return null;
+                }
+
+                @Override
+                public Void _visitUnknown(Object unknown) {
+                    return null;
+                }
+            });
+
             return constructors;
         }
 
         @Override
         public String getValueFieldName() {
-            return KeyWordUtils.getKeyWordCompatibleName(
-                    singleUnionType.getDiscriminantValue().getCamelCase());
+            return valueFieldSpec.map(fieldSpec -> fieldSpec.name).orElse("value");
         }
 
         private Optional<FieldSpec> getValueField() {
@@ -207,11 +236,13 @@ public final class UnionGenerator extends AbstractFileGenerator {
 
                 @Override
                 public Optional<FieldSpec> visitSingleProperty(SingleUnionTypeProperty singleProperty) {
+                    String fieldName =
+                            singleProperty.getNameV2().getName().getSafeName().getCamelCase();
                     return Optional.of(FieldSpec.builder(
                                     generatorContext
                                             .getPoetTypeNameMapper()
                                             .convertToTypeName(true, singleUnionType.getValueType()),
-                                    singleProperty.getName().getCamelCase(),
+                                    fieldName,
                                     Modifier.PRIVATE)
                             .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
                                     .addMember(
@@ -232,21 +263,6 @@ public final class UnionGenerator extends AbstractFileGenerator {
                     return Optional.empty();
                 }
             });
-        }
-
-        private boolean isTypeReferenceAnObject(TypeReference typeReference) {
-            Optional<DeclaredTypeName> maybeNamedType = typeReference.getNamed();
-            if (maybeNamedType.isPresent()) {
-                TypeDeclaration typeDeclaration =
-                        generatorContext.getTypeDefinitionsByName().get(maybeNamedType.get());
-                if (typeDeclaration.getShape().isObject()) {
-                    return true;
-                } else if (typeDeclaration.getShape().isAlias()) {
-                    return isTypeReferenceAnObject(
-                            typeDeclaration.getShape().getAlias().get().getAliasOf());
-                }
-            }
-            return false;
         }
     }
 
