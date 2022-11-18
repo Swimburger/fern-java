@@ -22,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fern.ir.model.ir.FernConstants;
 import com.fern.ir.model.types.DeclaredTypeName;
 import com.fern.ir.model.types.SingleUnionType;
+import com.fern.ir.model.types.SingleUnionTypeProperties;
+import com.fern.ir.model.types.SingleUnionTypeProperty;
 import com.fern.ir.model.types.TypeDeclaration;
 import com.fern.ir.model.types.TypeReference;
 import com.fern.ir.model.types.UnionTypeDeclaration;
@@ -114,12 +116,8 @@ public final class UnionGenerator extends AbstractFileGenerator {
         private ModelUnionSubTypes(ClassName unionClassName, SingleUnionType singleUnionType) {
             super(unionClassName);
             this.singleUnionType = singleUnionType;
-            this.unionSubTypeTypeName = singleUnionType.getValueType().isVoid()
-                    ? Optional.empty()
-                    : Optional.of(generatorContext
-                            .getPoetTypeNameMapper()
-                            .convertToTypeName(true, singleUnionType.getValueType()));
             this.valueFieldSpec = getValueField();
+            this.unionSubTypeTypeName = valueFieldSpec.map(fieldSpec -> fieldSpec.type);
         }
 
         @Override
@@ -193,23 +191,47 @@ public final class UnionGenerator extends AbstractFileGenerator {
         }
 
         private Optional<FieldSpec> getValueField() {
-            if (singleUnionType.getValueType().isVoid()) {
-                return Optional.empty();
-            }
-            boolean errorIsObject = isTypeReferenceAnObject(singleUnionType.getValueType());
-            FieldSpec.Builder valueFieldSpecBuilder =
-                    FieldSpec.builder(getUnionSubTypeTypeName().get(), getValueFieldName(), Modifier.PRIVATE);
-            if (errorIsObject) {
-                valueFieldSpecBuilder.addAnnotation(JsonUnwrapped.class);
-            } else {
-                valueFieldSpecBuilder.addAnnotation(AnnotationSpec.builder(JsonProperty.class)
-                        .addMember(
-                                "value",
-                                "$S",
-                                singleUnionType.getDiscriminantValue().getWireValue())
-                        .build());
-            }
-            return Optional.of(valueFieldSpecBuilder.build());
+            return singleUnionType.getShape().visit(new SingleUnionTypeProperties.Visitor<>() {
+
+                @Override
+                public Optional<FieldSpec> visitSamePropertiesAsObject(DeclaredTypeName samePropertiesAsObject) {
+                    return Optional.of(FieldSpec.builder(
+                                    generatorContext
+                                            .getPoetTypeNameMapper()
+                                            .convertToTypeName(true, singleUnionType.getValueType()),
+                                    "value",
+                                    Modifier.PRIVATE)
+                            .addAnnotation(JsonUnwrapped.class)
+                            .build());
+                }
+
+                @Override
+                public Optional<FieldSpec> visitSingleProperty(SingleUnionTypeProperty singleProperty) {
+                    return Optional.of(FieldSpec.builder(
+                                    generatorContext
+                                            .getPoetTypeNameMapper()
+                                            .convertToTypeName(true, singleUnionType.getValueType()),
+                                    singleProperty.getName().getCamelCase(),
+                                    Modifier.PRIVATE)
+                            .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
+                                    .addMember(
+                                            "value",
+                                            "$S",
+                                            singleProperty.getNameV2().getWireValue())
+                                    .build())
+                            .build());
+                }
+
+                @Override
+                public Optional<FieldSpec> visitNoProperties() {
+                    return Optional.empty();
+                }
+
+                @Override
+                public Optional<FieldSpec> _visitUnknown(Object unknown) {
+                    return Optional.empty();
+                }
+            });
         }
 
         private boolean isTypeReferenceAnObject(TypeReference typeReference) {
