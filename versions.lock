@@ -1,6 +1,7 @@
 # Run ./gradlew --write-locks to regenerate this file
 ch.qos.logback:logback-classic:1.2.6 (2 constraints: be11ed04)
 ch.qos.logback:logback-core:1.2.6 (2 constraints: bd19dc1b)
+com.atlassian.commonmark:commonmark:0.12.1 (1 constraints: 36052a3b)
 com.fasterxml.jackson:jackson-bom:2.13.0 (6 constraints: f27009bb)
 com.fasterxml.jackson.core:jackson-annotations:2.13.0 (4 constraints: 54335ebc)
 com.fasterxml.jackson.core:jackson-core:2.13.0 (5 constraints: b45a7f3b)

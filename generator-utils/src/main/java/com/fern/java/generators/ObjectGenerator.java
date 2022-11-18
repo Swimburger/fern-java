@@ -56,7 +56,7 @@ public final class ObjectGenerator extends AbstractFileGenerator {
         if (selfInterface.isEmpty()) {
             enrichedObjectProperties = objectTypeDeclaration.getProperties().stream()
                     .map(objectProperty -> EnrichedObjectProperty.of(
-                            objectProperty.getNameV2(),
+                            objectProperty,
                             false,
                             poetTypeNameMapper.convertToTypeName(true, objectProperty.getValueType())))
                     .collect(Collectors.toList());
@@ -67,7 +67,7 @@ public final class ObjectGenerator extends AbstractFileGenerator {
                         .interfaceClassName(generatedInterface.getClassName())
                         .addAllInterfaceProperties(generatedInterface.propertyMethodSpecs().stream()
                                 .map(propertyMethodSpec -> EnrichedObjectProperty.of(
-                                        propertyMethodSpec.objectProperty().getNameV2(),
+                                        propertyMethodSpec.objectProperty(),
                                         true,
                                         propertyMethodSpec.methodSpec().returnType))
                                 .collect(Collectors.toList()))
