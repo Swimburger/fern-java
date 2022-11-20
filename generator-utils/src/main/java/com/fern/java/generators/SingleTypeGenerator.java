@@ -26,10 +26,14 @@ import com.fern.java.AbstractGeneratorContext;
 import com.fern.java.output.GeneratedJavaFile;
 import com.fern.java.output.GeneratedJavaInterface;
 import com.squareup.javapoet.ClassName;
-import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class SingleTypeGenerator implements Type.Visitor<Optional<GeneratedJavaFile>> {
@@ -70,11 +74,22 @@ public final class SingleTypeGenerator implements Type.Visitor<Optional<Generate
 
     @Override
     public Optional<GeneratedJavaFile> visitObject(ObjectTypeDeclaration value) {
-        List<GeneratedJavaInterface> extendedInterfaces = value.getExtends().stream()
+        List<GeneratedJavaInterface> extendedInterfaces = new ArrayList<>();
+        Set<GeneratedJavaInterface> visited = new HashSet<>();
+        Queue<GeneratedJavaInterface> interfacesToVisit = value.getExtends().stream()
                 .map(allGeneratedInterfaces::get)
-                .sorted(Comparator.comparing(
-                        generatedInterface -> generatedInterface.getClassName().simpleName()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(LinkedList::new));
+        while (!interfacesToVisit.isEmpty()) {
+            GeneratedJavaInterface generatedJavaInterface = interfacesToVisit.poll();
+            if (visited.contains(generatedJavaInterface)) {
+                continue;
+            }
+            extendedInterfaces.add(generatedJavaInterface);
+            interfacesToVisit.addAll(generatedJavaInterface.extendedInterfaces().stream()
+                    .map(allGeneratedInterfaces::get)
+                    .collect(Collectors.toList()));
+            visited.add(generatedJavaInterface);
+        }
         ObjectGenerator objectGenerator = new ObjectGenerator(
                 value,
                 Optional.ofNullable(allGeneratedInterfaces.get(declaredTypeName)),
