@@ -253,9 +253,6 @@ public final class BuilderGenerator {
                 .addParameter(ParameterSpec.builder(
                                 enrichedObjectProperty.poetTypeName(), enrichedObjectProperty.fieldSpec().name)
                         .build());
-        if (enrichedObjectProperty.docs().isPresent()) {
-            setterBuilder.addJavadoc(JavaDocUtils.render(enrichedObjectProperty.docs().get()));
-        }
         return setterBuilder;
     }
 
