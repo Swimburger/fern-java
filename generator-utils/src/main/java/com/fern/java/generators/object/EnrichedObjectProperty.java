@@ -43,6 +43,7 @@ public interface EnrichedObjectProperty {
     TypeName poetTypeName();
 
     boolean fromInterface();
+
     Optional<String> docs();
 
     @Value.Lazy

@@ -109,9 +109,7 @@ public final class ObjectGenerator extends AbstractFileGenerator {
             GeneratedJavaInterface generatedJavaInterface) {
         return generatedJavaInterface.propertyMethodSpecs().stream()
                 .map(propertyMethodSpec -> EnrichedObjectProperty.of(
-                        propertyMethodSpec.objectProperty(),
-                        true,
-                        propertyMethodSpec.methodSpec().returnType))
+                        propertyMethodSpec.objectProperty(), true, propertyMethodSpec.methodSpec().returnType))
                 .collect(Collectors.toList());
     }
 }
