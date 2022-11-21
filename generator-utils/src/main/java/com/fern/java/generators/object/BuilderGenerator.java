@@ -235,7 +235,8 @@ public final class BuilderGenerator {
                         enrichedObjectProperty.fieldSpec().name)
                 .addStatement("return this");
         if (enrichedObjectProperty.docs().isPresent()) {
-            methodBuilder.addJavadoc(JavaDocUtils.render(enrichedObjectProperty.docs().get()));
+            methodBuilder.addJavadoc(
+                    JavaDocUtils.render(enrichedObjectProperty.docs().get()));
         }
         if (enrichedObjectProperty.wireKey().isPresent()) {
             methodBuilder.addAnnotation(AnnotationSpec.builder(JsonSetter.class)
