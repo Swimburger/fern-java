@@ -1660,6 +1660,7 @@ public final class BlogPost {
     return type;
   }
 
+  /** The title of the blog post. */
   @JsonProperty("title")
   public String getTitle() {
     return title;
