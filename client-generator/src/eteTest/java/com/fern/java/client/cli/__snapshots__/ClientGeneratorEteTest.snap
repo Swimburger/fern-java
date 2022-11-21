@@ -1730,6 +1730,7 @@ public final class BlogPost {
   }
 
   public interface TitleStage {
+    /** The title of the blog post. */
     AuthorStage title(String title);
   }
 
@@ -1784,6 +1785,7 @@ public final class BlogPost {
       return this;
     }
 
+    /** The title of the blog post. The title of the blog post. */
     @Override
     @JsonSetter("title")
     public AuthorStage title(String title) {
