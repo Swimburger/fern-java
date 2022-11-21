@@ -87,7 +87,7 @@ public interface EnrichedObjectProperty {
                 .poetTypeName(poetTypeName)
                 .fromInterface(fromInterface)
                 .wireKey(objectProperty.getNameV2().getWireValue())
-                .docs(objectProperty)
+                .docs(objectProperty.getDocs())
                 .build();
     }
 }
