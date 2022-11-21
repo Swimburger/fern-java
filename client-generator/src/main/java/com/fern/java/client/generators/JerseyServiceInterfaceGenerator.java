@@ -161,6 +161,7 @@ public final class JerseyServiceInterfaceGenerator extends AbstractFileGenerator
 
         return GeneratedEndpointMethod.builder()
                 .methodSpec(endpointMethodBuilder.build())
+                .addAllParameters(endpointParameters)
                 .build();
     }
 
