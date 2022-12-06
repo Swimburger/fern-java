@@ -649,6 +649,9 @@ public final class BuilderGenerator {
                     && !isEqual(poetParameterizedTypeName, ClassName.get(Map.class))
                     && !isEqual(poetParameterizedTypeName, ClassName.get(List.class))
                     && !isEqual(poetParameterizedTypeName, ClassName.get(Set.class));
+        } else if (poetTypeName instanceof ClassName) {
+            ClassName className = (ClassName) poetTypeName;
+            return !className.equals(TypeName.OBJECT);
         }
         return true;
     }
