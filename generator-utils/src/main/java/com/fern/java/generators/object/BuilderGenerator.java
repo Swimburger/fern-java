@@ -300,6 +300,24 @@ public final class BuilderGenerator {
                         builderImpl::addReversedFields,
                         builderImpl::addReversedMethods,
                         true);
+            } else if ((poetTypeName).equals(TypeName.OBJECT)) {
+                finalStageBuilder.addMethod()
+                interfaceSetterConsumer.accept(
+                        createOptionalItemTypeNameSetter(enrichedObjectProperty, propertyTypeName, finalStageClassName)
+                                .addModifiers(Modifier.ABSTRACT)
+                                .build());
+                implFieldConsumer.accept(implFieldSpecBuilder
+                        .initializer("$T.empty()", Optional.class)
+                        .build());
+                implSetterConsumer.accept(defaultMethodImplBuilder
+                        .addStatement("this.$L = $L", fieldSpec.name, fieldSpec.name)
+                        .addStatement("return this")
+                        .build());
+                implSetterConsumer.accept(createOptionalItemTypeNameSetter(
+                        enrichedObjectProperty, propertyTypeName, finalStageClassName, implsOverride)
+                        .addStatement("this.$L = $T.of($L)", fieldSpec.name, Optional.class, fieldSpec.name)
+                        .addStatement("return this")
+                        .build());
             } else {
                 throw new RuntimeException("Encountered final stage property that is not a ParameterizedTypeName: "
                         + poetTypeName.toString());
