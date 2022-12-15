@@ -302,7 +302,7 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
         for (ParameterSpec headerParameter : generatorContext.getGlobalHeaders().getRequiredGlobalHeaderParameters()) {
             arguments.add(headerParameter.name);
         }
-        if (interfaceMethod.returnType != null && interfaceMethod.returnType.equals(TypeName.VOID)) {
+        if (interfaceMethod.returnType != null && !interfaceMethod.returnType.equals(TypeName.VOID)) {
             endpointMethodBuilder.addStatement(
                     "return this.$L.$L(" + String.join(", ", arguments) + ")",
                     SERVICE_FIELD_NAME,
