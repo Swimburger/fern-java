@@ -280,8 +280,29 @@ exec "$JAVACMD" "$@"
 ]
 
 
-basic[src/main/java/com/fern/basic/blog/Age.java]=[
-package com.fern.basic.blog;
+basic[src/main/java/com/fern/basic/core/ObjectMappers.java]=[
+package com.fern.basic.core;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+
+public final class ObjectMappers {
+  public static final ObjectMapper JSON_MAPPER =
+      JsonMapper.builder()
+          .addModule(new Jdk8Module())
+          .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+          .build();
+
+  private ObjectMappers() {}
+}
+
+]
+
+
+basic[src/main/java/com/fern/basic/model/blog/Age.java]=[
+package com.fern.basic.model.blog;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -326,8 +347,8 @@ public final class Age {
 ]
 
 
-basic[src/main/java/com/fern/basic/blog/Author.java]=[
-package com.fern.basic.blog;
+basic[src/main/java/com/fern/basic/model/blog/Author.java]=[
+package com.fern.basic.model.blog;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -505,8 +526,8 @@ public final class Author {
 ]
 
 
-basic[src/main/java/com/fern/basic/blog/BlogPost.java]=[
-package com.fern.basic.blog;
+basic[src/main/java/com/fern/basic/model/blog/BlogPost.java]=[
+package com.fern.basic.model.blog;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -699,8 +720,8 @@ public final class BlogPost {
 ]
 
 
-basic[src/main/java/com/fern/basic/blog/CreatePostRequest.java]=[
-package com.fern.basic.blog;
+basic[src/main/java/com/fern/basic/model/blog/CreatePostRequest.java]=[
+package com.fern.basic.model.blog;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -894,8 +915,8 @@ public final class CreatePostRequest {
 ]
 
 
-basic[src/main/java/com/fern/basic/blog/GeneratorIdAndVersion.java]=[
-package com.fern.basic.blog;
+basic[src/main/java/com/fern/basic/model/blog/GeneratorIdAndVersion.java]=[
+package com.fern.basic.model.blog;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -1006,8 +1027,8 @@ public final class GeneratorIdAndVersion {
 ]
 
 
-basic[src/main/java/com/fern/basic/blog/PostId.java]=[
-package com.fern.basic.blog;
+basic[src/main/java/com/fern/basic/model/blog/PostId.java]=[
+package com.fern.basic.model.blog;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -1052,8 +1073,8 @@ public final class PostId {
 ]
 
 
-basic[src/main/java/com/fern/basic/blog/PostNotFoundErrorBody.java]=[
-package com.fern.basic.blog;
+basic[src/main/java/com/fern/basic/model/blog/PostNotFoundErrorBody.java]=[
+package com.fern.basic.model.blog;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -1142,8 +1163,8 @@ public final class PostNotFoundErrorBody {
 ]
 
 
-basic[src/main/java/com/fern/basic/blog/PostType.java]=[
-package com.fern.basic.blog;
+basic[src/main/java/com/fern/basic/model/blog/PostType.java]=[
+package com.fern.basic.model.blog;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -1239,8 +1260,8 @@ public final class PostType {
 ]
 
 
-basic[src/main/java/com/fern/basic/blog/UnauthorizedErrorBody.java]=[
-package com.fern.basic.blog;
+basic[src/main/java/com/fern/basic/model/blog/UnauthorizedErrorBody.java]=[
+package com.fern.basic.model.blog;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -1329,29 +1350,8 @@ public final class UnauthorizedErrorBody {
 ]
 
 
-basic[src/main/java/com/fern/basic/core/ObjectMappers.java]=[
-package com.fern.basic.core;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-
-public final class ObjectMappers {
-  public static final ObjectMapper JSON_MAPPER =
-      JsonMapper.builder()
-          .addModule(new Jdk8Module())
-          .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-          .build();
-
-  private ObjectMappers() {}
-}
-
-]
-
-
-basic[src/main/java/com/fern/basic/dummy/service/DummyId.java]=[
-package com.fern.basic.dummy.service;
+basic[src/main/java/com/fern/basic/model/dummy/service/DummyId.java]=[
+package com.fern.basic.model.dummy.service;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

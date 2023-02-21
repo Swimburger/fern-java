@@ -17,10 +17,13 @@
 package com.fern.java;
 
 import com.fern.ir.model.commons.FernFilepath;
+import com.fern.ir.model.commons.StringWithAllCasings;
 import com.fern.ir.model.types.DeclaredTypeName;
 import com.squareup.javapoet.ClassName;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public abstract class AbstractNonModelPoetClassNameFactory extends AbstractPoetClassNameFactory {
 
@@ -57,6 +60,13 @@ public abstract class AbstractNonModelPoetClassNameFactory extends AbstractPoetC
     }
 
     protected final String getResourcesPackage(Optional<FernFilepath> fernFilepath, Optional<String> suffix) {
-        return "resources." + getPackage(fernFilepath, suffix);
+        List<String> tokens = new ArrayList<>(getPackagePrefixTokens());
+        tokens.add("resources");
+        fernFilepath.ifPresent(filepath -> tokens.addAll(filepath.get().stream()
+                .map(StringWithAllCasings::getSnakeCase)
+                .flatMap(snakeCase -> splitOnNonAlphaNumericChar(snakeCase).stream())
+                .collect(Collectors.toList())));
+        suffix.ifPresent(tokens::add);
+        return String.join(".", tokens);
     }
 }

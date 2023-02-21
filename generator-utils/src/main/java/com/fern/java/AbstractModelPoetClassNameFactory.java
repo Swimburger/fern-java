@@ -17,10 +17,12 @@
 package com.fern.java;
 
 import com.fern.ir.model.commons.FernFilepath;
+import com.fern.ir.model.commons.StringWithAllCasings;
 import com.fern.ir.model.types.DeclaredTypeName;
 import com.squareup.javapoet.ClassName;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 public abstract class AbstractModelPoetClassNameFactory extends AbstractPoetClassNameFactory {
 
@@ -42,6 +44,12 @@ public abstract class AbstractModelPoetClassNameFactory extends AbstractPoetClas
     }
 
     protected final String getTypesPackageName(FernFilepath fernFilepath) {
-        return getPackage(Optional.of(fernFilepath), Optional.empty());
+        List<String> tokens = new ArrayList<>(getPackagePrefixTokens());
+        tokens.add("model");
+        tokens.addAll(fernFilepath.get().stream()
+                .map(StringWithAllCasings::getSnakeCase)
+                .flatMap(snakeCase -> splitOnNonAlphaNumericChar(snakeCase).stream())
+                .collect(Collectors.toList()));
+        return String.join(".", tokens);
     }
 }
