@@ -33,6 +33,7 @@ public final class SpringLocalFilesPoetClassNameFactory extends AbstractNonModel
     public ClassName getServiceInterfaceClassName(HttpService httpService) {
         String packageName =
                 getResourcesPackage(Optional.of(httpService.getName().getFernFilepath()), Optional.empty());
-        return ClassName.get(packageName, StringUtils.capitalize(httpService.getName().getName()));
+        return ClassName.get(
+                packageName, StringUtils.capitalize(httpService.getName().getName()));
     }
 }
