@@ -75,9 +75,8 @@ public final class SpringServerInterfaceGenerator extends AbstractFileGenerator 
         });
         TypeSpec springServiceTypeSpec =
                 jerseyServiceBuilder.addMethods(endpointToMethodSpec.values()).build();
-        JavaFile springServiceJavaFile = JavaFile.builder(
-                        className.packageName(), springServiceTypeSpec)
-                .build();
+        JavaFile springServiceJavaFile =
+                JavaFile.builder(className.packageName(), springServiceTypeSpec).build();
         return GeneratedJavaFile.builder()
                 .className(className)
                 .javaFile(springServiceJavaFile)

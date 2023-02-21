@@ -97,8 +97,8 @@ public final class SpringGeneratorCli extends AbstractGeneratorCli {
         // services
         List<GeneratedFile> generatedServiceClients = ir.getServices().getHttp().stream()
                 .map(httpService -> {
-                    SpringServerInterfaceGenerator httpServiceClientGenerator = new SpringServerInterfaceGenerator(
-                            context, maybeAuth, httpService);
+                    SpringServerInterfaceGenerator httpServiceClientGenerator =
+                            new SpringServerInterfaceGenerator(context, maybeAuth, httpService);
                     return httpServiceClientGenerator.generateFile();
                 })
                 .collect(Collectors.toList());
