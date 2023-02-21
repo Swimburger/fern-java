@@ -124,7 +124,8 @@ public final class SpringServerInterfaceGenerator extends AbstractFileGenerator 
                             .anyMatch(queryParameter ->
                                     queryParameter.getName().getCamelCase().equalsIgnoreCase("principal"));
             parameters.add(ParameterSpec.builder(
-                    ClassName.get(Principal.class), isPrincipalPresent ? "_principal" : "principal").build());
+                            ClassName.get(Principal.class), isPrincipalPresent ? "_principal" : "principal")
+                    .build());
         }
 
         // headers
