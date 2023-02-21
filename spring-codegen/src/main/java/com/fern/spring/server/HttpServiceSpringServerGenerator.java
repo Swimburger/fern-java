@@ -37,7 +37,6 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
-import java.security.Principal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,20 +108,6 @@ public final class HttpServiceSpringServerGenerator extends Generator {
         HttpAuthParameterSpecsUtils httpAuthParameterSpecsUtils =
                 new HttpAuthParameterSpecsUtils(RequestHeader.class, generatorContext, generatedAuthSchemes);
         endpointMethodBuilder.addParameters(httpAuthParameterSpecsUtils.getAuthParameters(httpEndpoint));
-
-        if (httpEndpoint.getAuth()) {
-            boolean isPrincipalPresent = httpService.getHeaders().stream()
-                            .anyMatch(httpHeader ->
-                                    httpHeader.getName().getCamelCase().equalsIgnoreCase("principal"))
-                    || httpService.getPathParameters().stream()
-                            .anyMatch(pathParameter ->
-                                    pathParameter.getName().getCamelCase().equalsIgnoreCase("principal"))
-                    || httpService.getPathParameters().stream()
-                            .anyMatch(queryParameter ->
-                                    queryParameter.getName().getCamelCase().equalsIgnoreCase("principal"));
-            endpointMethodBuilder.addParameter(
-                    ClassName.get(Principal.class), isPrincipalPresent ? "_principal" : "principal");
-        }
 
         httpService.getHeaders().stream()
                 .map(springServiceGeneratorUtils::getHeaderParameterSpec)
