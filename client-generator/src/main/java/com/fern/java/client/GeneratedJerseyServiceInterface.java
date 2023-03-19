@@ -34,13 +34,13 @@ import org.immutables.value.Value;
 @StagedBuilderImmutablesStyle
 public abstract class GeneratedJerseyServiceInterface extends AbstractGeneratedJavaFile {
 
+    public abstract AbstractGeneratedJavaFile errorDecoder();
+
     public abstract Map<HttpEndpointId, GeneratedEndpointMethod> endpointMethods();
 
     public abstract Map<HttpEndpointId, AbstractGeneratedJavaFile> endpointExceptions();
 
-    public abstract AbstractGeneratedJavaFile errorDecoder();
-
-    public static ImmutableGeneratedJerseyServiceInterface.ErrorDecoderBuildStage builder() {
+    public static ImmutableGeneratedJerseyServiceInterface.ClassNameBuildStage builder() {
         return ImmutableGeneratedJerseyServiceInterface.builder();
     }
 

@@ -128,11 +128,11 @@ public final class JerseyServiceInterfaceGenerator extends AbstractFileGenerator
                 .build();
 
         return GeneratedJerseyServiceInterface.builder()
-                .errorDecoder(errorDecoder)
                 .className(className)
                 .javaFile(jerseyServiceFile)
-                .putAllEndpointExceptions(endpointExceptions)
+                .errorDecoder(errorDecoder)
                 .putAllEndpointMethods(endpointMethods)
+                .putAllEndpointExceptions(endpointExceptions)
                 .build();
     }
 
