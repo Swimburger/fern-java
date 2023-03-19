@@ -21,7 +21,7 @@ import com.fern.generator.exec.model.config.GeneratorConfig;
 import com.fern.generator.exec.model.config.GeneratorPublishConfig;
 import com.fern.generator.exec.model.config.GithubOutputMode;
 import com.fern.ir.core.ObjectMappers;
-import com.fern.ir.model.ir.IntermediateRepresentation;
+import com.fern.ir.v2.model.ir.IntermediateRepresentation;
 import com.fern.java.AbstractGeneratorCli;
 import com.fern.java.CustomConfig;
 import com.fern.java.DefaultGeneratorExecClient;

@@ -16,9 +16,9 @@
 
 package com.fern.java.client.generators;
 
-import com.fern.ir.model.errors.DeclaredErrorName;
-import com.fern.ir.model.services.http.HttpEndpoint;
-import com.fern.ir.model.services.http.HttpService;
+import com.fern.ir.v2.model.errors.DeclaredErrorName;
+import com.fern.ir.v2.model.services.http.HttpEndpoint;
+import com.fern.ir.v2.model.services.http.HttpService;
 import com.fern.java.client.ClientGeneratorContext;
 import com.fern.java.client.GeneratedEndpointRequest;
 import com.fern.java.client.GeneratedJerseyServiceInterface.EndpointParameter;

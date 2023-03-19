@@ -16,9 +16,9 @@
 
 package com.fern.java.generators.auth;
 
-import com.fern.ir.model.auth.AuthScheme;
-import com.fern.ir.model.commons.WithDocs;
-import com.fern.ir.model.services.http.HttpHeader;
+import com.fern.ir.v2.model.auth.AuthScheme;
+import com.fern.ir.v2.model.commons.WithDocs;
+import com.fern.ir.v2.model.services.http.HttpHeader;
 import com.fern.java.AbstractGeneratorContext;
 import com.fern.java.output.GeneratedJavaFile;
 

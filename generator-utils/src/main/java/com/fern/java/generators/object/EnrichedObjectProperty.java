@@ -17,8 +17,8 @@
 package com.fern.java.generators.object;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fern.ir.model.commons.StringWithAllCasings;
-import com.fern.ir.model.types.ObjectProperty;
+import com.fern.ir.v2.model.commons.StringWithAllCasings;
+import com.fern.ir.v2.model.types.ObjectProperty;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
 import com.fern.java.utils.JavaDocUtils;
 import com.fern.java.utils.KeyWordUtils;

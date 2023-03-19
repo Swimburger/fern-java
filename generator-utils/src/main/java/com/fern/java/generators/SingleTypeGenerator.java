@@ -16,12 +16,12 @@
 
 package com.fern.java.generators;
 
-import com.fern.ir.model.types.AliasTypeDeclaration;
-import com.fern.ir.model.types.DeclaredTypeName;
-import com.fern.ir.model.types.EnumTypeDeclaration;
-import com.fern.ir.model.types.ObjectTypeDeclaration;
-import com.fern.ir.model.types.Type;
-import com.fern.ir.model.types.UnionTypeDeclaration;
+import com.fern.ir.v2.model.types.AliasTypeDeclaration;
+import com.fern.ir.v2.model.types.DeclaredTypeName;
+import com.fern.ir.v2.model.types.EnumTypeDeclaration;
+import com.fern.ir.v2.model.types.ObjectTypeDeclaration;
+import com.fern.ir.v2.model.types.Type;
+import com.fern.ir.v2.model.types.UnionTypeDeclaration;
 import com.fern.java.AbstractGeneratorContext;
 import com.fern.java.output.GeneratedJavaFile;
 import com.fern.java.output.GeneratedJavaInterface;

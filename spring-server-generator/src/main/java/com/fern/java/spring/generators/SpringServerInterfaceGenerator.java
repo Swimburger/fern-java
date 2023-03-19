@@ -15,11 +15,11 @@
  */
 package com.fern.java.spring.generators;
 
-import com.fern.ir.model.services.http.HttpEndpoint;
-import com.fern.ir.model.services.http.HttpEndpointId;
-import com.fern.ir.model.services.http.HttpRequest;
-import com.fern.ir.model.services.http.HttpResponse;
-import com.fern.ir.model.services.http.HttpService;
+import com.fern.ir.v2.model.services.http.HttpEndpoint;
+import com.fern.ir.v2.model.services.http.HttpEndpointId;
+import com.fern.ir.v2.model.services.http.HttpRequest;
+import com.fern.ir.v2.model.services.http.HttpResponse;
+import com.fern.ir.v2.model.services.http.HttpService;
 import com.fern.java.generators.AbstractFileGenerator;
 import com.fern.java.output.GeneratedAuthFiles;
 import com.fern.java.output.GeneratedFile;
