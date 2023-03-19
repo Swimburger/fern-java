@@ -16,7 +16,7 @@
 
 package com.fern.java.spring;
 
-import com.fern.ir.v2.model.services.http.HttpService;
+import com.fern.ir.v3.model.services.http.HttpService;
 import com.fern.java.AbstractNonModelPoetClassNameFactory;
 import com.squareup.javapoet.ClassName;
 import java.util.Collections;

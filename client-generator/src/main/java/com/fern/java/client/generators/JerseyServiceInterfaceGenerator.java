@@ -16,12 +16,12 @@
 
 package com.fern.java.client.generators;
 
-import com.fern.ir.v2.model.errors.DeclaredErrorName;
-import com.fern.ir.v2.model.services.http.HttpEndpoint;
-import com.fern.ir.v2.model.services.http.HttpEndpointId;
-import com.fern.ir.v2.model.services.http.HttpRequest;
-import com.fern.ir.v2.model.services.http.HttpResponse;
-import com.fern.ir.v2.model.services.http.HttpService;
+import com.fern.ir.v3.model.errors.DeclaredErrorName;
+import com.fern.ir.v3.model.services.http.HttpEndpoint;
+import com.fern.ir.v3.model.services.http.HttpEndpointId;
+import com.fern.ir.v3.model.services.http.HttpRequest;
+import com.fern.ir.v3.model.services.http.HttpResponse;
+import com.fern.ir.v3.model.services.http.HttpService;
 import com.fern.java.client.ClientGeneratorContext;
 import com.fern.java.client.GeneratedJerseyServiceInterface;
 import com.fern.java.client.GeneratedJerseyServiceInterface.AuthEndpointParameter;

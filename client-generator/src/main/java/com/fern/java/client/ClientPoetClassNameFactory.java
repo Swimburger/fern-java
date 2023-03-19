@@ -16,11 +16,11 @@
 
 package com.fern.java.client;
 
-import com.fern.ir.v2.model.errors.ErrorDeclaration;
-import com.fern.ir.v2.model.ir.IntermediateRepresentation;
-import com.fern.ir.v2.model.services.commons.DeclaredServiceName;
-import com.fern.ir.v2.model.services.http.HttpEndpoint;
-import com.fern.ir.v2.model.services.http.HttpService;
+import com.fern.ir.v3.model.errors.ErrorDeclaration;
+import com.fern.ir.v3.model.ir.IntermediateRepresentation;
+import com.fern.ir.v3.model.services.commons.DeclaredServiceName;
+import com.fern.ir.v3.model.services.http.HttpEndpoint;
+import com.fern.ir.v3.model.services.http.HttpService;
 import com.fern.java.AbstractNonModelPoetClassNameFactory;
 import com.fern.java.AbstractPoetClassNameFactory;
 import com.squareup.javapoet.ClassName;

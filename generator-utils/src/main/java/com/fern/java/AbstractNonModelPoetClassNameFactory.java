@@ -16,9 +16,9 @@
 
 package com.fern.java;
 
-import com.fern.ir.v2.model.commons.FernFilepath;
-import com.fern.ir.v2.model.commons.StringWithAllCasings;
-import com.fern.ir.v2.model.types.DeclaredTypeName;
+import com.fern.ir.v3.model.commons.FernFilepath;
+import com.fern.ir.v3.model.commons.StringWithAllCasings;
+import com.fern.ir.v3.model.types.DeclaredTypeName;
 import com.squareup.javapoet.ClassName;
 import java.util.ArrayList;
 import java.util.List;
