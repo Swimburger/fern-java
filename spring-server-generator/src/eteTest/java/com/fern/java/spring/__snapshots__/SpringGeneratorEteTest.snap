@@ -77,12 +77,10 @@ basic[resources/blog/PostsService.java]=[
 package com.fern.resources.blog;
 
 import com.fern.resources.blog.types.BlogPost;
-import com.fern.resources.blog.types.CreatePostRequest;
 import com.fern.resources.blog.types.PostId;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @RequestMapping(
@@ -92,7 +90,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 )
 public interface PostsService {
   @PostMapping("/create")
-  void createPost(@RequestBody CreatePostRequest body);
+  void createPost();
 
   @GetMapping("/{postId}")
   BlogPost getPost(@PathVariable("postId") PostId postId);
@@ -1196,10 +1194,8 @@ public final class UnauthorizedErrorBody {
 basic[resources/dummy/service/DummyService.java]=[
 package com.fern.resources.dummy.service;
 
-import com.fern.resources.dummy.service.types.DummyId;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @RequestMapping(
@@ -1209,7 +1205,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 )
 public interface DummyService {
   @PostMapping("/")
-  void getDummy(@RequestBody DummyId body);
+  void getDummy();
 
   @GetMapping("/health")
   void health();
