@@ -169,55 +169,51 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
 
             if (httpEndpoint.getSdkRequest().isPresent()) {
                 httpEndpoint.getSdkRequest().get().getShape().visit(new SdkRequestShape.Visitor<Void>() {
-                        @Override
-                        public Void visitJustRequestBody(HttpRequestBodyReference justRequestBody) {
-                            TypeName requestTypeName = generatorContext
-                                    .getPoetTypeNameMapper()
-                                    .convertToTypeName(true, justRequestBody.getRequestBodyType());
-                            endpointMethodBuilder.addParameter(
-                                    requestTypeName,
-                                    REQUEST_PARAMETER_NAME);
-                            endpointMethodBuilder.addJavadoc(JavaDocUtils.getParameterJavadoc(
-                                    REQUEST_PARAMETER_NAME,
-                                    justRequestBody.getDocs().orElse("")));
-                            generateCallWithOnlyRequest(
-                                    endpointMethodBuilder, generatedEndpointMethod.methodSpec(), httpEndpoint);
-                            return null;
-                        }
+                    @Override
+                    public Void visitJustRequestBody(HttpRequestBodyReference justRequestBody) {
+                        TypeName requestTypeName = generatorContext
+                                .getPoetTypeNameMapper()
+                                .convertToTypeName(true, justRequestBody.getRequestBodyType());
+                        endpointMethodBuilder.addParameter(requestTypeName, REQUEST_PARAMETER_NAME);
+                        endpointMethodBuilder.addJavadoc(JavaDocUtils.getParameterJavadoc(
+                                REQUEST_PARAMETER_NAME,
+                                justRequestBody.getDocs().orElse("")));
+                        generateCallWithOnlyRequest(
+                                endpointMethodBuilder, generatedEndpointMethod.methodSpec(), httpEndpoint);
+                        return null;
+                    }
 
-                        @Override
-                        public Void visitWrapper(SdkRequestWrapper wrapper) {
-                            WrappedRequestGenerator wrappedRequestGenerator = new WrappedRequestGenerator(
-                                    wrapper,
-                                    httpService,
-                                    httpEndpoint,
-                                    clientGeneratorContext
-                                            .getPoetClassNameFactory()
-                                            .getRequestWrapperBodyClassName(httpService, wrapper),
-                                    allGeneratedInterfaces,
-                                    clientGeneratorContext);
-                            GeneratedWrappedRequest generatedWrappedRequest = wrappedRequestGenerator.generateFile();
-                            endpointMethodBuilder.addParameter(
-                                    generatedWrappedRequest.getClassName(), REQUEST_PARAMETER_NAME);
-                            endpointMethodBuilder.addJavadoc(
-                                    JavaDocUtils.getParameterJavadoc(REQUEST_PARAMETER_NAME, ""));
-                            generatedEndpointRequests.add(generatedWrappedRequest);
-                            generateCallWithWrappedRequest(
-                                    httpEndpoint,
-                                    generatedEndpointMethod.methodSpec(),
-                                    generatedWrappedRequest,
-                                    endpointMethodBuilder);
-                            return null;
-                        }
+                    @Override
+                    public Void visitWrapper(SdkRequestWrapper wrapper) {
+                        WrappedRequestGenerator wrappedRequestGenerator = new WrappedRequestGenerator(
+                                wrapper,
+                                httpService,
+                                httpEndpoint,
+                                clientGeneratorContext
+                                        .getPoetClassNameFactory()
+                                        .getRequestWrapperBodyClassName(httpService, wrapper),
+                                allGeneratedInterfaces,
+                                clientGeneratorContext);
+                        GeneratedWrappedRequest generatedWrappedRequest = wrappedRequestGenerator.generateFile();
+                        endpointMethodBuilder.addParameter(
+                                generatedWrappedRequest.getClassName(), REQUEST_PARAMETER_NAME);
+                        endpointMethodBuilder.addJavadoc(JavaDocUtils.getParameterJavadoc(REQUEST_PARAMETER_NAME, ""));
+                        generatedEndpointRequests.add(generatedWrappedRequest);
+                        generateCallWithWrappedRequest(
+                                httpEndpoint,
+                                generatedEndpointMethod.methodSpec(),
+                                generatedWrappedRequest,
+                                endpointMethodBuilder);
+                        return null;
+                    }
 
-                        @Override
-                        public Void _visitUnknown(Object unknownType) {
-                            return null;
-                        }
-                    });
+                    @Override
+                    public Void _visitUnknown(Object unknownType) {
+                        return null;
+                    }
+                });
             } else {
-                generateCallWithoutRequest(
-                        endpointMethodBuilder, generatedEndpointMethod.methodSpec(), httpEndpoint);
+                generateCallWithoutRequest(endpointMethodBuilder, generatedEndpointMethod.methodSpec(), httpEndpoint);
             }
 
             endpointMethodBuilder.addExceptions(generatedEndpointMethod.methodSpec().exceptions);
