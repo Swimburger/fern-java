@@ -93,7 +93,7 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
         this.allGeneratedInterfaces = allGeneratedInterfaces;
     }
 
-    @SuppressWarnings("checkstyle:CyclomaticComplexity")
+    @SuppressWarnings({"checkstyle:CyclomaticComplexity", "checkstyle:MethodLength"})
     @Override
     public GeneratedServiceClient generateFile() {
         JerseyServiceInterfaceGenerator jerseyServiceInterfaceGenerator = new JerseyServiceInterfaceGenerator(
