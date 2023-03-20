@@ -129,7 +129,13 @@ public final class ClientGeneratorCli extends AbstractGeneratorCli<CustomConfig,
         List<GeneratedServiceClient> generatedServiceClients = ir.getServices().getHttp().stream()
                 .map(httpService -> {
                     HttpServiceClientGenerator httpServiceClientGenerator = new HttpServiceClientGenerator(
-                            context, httpService, errors, maybeAuth, generatedClientOptionsClass, objectMapper);
+                            context,
+                            httpService,
+                            errors,
+                            maybeAuth,
+                            generatedClientOptionsClass,
+                            generatedTypes.getInterfaces(),
+                            objectMapper);
                     return httpServiceClientGenerator.generateFile();
                 })
                 .collect(Collectors.toList());

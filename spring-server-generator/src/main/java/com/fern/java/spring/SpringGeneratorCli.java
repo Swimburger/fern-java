@@ -104,9 +104,8 @@ public final class SpringGeneratorCli
         // services
         List<GeneratedSpringServerInterface> generatedSpringServerInterfaces = ir.getServices().getHttp().stream()
                 .map(httpService -> {
-                    SpringServerInterfaceGenerator httpServiceClientGenerator =
-                            new SpringServerInterfaceGenerator(context, maybeAuth, generatedTypes.getInterfaces(),
-                                    httpService);
+                    SpringServerInterfaceGenerator httpServiceClientGenerator = new SpringServerInterfaceGenerator(
+                            context, maybeAuth, generatedTypes.getInterfaces(), httpService);
                     return httpServiceClientGenerator.generateFile();
                 })
                 .collect(Collectors.toList());

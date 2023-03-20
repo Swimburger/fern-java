@@ -16,14 +16,11 @@
 
 package com.fern.java.spring.generators;
 
-import com.fern.ir.v3.model.commons.WireStringWithAllCasings;
-import com.fern.ir.v3.model.declaration.Availability;
-import com.fern.ir.v3.model.declaration.AvailabilityStatus;
 import com.fern.ir.v3.model.services.http.HttpService;
 import com.fern.ir.v3.model.services.http.InlinedRequestBody;
 import com.fern.ir.v3.model.types.DeclaredTypeName;
-import com.fern.ir.v3.model.types.ObjectProperty;
 import com.fern.ir.v3.model.types.ObjectTypeDeclaration;
+import com.fern.java.InlinedRequestBodyUtils;
 import com.fern.java.generators.AbstractFileGenerator;
 import com.fern.java.generators.ObjectGenerator;
 import com.fern.java.output.AbstractGeneratedJavaFile;
@@ -52,52 +49,16 @@ public final class InlinedRequestBodyGenerator extends AbstractFileGenerator {
                 springGeneratorContext);
         this.inlinedRequestBody = inlinedRequestBody;
         this.allGeneratedInterfaces = allGeneratedInterfaces;
-        this.extendedInterfaces =
-                inlinedRequestBody.getExtends().stream().map(allGeneratedInterfaces::get).collect(Collectors.toList());
+        this.extendedInterfaces = inlinedRequestBody.getExtends().stream()
+                .map(allGeneratedInterfaces::get)
+                .collect(Collectors.toList());
     }
 
     @Override
     public AbstractGeneratedJavaFile generateFile() {
         ObjectTypeDeclaration objectTypeDeclaration = ObjectTypeDeclaration.builder()
                 .addAllExtends(inlinedRequestBody.getExtends())
-                .addAllProperties(inlinedRequestBody.getProperties().stream()
-                        .map(inlinedRequestBodyProperty -> ObjectProperty.builder()
-                                .availability(Availability.builder()
-                                        .status(AvailabilityStatus.GENERAL_AVAILABILITY)
-                                        .build())
-                                .name(WireStringWithAllCasings.builder()
-                                        .originalValue(inlinedRequestBodyProperty
-                                                .getName()
-                                                .getWireValue())
-                                        .camelCase(inlinedRequestBodyProperty
-                                                .getName()
-                                                .getName()
-                                                .getSafeName()
-                                                .getCamelCase())
-                                        .pascalCase(inlinedRequestBodyProperty
-                                                .getName()
-                                                .getName()
-                                                .getSafeName()
-                                                .getPascalCase())
-                                        .snakeCase(inlinedRequestBodyProperty
-                                                .getName()
-                                                .getName()
-                                                .getSafeName()
-                                                .getSnakeCase())
-                                        .screamingSnakeCase(inlinedRequestBodyProperty
-                                                .getName()
-                                                .getName()
-                                                .getSafeName()
-                                                .getScreamingSnakeCase())
-                                        .wireValue(inlinedRequestBodyProperty
-                                                .getName()
-                                                .getWireValue())
-                                        .build())
-                                .nameV2(inlinedRequestBodyProperty.getName())
-                                .valueType(inlinedRequestBodyProperty.getValueType())
-                                .docs(inlinedRequestBodyProperty.getDocs())
-                                .build())
-                        .collect(Collectors.toList()))
+                .addAllProperties(InlinedRequestBodyUtils.convertToObjectProperties(inlinedRequestBody))
                 .build();
         ObjectGenerator objectGenerator = new ObjectGenerator(
                 objectTypeDeclaration,

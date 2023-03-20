@@ -18,7 +18,7 @@ package com.fern.java.client;
 
 import com.fern.ir.v3.model.services.http.HttpEndpointId;
 import com.fern.ir.v3.model.services.http.HttpHeader;
-import com.fern.ir.v3.model.services.http.HttpRequest;
+import com.fern.ir.v3.model.services.http.HttpRequestBody;
 import com.fern.ir.v3.model.services.http.PathParameter;
 import com.fern.ir.v3.model.services.http.QueryParameter;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
@@ -126,11 +126,11 @@ public abstract class GeneratedJerseyServiceInterface extends AbstractGeneratedJ
     @Value.Immutable
     @StagedBuilderImmutablesStyle
     public interface EndpointRequestParameter extends EndpointParameter {
-        HttpRequest httpRequest();
+        HttpRequestBody httpRequest();
 
         @Override
         default Optional<String> docs() {
-            return httpRequest().getDocs();
+            return Optional.empty();
         }
 
         static ImmutableEndpointRequestParameter.ParameterSpecBuildStage builder() {

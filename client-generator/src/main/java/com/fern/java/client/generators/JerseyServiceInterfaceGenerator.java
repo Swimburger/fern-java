@@ -19,7 +19,6 @@ package com.fern.java.client.generators;
 import com.fern.ir.v3.model.errors.DeclaredErrorName;
 import com.fern.ir.v3.model.services.http.HttpEndpoint;
 import com.fern.ir.v3.model.services.http.HttpEndpointId;
-import com.fern.ir.v3.model.services.http.HttpRequest;
 import com.fern.ir.v3.model.services.http.HttpResponse;
 import com.fern.ir.v3.model.services.http.HttpService;
 import com.fern.java.client.ClientGeneratorContext;
@@ -42,6 +41,7 @@ import com.fern.java.output.GeneratedAuthFiles;
 import com.fern.java.output.GeneratedJavaFile;
 import com.fern.java.utils.HttpPathUtils;
 import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -222,14 +222,11 @@ public final class JerseyServiceInterfaceGenerator extends AbstractFileGenerator
         });
 
         // request body
-        HttpRequest httpRequest = httpEndpoint.getRequest();
-        if (!httpRequest.getType().isVoid()) {
-            TypeName requestTypeName =
-                    generatorContext.getPoetTypeNameMapper().convertToTypeName(true, httpRequest.getType());
+        if (httpEndpoint.getRequestBody().isPresent()) {
             parameters.add(EndpointRequestParameter.builder()
-                    .parameterSpec(
-                            ParameterSpec.builder(requestTypeName, "body").build())
-                    .httpRequest(httpRequest)
+                    .parameterSpec(ParameterSpec.builder(ClassName.get(Object.class), "body")
+                            .build())
+                    .httpRequest(httpEndpoint.getRequestBody().get())
                     .build());
         }
 

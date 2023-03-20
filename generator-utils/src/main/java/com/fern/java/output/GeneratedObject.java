@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2022 Birch Solutions Inc. All rights reserved.
+ * (c) Copyright 2023 Birch Solutions Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,21 @@
  * limitations under the License.
  */
 
-package com.fern.java.client;
+package com.fern.java.output;
 
-import com.fern.ir.v3.model.services.http.HttpService;
+import com.fern.ir.v3.model.types.ObjectProperty;
+import com.fern.java.generators.object.EnrichedObjectProperty;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
-import com.fern.java.output.AbstractGeneratedJavaFile;
-import java.util.List;
+import java.util.Map;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @StagedBuilderImmutablesStyle
-public abstract class GeneratedServiceClient extends AbstractGeneratedJavaFile {
+public abstract class GeneratedObject extends AbstractGeneratedJavaFile {
 
-    public abstract HttpService httpService();
+    public abstract Map<ObjectProperty, EnrichedObjectProperty> objectPropertyGetters();
 
-    public abstract GeneratedJerseyServiceInterface jerseyServiceInterfaceOutput();
-
-    public abstract List<GeneratedWrappedRequest> generatedEndpointRequestOutputs();
-
-    public static ImmutableGeneratedServiceClient.ClassNameBuildStage builder() {
-        return ImmutableGeneratedServiceClient.builder();
+    public static ImmutableGeneratedObject.ClassNameBuildStage builder() {
+        return ImmutableGeneratedObject.builder();
     }
 }

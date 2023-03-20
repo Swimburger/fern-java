@@ -25,6 +25,7 @@ import com.fern.ir.v3.model.types.UnionTypeDeclaration;
 import com.fern.java.AbstractGeneratorContext;
 import com.fern.java.output.GeneratedJavaFile;
 import com.fern.java.output.GeneratedJavaInterface;
+import com.fern.java.output.GeneratedObject;
 import com.squareup.javapoet.ClassName;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +79,11 @@ public final class SingleTypeGenerator implements Type.Visitor<Optional<Generate
                 generatorContext,
                 allGeneratedInterfaces,
                 className);
-        return Optional.of(objectGenerator.generateFile());
+        GeneratedObject generatedObject = objectGenerator.generateFile();
+        return Optional.of(GeneratedJavaFile.builder()
+                .className(generatedObject.getClassName())
+                .javaFile(generatedObject.javaFile())
+                .build());
     }
 
     @Override

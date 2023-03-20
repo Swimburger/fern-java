@@ -172,11 +172,7 @@ public final class SpringServerInterfaceGenerator extends AbstractFileGenerator 
                 @Override
                 public TypeName visitInlinedRequestBody(InlinedRequestBody inlinedRequestBody) {
                     InlinedRequestBodyGenerator inlinedRequestBodyGenerator = new InlinedRequestBodyGenerator(
-                            httpService,
-                            inlinedRequestBody,
-                            allGeneratedInterfaces,
-                            springGeneratorContext
-                    );
+                            httpService, inlinedRequestBody, allGeneratedInterfaces, springGeneratorContext);
                     AbstractGeneratedJavaFile generatedFile = inlinedRequestBodyGenerator.generateFile();
                     generatedRequestBodyFiles.add(generatedFile);
                     return generatedFile.getClassName();
