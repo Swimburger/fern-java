@@ -669,7 +669,10 @@ public final class AuthServiceClient {
   /**
    * @throws GetAuthException Exception that wraps all possible endpoint errors
    */
-  public void getAuth() throws GetAuthException {}
+  public void getAuth() throws GetAuthException {
+    BearerAuth authValue = this.auth.orElseThrow(() -> new RuntimeException("Auth is required"));
+    this.service.getAuth(authValue, apiVersion);
+  }
 }
 
 ]
@@ -2629,13 +2632,15 @@ public final class DummyServiceServiceClient {
    * @throws GetDummyException Exception that wraps all possible endpoint errors
    */
   public void getDummy(String request) throws GetDummyException {
-    this.service.getDummy(apiVersion);
+    this.service.getDummy(apiVersion, request);
   }
 
   /**
    * @throws HealthException Exception that wraps all possible endpoint errors
    */
-  public void health() throws HealthException {}
+  public void health() throws HealthException {
+    this.service.health(apiVersion);
+  }
 }
 
 ]
@@ -3030,7 +3035,8 @@ public final class DeviceServiceClient {
    *     <p>the updated Device
    */
   public Device add(String appId, String userId, Device request) throws AddException {
-    return this.service.add(apiVersion, appId, userId);
+    BearerAuth authValue = this.auth.orElseThrow(() -> new RuntimeException("Auth is required"));
+    return this.service.add(authValue, apiVersion, appId, userId, request);
   }
 
   /**
@@ -3046,7 +3052,8 @@ public final class DeviceServiceClient {
    */
   public Device update(String appId, String userId, String deviceId, Device request)
       throws UpdateException {
-    return this.service.update(apiVersion, appId, userId, deviceId);
+    BearerAuth authValue = this.auth.orElseThrow(() -> new RuntimeException("Auth is required"));
+    return this.service.update(authValue, apiVersion, appId, userId, deviceId, request);
   }
 
   /**
@@ -3057,7 +3064,10 @@ public final class DeviceServiceClient {
    * @param deviceId your device identifier
    * @throws DeleteException Exception that wraps all possible endpoint errors
    */
-  public void delete(String appId, String userId, String deviceId) throws DeleteException {}
+  public void delete(String appId, String userId, String deviceId) throws DeleteException {
+    BearerAuth authValue = this.auth.orElseThrow(() -> new RuntimeException("Auth is required"));
+    this.service.delete(authValue, apiVersion, appId, userId, deviceId);
+  }
 
   /**
    * Get a Device for a User
@@ -3068,7 +3078,10 @@ public final class DeviceServiceClient {
    * @throws GetDeviceException Exception that wraps all possible endpoint errors
    * @return Device
    */
-  public Device getDevice(String appId, String userId, String deviceId) throws GetDeviceException {}
+  public Device getDevice(String appId, String userId, String deviceId) throws GetDeviceException {
+    BearerAuth authValue = this.auth.orElseThrow(() -> new RuntimeException("Auth is required"));
+    return this.service.getDevice(authValue, apiVersion, appId, userId, deviceId);
+  }
 }
 
 ]
@@ -8307,7 +8320,10 @@ public final class UserServiceClient {
    * @throws GetException Exception that wraps all possible endpoint errors
    * @return RavenUser
    */
-  public RavenUser get(String appId, String userId) throws GetException {}
+  public RavenUser get(String appId, String userId) throws GetException {
+    BearerAuth authValue = this.auth.orElseThrow(() -> new RuntimeException("Auth is required"));
+    return this.service.get(authValue, apiVersion, appId, userId);
+  }
 }
 
 ]

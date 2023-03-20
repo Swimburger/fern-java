@@ -167,20 +167,20 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
                         pathParameterName, pathParameter.getDocs().orElse("")));
             });
 
-            httpEndpoint
-                    .getSdkRequest()
-                    .ifPresent(sdkRequest -> sdkRequest.getShape().visit(new SdkRequestShape.Visitor<Void>() {
+            if (httpEndpoint.getSdkRequest().isPresent()) {
+                httpEndpoint.getSdkRequest().get().getShape().visit(new SdkRequestShape.Visitor<Void>() {
                         @Override
                         public Void visitJustRequestBody(HttpRequestBodyReference justRequestBody) {
+                            TypeName requestTypeName = generatorContext
+                                    .getPoetTypeNameMapper()
+                                    .convertToTypeName(true, justRequestBody.getRequestBodyType());
                             endpointMethodBuilder.addParameter(
-                                    generatorContext
-                                            .getPoetTypeNameMapper()
-                                            .convertToTypeName(true, justRequestBody.getRequestBodyType()),
+                                    requestTypeName,
                                     REQUEST_PARAMETER_NAME);
                             endpointMethodBuilder.addJavadoc(JavaDocUtils.getParameterJavadoc(
                                     REQUEST_PARAMETER_NAME,
                                     justRequestBody.getDocs().orElse("")));
-                            generateCallWithoutRequest(
+                            generateCallWithOnlyRequest(
                                     endpointMethodBuilder, generatedEndpointMethod.methodSpec(), httpEndpoint);
                             return null;
                         }
@@ -214,7 +214,11 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
                         public Void _visitUnknown(Object unknownType) {
                             return null;
                         }
-                    }));
+                    });
+            } else {
+                generateCallWithoutRequest(
+                        endpointMethodBuilder, generatedEndpointMethod.methodSpec(), httpEndpoint);
+            }
 
             endpointMethodBuilder.addExceptions(generatedEndpointMethod.methodSpec().exceptions);
             if (!generatedEndpointMethod.methodSpec().exceptions.isEmpty()) {
@@ -348,6 +352,19 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
     private void generateCallWithoutRequest(
             MethodSpec.Builder endpointMethodBuilder, MethodSpec interfaceMethod, HttpEndpoint httpEndpoint) {
         List<String> arguments = new ArrayList<>();
+
+        if (httpEndpoint.getAuth()) {
+            GeneratedAuthFiles generatedAuth = maybeAuth.orElseThrow(
+                    () -> new RuntimeException("Invalid IR. Authed endpoint but no auth defined."));
+            endpointMethodBuilder.addStatement(
+                    "$T authValue = this.$L.orElseThrow(() -> new $T($S))",
+                    generatedAuth.getClassName(),
+                    AUTH_FIELD_NAME,
+                    RuntimeException.class,
+                    "Auth is required");
+            arguments.add("authValue");
+        }
+
         for (ParameterSpec headerParameter : generatorContext.getGlobalHeaders().getRequiredGlobalHeaderParameters()) {
             arguments.add(headerParameter.name);
         }
@@ -368,6 +385,43 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
         }
     }
 
+    private void generateCallWithOnlyRequest(
+            MethodSpec.Builder endpointMethodBuilder, MethodSpec interfaceMethod, HttpEndpoint httpEndpoint) {
+        List<String> arguments = new ArrayList<>();
+        if (httpEndpoint.getAuth()) {
+            GeneratedAuthFiles generatedAuth = maybeAuth.orElseThrow(
+                    () -> new RuntimeException("Invalid IR. Authed endpoint but no auth defined."));
+            endpointMethodBuilder.addStatement(
+                    "$T authValue = this.$L.orElseThrow(() -> new $T($S))",
+                    generatedAuth.getClassName(),
+                    AUTH_FIELD_NAME,
+                    RuntimeException.class,
+                    "Auth is required");
+            arguments.add("authValue");
+        }
+
+        for (ParameterSpec headerParameter : generatorContext.getGlobalHeaders().getRequiredGlobalHeaderParameters()) {
+            arguments.add(headerParameter.name);
+        }
+        for (PathParameter pathParameter : httpService.getPathParameters()) {
+            arguments.add(pathParameter.getName().getCamelCase());
+        }
+        for (PathParameter pathParameter : httpEndpoint.getPathParameters()) {
+            arguments.add(pathParameter.getName().getCamelCase());
+        }
+        arguments.add(REQUEST_PARAMETER_NAME);
+        if (interfaceMethod.returnType != null && !interfaceMethod.returnType.equals(TypeName.VOID)) {
+            endpointMethodBuilder.addStatement(
+                    "return this.$L.$L(" + String.join(", ", arguments) + ")",
+                    SERVICE_FIELD_NAME,
+                    interfaceMethod.name);
+        } else {
+            endpointMethodBuilder.addStatement(
+                    "this.$L.$L(" + String.join(", ", arguments) + ")", SERVICE_FIELD_NAME, interfaceMethod.name);
+        }
+    }
+
+    @SuppressWarnings("checkstyle:CyclomaticComplexity")
     private void generateCallWithWrappedRequest(
             HttpEndpoint httpEndpoint,
             MethodSpec interfaceMethod,
