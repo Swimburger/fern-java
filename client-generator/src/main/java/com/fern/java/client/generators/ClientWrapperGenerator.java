@@ -32,6 +32,7 @@ import com.fern.java.utils.CasingUtils;
 import com.palantir.common.streams.KeyedStream;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
@@ -51,11 +52,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
+import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.immutables.value.Value;
 
 public final class ClientWrapperGenerator extends AbstractFileGenerator {
 
+    public static final String OKHTTP3_CLIENT_FIELD_NAME = "client";
     private static final String MEMOIZE_METHOD_NAME = "memoize";
     private static final String ENVIRONMENT_PARAMETER_NAME = "environment";
     private static final String URL_PARAMETER_NAME = "url";
@@ -118,6 +121,10 @@ public final class ClientWrapperGenerator extends AbstractFileGenerator {
     private GeneratedJavaFile createClient(ClientConfig clientConfig) {
         TypeSpec.Builder clientWrapperBuilder =
                 TypeSpec.classBuilder(clientConfig.className()).addModifiers(Modifier.PUBLIC, Modifier.FINAL);
+        clientWrapperBuilder.addField(
+                FieldSpec.builder(OkHttpClient.class, OKHTTP3_CLIENT_FIELD_NAME, Modifier.PRIVATE, Modifier.FINAL)
+                        .initializer("new $T()", OkHttpClient.class)
+                        .build());
 
         Map<String, GeneratedServiceClient> supplierFields = new HashMap<>();
         Map<String, ClassName> nestedClientFields = new HashMap<>();

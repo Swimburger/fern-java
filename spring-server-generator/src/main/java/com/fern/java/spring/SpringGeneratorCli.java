@@ -29,7 +29,7 @@ import com.fern.java.generators.ObjectMappersGenerator;
 import com.fern.java.generators.TypesGenerator;
 import com.fern.java.generators.TypesGenerator.Result;
 import com.fern.java.output.GeneratedAuthFiles;
-import com.fern.java.output.GeneratedJavaFile;
+import com.fern.java.output.GeneratedObjectMapper;
 import com.fern.java.output.gradle.GradleDependency;
 import com.fern.java.spring.generators.SpringServerInterfaceGenerator;
 import java.util.ArrayList;
@@ -87,7 +87,7 @@ public final class SpringGeneratorCli
 
         // core
         ObjectMappersGenerator objectMappersGenerator = new ObjectMappersGenerator(context);
-        GeneratedJavaFile objectMapper = objectMappersGenerator.generateFile();
+        GeneratedObjectMapper objectMapper = objectMappersGenerator.generateFile();
         this.addGeneratedFile(objectMapper);
 
         // auth

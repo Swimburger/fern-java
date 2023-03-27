@@ -40,6 +40,7 @@ import com.fern.java.generators.TypesGenerator;
 import com.fern.java.generators.TypesGenerator.Result;
 import com.fern.java.output.GeneratedAuthFiles;
 import com.fern.java.output.GeneratedJavaFile;
+import com.fern.java.output.GeneratedObjectMapper;
 import com.fern.java.output.gradle.AbstractGradleDependency.DependencyType;
 import com.fern.java.output.gradle.GradleDependency;
 import java.util.ArrayList;
@@ -94,7 +95,7 @@ public final class ClientGeneratorCli extends AbstractGeneratorCli<CustomConfig,
 
         // core
         ObjectMappersGenerator objectMappersGenerator = new ObjectMappersGenerator(context);
-        GeneratedJavaFile objectMapper = objectMappersGenerator.generateFile();
+        GeneratedObjectMapper objectMapper = objectMappersGenerator.generateFile();
         this.addGeneratedFile(objectMapper);
 
         EnvironmentGenerator environmentGenerator = new EnvironmentGenerator(context);
@@ -142,15 +143,7 @@ public final class ClientGeneratorCli extends AbstractGeneratorCli<CustomConfig,
         generatedServiceClients.forEach(this::addGeneratedFile);
         generatedServiceClients.forEach(generatedServiceClient -> {
             this.addGeneratedFile(generatedServiceClient);
-            this.addGeneratedFile(generatedServiceClient.jerseyServiceInterfaceOutput());
-            this.addGeneratedFile(
-                    generatedServiceClient.jerseyServiceInterfaceOutput().errorDecoder());
             generatedServiceClient.generatedEndpointRequestOutputs().forEach(this::addGeneratedFile);
-            generatedServiceClient
-                    .jerseyServiceInterfaceOutput()
-                    .endpointExceptions()
-                    .values()
-                    .forEach(this::addGeneratedFile);
         });
 
         // client wrapper

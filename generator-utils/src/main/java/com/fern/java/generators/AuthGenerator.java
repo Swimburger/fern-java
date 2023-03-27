@@ -44,6 +44,7 @@ public final class AuthGenerator {
             return Optional.of(GeneratedAuthFiles.builder()
                     .className(generatedFile.getClassName())
                     .javaFile(generatedFile.javaFile())
+                    .authScheme(authScheme)
                     .build());
         } else if (apiAuth.getRequirement().equals(AuthSchemesRequirement.ANY)) {
             throw new RuntimeException("Any auth is unsupported!");

@@ -28,8 +28,6 @@ public abstract class GeneratedServiceClient extends AbstractGeneratedJavaFile {
 
     public abstract HttpService httpService();
 
-    public abstract GeneratedJerseyServiceInterface jerseyServiceInterfaceOutput();
-
     public abstract List<GeneratedWrappedRequest> generatedEndpointRequestOutputs();
 
     public static ImmutableGeneratedServiceClient.ClassNameBuildStage builder() {
