@@ -161,9 +161,9 @@ public final class ClientGeneratorCli extends AbstractGeneratorCli<CustomConfig,
         return List.of(
                 GradleDependency.builder()
                         .type(DependencyType.API)
-                        .group("io.github.fern-api")
-                        .artifact("jersey-utils")
-                        .version(GradleDependency.UTILS_VERSION)
+                        .group("com.squareup.okhttp3")
+                        .artifact("okhttp")
+                        .version(GradleDependency.OKHTTP_VERSION)
                         .build(),
                 GradleDependency.builder()
                         .type(DependencyType.API)
@@ -176,24 +176,6 @@ public final class ClientGeneratorCli extends AbstractGeneratorCli<CustomConfig,
                         .group("com.fasterxml.jackson.datatype")
                         .artifact("jackson-datatype-jdk8")
                         .version(GradleDependency.JACKSON_JDK8_VERSION)
-                        .build(),
-                GradleDependency.builder()
-                        .type(DependencyType.API)
-                        .group("io.github.openfeign")
-                        .artifact("feign-jackson")
-                        .version(GradleDependency.FEIGN_VERSION)
-                        .build(),
-                GradleDependency.builder()
-                        .type(DependencyType.API)
-                        .group("io.github.openfeign")
-                        .artifact("feign-core")
-                        .version(GradleDependency.FEIGN_VERSION)
-                        .build(),
-                GradleDependency.builder()
-                        .type(DependencyType.API)
-                        .group("io.github.openfeign")
-                        .artifact("feign-jaxrs2")
-                        .version(GradleDependency.FEIGN_VERSION)
                         .build());
     }
 
