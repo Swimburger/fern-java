@@ -17,6 +17,7 @@
 package com.fern.java.client.generators.endpoint;
 
 import com.fern.ir.v3.model.services.http.HttpEndpoint;
+import com.fern.ir.v3.model.services.http.HttpRequestBodyReference;
 import com.fern.ir.v3.model.services.http.HttpService;
 import com.fern.java.client.ClientGeneratorContext;
 import com.fern.java.client.GeneratedClientOptions;
@@ -33,6 +34,7 @@ import okhttp3.RequestBody;
 public final class OnlyRequestEndpointWriter extends AbstractEndpointWriter {
     private final ClientGeneratorContext clientGeneratorContext;
     private final HttpEndpoint httpEndpoint;
+    private final HttpRequestBodyReference httpRequestBodyReference;
 
     public OnlyRequestEndpointWriter(
             HttpService httpService,
@@ -42,7 +44,8 @@ public final class OnlyRequestEndpointWriter extends AbstractEndpointWriter {
             GeneratedObjectMapper generatedObjectMapper,
             ClientGeneratorContext clientGeneratorContext,
             Optional<GeneratedClientOptions> generatedClientOptions,
-            Optional<ClientAuthFieldSpec> authFieldSpec) {
+            Optional<ClientAuthFieldSpec> authFieldSpec,
+            HttpRequestBodyReference httpRequestBodyReference) {
         super(
                 httpService,
                 httpEndpoint,
@@ -54,6 +57,7 @@ public final class OnlyRequestEndpointWriter extends AbstractEndpointWriter {
                 authFieldSpec);
         this.clientGeneratorContext = clientGeneratorContext;
         this.httpEndpoint = httpEndpoint;
+        this.httpRequestBodyReference = httpRequestBodyReference;
     }
 
     @Override
@@ -61,9 +65,7 @@ public final class OnlyRequestEndpointWriter extends AbstractEndpointWriter {
         return List.of(ParameterSpec.builder(
                         clientGeneratorContext
                                 .getPoetTypeNameMapper()
-                                .convertToTypeName(
-                                        true,
-                                        httpEndpoint.getResponse().getTypeV2().get()),
+                                .convertToTypeName(true, httpRequestBodyReference.getRequestBodyType()),
                         "request")
                 .build());
     }
@@ -83,7 +85,7 @@ public final class OnlyRequestEndpointWriter extends AbstractEndpointWriter {
         for (ParameterSpec pathParameter : pathParameters) {
             httpUrlInitBuilder.add(".addPathSegment($L)\n", pathParameter.name);
         }
-        return httpUrlInitBuilder.add(".build()").unindent().build();
+        return httpUrlInitBuilder.add(".build();").unindent().build();
     }
 
     @Override
@@ -98,19 +100,16 @@ public final class OnlyRequestEndpointWriter extends AbstractEndpointWriter {
                 .addStatement(
                         "$L = $T.create($T.$L.writeValueAsBytes($L), $T.APPLICATION_JSON)",
                         AbstractEndpointWriter.REQUEST_BODY_NAME,
+                        RequestBody.class,
                         generatedObjectMapper.getClassName(),
                         generatedObjectMapper.jsonMapperStaticField().name,
+                        "request",
                         okhttp3.MediaType.class)
                 .endControlFlow()
                 .beginControlFlow("catch($T e)", Exception.class)
                 .addStatement("throw new $T(e)", RuntimeException.class)
                 .endControlFlow()
-                .add(
-                        "$T $L = new $T.Builder()\n",
-                        Request.class,
-                        AbstractEndpointWriter.REQUEST_NAME,
-                        Request.class,
-                        urlField.name)
+                .add("$T $L = new $T.Builder()\n", Request.class, AbstractEndpointWriter.REQUEST_NAME, Request.class)
                 .indent()
                 .add(".url($L)\n", AbstractEndpointWriter.HTTP_URL_NAME)
                 .add(

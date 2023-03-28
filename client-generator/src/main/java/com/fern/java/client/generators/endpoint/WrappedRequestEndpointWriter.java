@@ -96,13 +96,18 @@ public final class WrappedRequestEndpointWriter extends AbstractEndpointWriter {
                         HttpUrl.class,
                         urlField.name)
                 .indent()
-                .add(".scheme(this.$L.getProtocol())\n", urlField.name)
-                .add(".host(this.$L.getHost())\n", urlField.name);
+                .add(".scheme(this.$L.getProtocol())\n", urlField.name);
+
+        if (pathParameters.isEmpty()) {
+            httpUrlBuilder.add(".host(this.$L.getHost());\n", urlField.name).unindent();
+        } else {
+            httpUrlBuilder.add(".host(this.$L.getHost())\n", urlField.name);
+        }
 
         for (int i = 0; i < pathParameters.size(); ++i) {
             ParameterSpec pathParameter = pathParameters.get(i);
             if (i == pathParameters.size() - 1) {
-                httpUrlBuilder.add(".addPathSegment($L);\n", pathParameter.name);
+                httpUrlBuilder.add(".addPathSegment($L);\n", pathParameter.name).unindent();
             } else {
                 httpUrlBuilder.add(".addPathSegment($L)\n", pathParameter.name);
             }
@@ -122,11 +127,10 @@ public final class WrappedRequestEndpointWriter extends AbstractEndpointWriter {
                         .endControlFlow();
             } else {
                 httpUrlBuilder.addStatement(
-                        "$L.addQueryParameter($S, $L)",
+                        "$L.addQueryParameter($S, $L.$N())",
                         AbstractEndpointWriter.HTTP_URL_BUILDER_NAME,
                         queryParam.wireKey(),
-                        "$L.$N()",
-                        sdkRequest.getRequestParameterName().getSafeName().getCamelCase(),
+                        requestParameterName,
                         queryParam.getterProperty());
             }
         }
@@ -199,8 +203,7 @@ public final class WrappedRequestEndpointWriter extends AbstractEndpointWriter {
                         "$T.Builder $L = new $T.Builder()\n",
                         Request.class,
                         AbstractEndpointWriter.REQUEST_BUILDER_NAME,
-                        Request.class,
-                        urlField.name)
+                        Request.class)
                 .indent()
                 .add(".url($L)\n", AbstractEndpointWriter.HTTP_URL_NAME)
                 .add(
@@ -217,10 +220,9 @@ public final class WrappedRequestEndpointWriter extends AbstractEndpointWriter {
                 requestInitializerBuilder
                         .beginControlFlow("if ($L.$N.isPresent())", requestParameterName, header.getterProperty())
                         .addStatement(
-                                "$L.addHeader($S, $L)",
+                                "$L.addHeader($S, $L.$N().get())",
                                 AbstractEndpointWriter.HTTP_URL_BUILDER_NAME,
                                 header.wireKey(),
-                                "$L.$N().get()",
                                 "request",
                                 header.getterProperty())
                         .endControlFlow();
@@ -234,7 +236,7 @@ public final class WrappedRequestEndpointWriter extends AbstractEndpointWriter {
                         header.getterProperty());
             }
         }
-        requestInitializerBuilder.addStatement("$T $l = $L.build()", Request.class, REQUEST_NAME, REQUEST_BUILDER_NAME);
+        requestInitializerBuilder.addStatement("$T $L = $L.build()", Request.class, REQUEST_NAME, REQUEST_BUILDER_NAME);
         return requestInitializerBuilder.build();
     }
 

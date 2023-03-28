@@ -73,7 +73,7 @@ public final class NoRequestEndpointWriter extends AbstractEndpointWriter {
         for (ParameterSpec pathParameter : pathParameters) {
             httpUrlInitBuilder.add(".addPathSegment($L)\n", pathParameter.name);
         }
-        return httpUrlInitBuilder.add(".build()").unindent().build();
+        return httpUrlInitBuilder.add(".build();").unindent().build();
     }
 
     @Override
@@ -83,12 +83,7 @@ public final class NoRequestEndpointWriter extends AbstractEndpointWriter {
             HttpEndpoint httpEndpoint,
             GeneratedObjectMapper generatedObjectMapper) {
         CodeBlock.Builder requestInitBuilder = CodeBlock.builder()
-                .add(
-                        "$T $L = new $T.Builder()\n",
-                        Request.class,
-                        AbstractEndpointWriter.REQUEST_NAME,
-                        Request.class,
-                        urlField.name)
+                .add("$T $L = new $T.Builder()\n", Request.class, AbstractEndpointWriter.REQUEST_NAME, Request.class)
                 .indent()
                 .add(".url($L)\n", AbstractEndpointWriter.HTTP_URL_NAME)
                 .add(

@@ -88,16 +88,16 @@ public abstract class AbstractEndpointWriter {
 
         // Step 3: Get http client initializer
         CodeBlock httpClientInitializer = getInitializeHttpUrlCodeBlock(urlField, pathParameters);
-        endpointMethodBuilder.addStatement(httpClientInitializer);
+        endpointMethodBuilder.addCode(httpClientInitializer);
 
         // Step 4: Get request initializer
         CodeBlock requestInitializer =
                 getInitializeRequestCodeBlock(urlField, authFieldSpec, httpEndpoint, generatedObjectMapper);
-        endpointMethodBuilder.addStatement(requestInitializer);
+        endpointMethodBuilder.addCode(requestInitializer);
 
         // Step 5: Make http request and handle responses
         CodeBlock responseParser = getResponseParserCodeBlock();
-        endpointMethodBuilder.addStatement(responseParser);
+        endpointMethodBuilder.addCode(responseParser);
         return endpointMethodBuilder.build();
     }
 

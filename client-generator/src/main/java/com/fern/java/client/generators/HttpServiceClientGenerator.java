@@ -155,7 +155,8 @@ public final class HttpServiceClientGenerator extends AbstractFileGenerator {
                                         objectMapper,
                                         clientGeneratorContext,
                                         generatedClientOptionsClass,
-                                        maybeAuthField2);
+                                        maybeAuthField2,
+                                        justRequestBody);
                                 return onlyRequestEndpointWriter.generate();
                             }
 
