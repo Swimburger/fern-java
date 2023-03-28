@@ -40,23 +40,23 @@ public final class SpringParameterSpecFactory {
         return getParameterSpec(
                 RequestHeader.class,
                 header.getName().getWireValue(),
-                header.getName().getCamelCase(),
+                header.getName().getName().getCamelCase().getSafeName(),
                 header.getValueType());
     }
 
     public ParameterSpec getPathParameterSpec(PathParameter pathParameter) {
         return getParameterSpec(
                 PathVariable.class,
-                pathParameter.getName().getOriginalValue(),
-                pathParameter.getName().getCamelCase(),
+                pathParameter.getName().getOriginalName(),
+                pathParameter.getName().getCamelCase().getSafeName(),
                 pathParameter.getValueType());
     }
 
     public ParameterSpec getQueryParameterSpec(QueryParameter queryParameter) {
         return getParameterSpec(
                 RequestParam.class,
-                queryParameter.getName().getOriginalValue(),
-                queryParameter.getName().getCamelCase(),
+                queryParameter.getName().getWireValue(),
+                queryParameter.getName().getName().getCamelCase().getSafeName(),
                 queryParameter.getValueType());
     }
 

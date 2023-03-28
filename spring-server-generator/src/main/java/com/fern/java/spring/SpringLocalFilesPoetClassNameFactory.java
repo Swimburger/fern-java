@@ -51,6 +51,7 @@ public final class SpringLocalFilesPoetClassNameFactory extends AbstractNonModel
         return fernFilepath
                         .getAllParts()
                         .get(fernFilepath.getAllParts().size() - 1)
-                        .getPascalCase() + "Service";
+                        .getPascalCase()
+                        .getUnsafeName() + "Service";
     }
 }
