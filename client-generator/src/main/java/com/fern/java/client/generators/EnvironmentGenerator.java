@@ -16,8 +16,8 @@
 
 package com.fern.java.client.generators;
 
-import com.fern.ir.v3.model.environment.Environment;
-import com.fern.ir.v3.model.environment.EnvironmentId;
+import com.fern.ir.v9.model.environment.Environment;
+import com.fern.ir.v9.model.environment.EnvironmentId;
 import com.fern.java.AbstractGeneratorContext;
 import com.fern.java.client.GeneratedEnvironmentsClass;
 import com.fern.java.generators.AbstractOptionalFileGenerator;

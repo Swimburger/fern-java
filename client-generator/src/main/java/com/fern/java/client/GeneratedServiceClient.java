@@ -16,7 +16,7 @@
 
 package com.fern.java.client;
 
-import com.fern.ir.v3.model.services.http.HttpService;
+import com.fern.ir.v9.model.http.HttpService;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
 import com.fern.java.output.AbstractGeneratedJavaFile;
 import java.util.List;
