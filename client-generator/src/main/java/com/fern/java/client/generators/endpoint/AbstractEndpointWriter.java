@@ -16,9 +16,9 @@
 
 package com.fern.java.client.generators.endpoint;
 
-import com.fern.ir.v3.model.services.http.HttpEndpoint;
-import com.fern.ir.v3.model.services.http.HttpService;
-import com.fern.ir.v3.model.services.http.PathParameter;
+import com.fern.ir.v9.model.http.HttpEndpoint;
+import com.fern.ir.v9.model.http.HttpService;
+import com.fern.ir.v9.model.http.PathParameter;
 import com.fern.java.client.ClientGeneratorContext;
 import com.fern.java.client.GeneratedClientOptions;
 import com.fern.java.output.GeneratedObjectMapper;

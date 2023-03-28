@@ -20,10 +20,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fern.generator.exec.model.config.GeneratorConfig;
 import com.fern.generator.exec.model.config.GeneratorPublishConfig;
 import com.fern.generator.exec.model.config.GithubOutputMode;
-import com.fern.ir.v3.core.ObjectMappers;
-import com.fern.ir.v3.model.errors.DeclaredErrorName;
-import com.fern.ir.v3.model.errors.ErrorDeclaration;
-import com.fern.ir.v3.model.ir.IntermediateRepresentation;
+import com.fern.ir.v9.core.ObjectMappers;
+import com.fern.ir.v9.model.errors.DeclaredErrorName;
+import com.fern.ir.v9.model.errors.ErrorDeclaration;
+import com.fern.ir.v9.model.ir.IntermediateRepresentation;
 import com.fern.java.AbstractGeneratorCli;
 import com.fern.java.CustomConfig;
 import com.fern.java.DefaultGeneratorExecClient;
@@ -161,9 +161,9 @@ public final class ClientGeneratorCli extends AbstractGeneratorCli<CustomConfig,
         return List.of(
                 GradleDependency.builder()
                         .type(DependencyType.API)
-                        .group("io.github.fern-api")
-                        .artifact("jersey-utils")
-                        .version(GradleDependency.UTILS_VERSION)
+                        .group("com.squareup.okhttp3")
+                        .artifact("okhttp")
+                        .version(GradleDependency.OKHTTP_VERSION)
                         .build(),
                 GradleDependency.builder()
                         .type(DependencyType.API)
@@ -176,24 +176,6 @@ public final class ClientGeneratorCli extends AbstractGeneratorCli<CustomConfig,
                         .group("com.fasterxml.jackson.datatype")
                         .artifact("jackson-datatype-jdk8")
                         .version(GradleDependency.JACKSON_JDK8_VERSION)
-                        .build(),
-                GradleDependency.builder()
-                        .type(DependencyType.API)
-                        .group("io.github.openfeign")
-                        .artifact("feign-jackson")
-                        .version(GradleDependency.FEIGN_VERSION)
-                        .build(),
-                GradleDependency.builder()
-                        .type(DependencyType.API)
-                        .group("io.github.openfeign")
-                        .artifact("feign-core")
-                        .version(GradleDependency.FEIGN_VERSION)
-                        .build(),
-                GradleDependency.builder()
-                        .type(DependencyType.API)
-                        .group("io.github.openfeign")
-                        .artifact("feign-jaxrs2")
-                        .version(GradleDependency.FEIGN_VERSION)
                         .build());
     }
 

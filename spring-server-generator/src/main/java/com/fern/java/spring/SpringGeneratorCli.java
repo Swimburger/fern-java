@@ -20,8 +20,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fern.generator.exec.model.config.GeneratorConfig;
 import com.fern.generator.exec.model.config.GeneratorPublishConfig;
 import com.fern.generator.exec.model.config.GithubOutputMode;
-import com.fern.ir.v3.core.ObjectMappers;
-import com.fern.ir.v3.model.ir.IntermediateRepresentation;
+import com.fern.ir.v9.core.ObjectMappers;
+import com.fern.ir.v9.model.ir.IntermediateRepresentation;
 import com.fern.java.AbstractGeneratorCli;
 import com.fern.java.DefaultGeneratorExecClient;
 import com.fern.java.generators.AuthGenerator;
@@ -102,7 +102,7 @@ public final class SpringGeneratorCli
         generatedTypes.getInterfaces().values().forEach(this::addGeneratedFile);
 
         // services
-        List<GeneratedSpringServerInterface> generatedSpringServerInterfaces = ir.getServices().getHttp().stream()
+        List<GeneratedSpringServerInterface> generatedSpringServerInterfaces = ir.getServices().values().stream()
                 .map(httpService -> {
                     SpringServerInterfaceGenerator httpServiceClientGenerator = new SpringServerInterfaceGenerator(
                             context, maybeAuth, generatedTypes.getInterfaces(), httpService);
