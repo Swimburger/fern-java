@@ -29,9 +29,7 @@ import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeName;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import javax.lang.model.element.Modifier;
-import okhttp3.Request;
 import okhttp3.Response;
 
 public abstract class AbstractEndpointWriter {
@@ -42,38 +40,30 @@ public abstract class AbstractEndpointWriter {
     public static final String REQUEST_BUILDER_NAME = "_requestBuilder";
     public static final String REQUEST_BODY_NAME = "_requestBody";
     public static final String RESPONSE_NAME = "_response";
-
     private final HttpService httpService;
     private final HttpEndpoint httpEndpoint;
-    private final FieldSpec okHttpClientField;
-    private final FieldSpec urlField;
-    private final Optional<ClientAuthFieldSpec> authFieldSpec;
-    private final Optional<GeneratedClientOptions> generatedClientOptions;
+    private final GeneratedClientOptions generatedClientOptions;
+    private final FieldSpec clientOptionsField;
     private final ClientGeneratorContext clientGeneratorContext;
     private final MethodSpec.Builder endpointMethodBuilder;
-
     private final GeneratedObjectMapper generatedObjectMapper;
 
     public AbstractEndpointWriter(
             HttpService httpService,
             HttpEndpoint httpEndpoint,
-            FieldSpec okHttpClientField,
-            FieldSpec urlField,
             GeneratedObjectMapper generatedObjectMapper,
             ClientGeneratorContext clientGeneratorContext,
-            Optional<GeneratedClientOptions> generatedClientOptions,
-            Optional<ClientAuthFieldSpec> authFieldSpec) {
+            FieldSpec clientOptionsField,
+            GeneratedClientOptions generatedClientOptions) {
         this.httpService = httpService;
         this.httpEndpoint = httpEndpoint;
-        this.okHttpClientField = okHttpClientField;
-        this.urlField = urlField;
-        this.authFieldSpec = authFieldSpec;
+        this.clientOptionsField = clientOptionsField;
         this.generatedClientOptions = generatedClientOptions;
         this.clientGeneratorContext = clientGeneratorContext;
         this.generatedObjectMapper = generatedObjectMapper;
         this.endpointMethodBuilder = MethodSpec.methodBuilder(
-                        httpEndpoint.getNameV2().get().getSafeName().getCamelCase())
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
+                        httpEndpoint.getName().get().getCamelCase().getSafeName())
+                .addModifiers(Modifier.PUBLIC);
     }
 
     public final MethodSpec generate() {
@@ -87,12 +77,13 @@ public abstract class AbstractEndpointWriter {
         endpointMethodBuilder.addParameters(additionalParameters());
 
         // Step 3: Get http client initializer
-        CodeBlock httpClientInitializer = getInitializeHttpUrlCodeBlock(urlField, pathParameters);
+        CodeBlock httpClientInitializer =
+                getInitializeHttpUrlCodeBlock(clientOptionsField, generatedClientOptions, pathParameters);
         endpointMethodBuilder.addCode(httpClientInitializer);
 
         // Step 4: Get request initializer
-        CodeBlock requestInitializer =
-                getInitializeRequestCodeBlock(urlField, authFieldSpec, httpEndpoint, generatedObjectMapper);
+        CodeBlock requestInitializer = getInitializeRequestCodeBlock(
+                clientOptionsField, generatedClientOptions, httpEndpoint, generatedObjectMapper);
         endpointMethodBuilder.addCode(requestInitializer);
 
         // Step 5: Make http request and handle responses
@@ -103,11 +94,12 @@ public abstract class AbstractEndpointWriter {
 
     public abstract List<ParameterSpec> additionalParameters();
 
-    public abstract CodeBlock getInitializeHttpUrlCodeBlock(FieldSpec url, List<ParameterSpec> pathParameters);
+    public abstract CodeBlock getInitializeHttpUrlCodeBlock(
+            FieldSpec clientOptionsMember, GeneratedClientOptions clientOptions, List<ParameterSpec> pathParameters);
 
     public abstract CodeBlock getInitializeRequestCodeBlock(
-            FieldSpec url,
-            Optional<ClientAuthFieldSpec> auth,
+            FieldSpec clientOptionsMember,
+            GeneratedClientOptions clientOptions,
             HttpEndpoint endpoint,
             GeneratedObjectMapper objectMapper);
 
@@ -115,20 +107,25 @@ public abstract class AbstractEndpointWriter {
         CodeBlock.Builder httpResponseBuilder = CodeBlock.builder()
                 .beginControlFlow("try")
                 .addStatement(
-                        "$T $L = $L.newCall($L).execute()", Response.class, RESPONSE_NAME, Request.class, urlField.name)
+                        "$T $L = $N.$N().newCall($L).execute()",
+                        Response.class,
+                        RESPONSE_NAME,
+                        clientOptionsField,
+                        generatedClientOptions.httpClient(),
+                        REQUEST_NAME)
                 .beginControlFlow("if ($L.isSuccessful())", RESPONSE_NAME);
-        if (httpEndpoint.getResponse().getTypeV2().isPresent()) {
+        if (httpEndpoint.getResponse().getType().isPresent()) {
             TypeName returnType = clientGeneratorContext
                     .getPoetTypeNameMapper()
                     .convertToTypeName(
-                            true, httpEndpoint.getResponse().getTypeV2().get());
+                            true, httpEndpoint.getResponse().getType().get());
             endpointMethodBuilder.returns(returnType);
             httpResponseBuilder
                     .addStatement(
-                            "return $T.$L.readValue($L.body.string(), $T.class)",
+                            "return $T.$L.readValue($L.body().string(), $T.class)",
                             generatedObjectMapper.getClassName(),
                             generatedObjectMapper.jsonMapperStaticField().name,
-                            REQUEST_NAME,
+                            RESPONSE_NAME,
                             returnType)
                     .endControlFlow();
         } else {
@@ -160,7 +157,7 @@ public abstract class AbstractEndpointWriter {
                         clientGeneratorContext
                                 .getPoetTypeNameMapper()
                                 .convertToTypeName(true, pathParameter.getValueType()),
-                        pathParameter.getNameV2().getSafeName().getCamelCase())
+                        pathParameter.getName().getCamelCase().getSafeName())
                 .build();
     }
 }

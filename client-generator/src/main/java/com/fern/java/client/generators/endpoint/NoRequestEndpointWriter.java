@@ -26,7 +26,7 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.ParameterSpec;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -36,21 +36,17 @@ public final class NoRequestEndpointWriter extends AbstractEndpointWriter {
     public NoRequestEndpointWriter(
             HttpService httpService,
             HttpEndpoint httpEndpoint,
-            FieldSpec okHttpClientField,
-            FieldSpec urlField,
             GeneratedObjectMapper generatedObjectMapper,
             ClientGeneratorContext clientGeneratorContext,
-            Optional<GeneratedClientOptions> generatedClientOptions,
-            Optional<ClientAuthFieldSpec> authFieldSpec) {
+            FieldSpec clientOptionsField,
+            GeneratedClientOptions generatedClientOptions) {
         super(
                 httpService,
                 httpEndpoint,
-                okHttpClientField,
-                urlField,
                 generatedObjectMapper,
                 clientGeneratorContext,
-                generatedClientOptions,
-                authFieldSpec);
+                clientOptionsField,
+                generatedClientOptions);
     }
 
     @Override
@@ -59,17 +55,17 @@ public final class NoRequestEndpointWriter extends AbstractEndpointWriter {
     }
 
     @Override
-    public CodeBlock getInitializeHttpUrlCodeBlock(FieldSpec urlField, List<ParameterSpec> pathParameters) {
+    public CodeBlock getInitializeHttpUrlCodeBlock(
+            FieldSpec clientOptionsMember, GeneratedClientOptions clientOptions, List<ParameterSpec> pathParameters) {
         CodeBlock.Builder httpUrlInitBuilder = CodeBlock.builder()
                 .add(
-                        "$T $L = $T.parser(this.$L).newBuilder()\n",
+                        "$T $L = $T.parse(this.$L.$N()).newBuilder()\n",
                         HttpUrl.class,
                         HTTP_URL_NAME,
                         HttpUrl.class,
-                        urlField.name)
-                .indent()
-                .add(".scheme(this.$L.getProtocol())\n", urlField.name)
-                .add(".host(this.$L.getHost())\n", urlField.name);
+                        clientOptionsMember.name,
+                        clientOptions.url())
+                .indent();
         for (ParameterSpec pathParameter : pathParameters) {
             httpUrlInitBuilder.add(".addPathSegment($L)\n", pathParameter.name);
         }
@@ -78,11 +74,11 @@ public final class NoRequestEndpointWriter extends AbstractEndpointWriter {
 
     @Override
     public CodeBlock getInitializeRequestCodeBlock(
-            FieldSpec urlField,
-            Optional<ClientAuthFieldSpec> authField,
+            FieldSpec clientOptionsMember,
+            GeneratedClientOptions clientOptions,
             HttpEndpoint httpEndpoint,
             GeneratedObjectMapper generatedObjectMapper) {
-        CodeBlock.Builder requestInitBuilder = CodeBlock.builder()
+        return CodeBlock.builder()
                 .add("$T $L = new $T.Builder()\n", Request.class, AbstractEndpointWriter.REQUEST_NAME, Request.class)
                 .indent()
                 .add(".url($L)\n", AbstractEndpointWriter.HTTP_URL_NAME)
@@ -90,11 +86,10 @@ public final class NoRequestEndpointWriter extends AbstractEndpointWriter {
                         ".method($S, $T.create($S, null))\n",
                         httpEndpoint.getMethod().toString(),
                         RequestBody.class,
-                        "");
-        authField.ifPresent(clientAuthFieldSpec -> requestInitBuilder.add(
-                ".addHeader($S, this.$L.toString())",
-                clientAuthFieldSpec.getHeaderKey(),
-                clientAuthFieldSpec.getAuthField()));
-        return requestInitBuilder.add(".build()").unindent().build();
+                        "")
+                .add(".headers($T.of($L.$N()))\n", Headers.class, clientOptionsMember.name, clientOptions.headers())
+                .add(".build();\n")
+                .unindent()
+                .build();
     }
 }

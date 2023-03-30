@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -54,56 +55,45 @@ public final class WrappedRequestEndpointWriter extends AbstractEndpointWriter {
     public WrappedRequestEndpointWriter(
             HttpService httpService,
             HttpEndpoint httpEndpoint,
-            FieldSpec okHttpClientField,
-            FieldSpec urlField,
             GeneratedObjectMapper generatedObjectMapper,
+            FieldSpec clientOptionsField,
+            GeneratedClientOptions generatedClientOptions,
             ClientGeneratorContext clientGeneratorContext,
-            Optional<GeneratedClientOptions> generatedClientOptions,
-            Optional<ClientAuthFieldSpec> authFieldSpec,
             SdkRequest sdkRequest,
             GeneratedWrappedRequest generatedWrappedRequest) {
         super(
                 httpService,
                 httpEndpoint,
-                okHttpClientField,
-                urlField,
                 generatedObjectMapper,
                 clientGeneratorContext,
-                generatedClientOptions,
-                authFieldSpec);
+                clientOptionsField,
+                generatedClientOptions);
         this.clientGeneratorContext = clientGeneratorContext;
         this.generatedWrappedRequest = generatedWrappedRequest;
         this.sdkRequest = sdkRequest;
         this.requestParameterName =
-                sdkRequest.getRequestParameterName().getSafeName().getCamelCase();
+                sdkRequest.getRequestParameterName().getCamelCase().getSafeName();
     }
 
     @Override
     public List<ParameterSpec> additionalParameters() {
-        return Collections.singletonList(ParameterSpec.builder(
-                        generatedWrappedRequest.getClassName(),
-                        sdkRequest.getRequestParameterName().getSafeName().getCamelCase())
-                .build());
+        return Collections.singletonList(
+                ParameterSpec.builder(generatedWrappedRequest.getClassName(), requestParameterName)
+                        .build());
     }
 
     @Override
-    public CodeBlock getInitializeHttpUrlCodeBlock(FieldSpec urlField, List<ParameterSpec> pathParameters) {
+    public CodeBlock getInitializeHttpUrlCodeBlock(
+            FieldSpec clientOptionsMember, GeneratedClientOptions clientOptions, List<ParameterSpec> pathParameters) {
         CodeBlock.Builder httpUrlBuilder = CodeBlock.builder()
                 .add(
-                        "$T.Builder $L = $T.parser(this.$L).newBuilder()\n",
+                        "$T $L = $T.parse(this.$L.$N()).newBuilder()" + (pathParameters.isEmpty() ? ";" : "") + "\n",
+                        HttpUrl.Builder.class,
+                        HTTP_URL_BUILDER_NAME,
                         HttpUrl.class,
-                        AbstractEndpointWriter.HTTP_URL_BUILDER_NAME,
-                        HttpUrl.class,
-                        urlField.name)
-                .indent()
-                .add(".scheme(this.$L.getProtocol())\n", urlField.name);
-
-        if (pathParameters.isEmpty()) {
-            httpUrlBuilder.add(".host(this.$L.getHost());\n", urlField.name).unindent();
-        } else {
-            httpUrlBuilder.add(".host(this.$L.getHost())\n", urlField.name);
-        }
-
+                        clientOptionsMember.name,
+                        clientOptions.url())
+                .indent();
         for (int i = 0; i < pathParameters.size(); ++i) {
             ParameterSpec pathParameter = pathParameters.get(i);
             if (i == pathParameters.size() - 1) {
@@ -144,8 +134,8 @@ public final class WrappedRequestEndpointWriter extends AbstractEndpointWriter {
 
     @Override
     public CodeBlock getInitializeRequestCodeBlock(
-            FieldSpec urlField,
-            Optional<ClientAuthFieldSpec> authField,
+            FieldSpec clientOptionsMember,
+            GeneratedClientOptions clientOptions,
             HttpEndpoint httpEndpoint,
             GeneratedObjectMapper generatedObjectMapper) {
         CodeBlock.Builder requestInitializerBuilder = CodeBlock.builder();
@@ -179,13 +169,14 @@ public final class WrappedRequestEndpointWriter extends AbstractEndpointWriter {
                     .addStatement("$T $L", RequestBody.class, AbstractEndpointWriter.REQUEST_BODY_NAME)
                     .beginControlFlow("try")
                     .addStatement(
-                            "$L = $T.create($T.$L.writeValueAsBytes($L), $T.APPLICATION_JSON)",
+                            "$L = $T.create($T.$L.writeValueAsBytes($L), $T.parse($S))",
                             AbstractEndpointWriter.REQUEST_BODY_NAME,
                             RequestBody.class,
                             generatedObjectMapper.getClassName(),
                             generatedObjectMapper.jsonMapperStaticField().name,
                             requestBodyArgument,
-                            okhttp3.MediaType.class)
+                            okhttp3.MediaType.class,
+                            "application/json")
                     .endControlFlow()
                     .beginControlFlow("catch($T e)", Exception.class)
                     .addStatement("throw new $T(e)", RuntimeException.class)
@@ -206,33 +197,26 @@ public final class WrappedRequestEndpointWriter extends AbstractEndpointWriter {
                         Request.class)
                 .indent()
                 .add(".url($L)\n", AbstractEndpointWriter.HTTP_URL_NAME)
-                .add(
-                        ".method($S, $L);\n",
-                        httpEndpoint.getMethod().toString(),
-                        AbstractEndpointWriter.REQUEST_BODY_NAME)
+                .add(".method($S, $L)\n", httpEndpoint.getMethod().toString(), AbstractEndpointWriter.REQUEST_BODY_NAME)
+                .add(".headers($T.of($L.$N()));\n", Headers.class, clientOptionsMember.name, clientOptions.headers())
                 .unindent();
-        authField.ifPresent(clientAuthFieldSpec -> requestInitializerBuilder.add(
-                ".addHeader($S, this.$L.toString())",
-                clientAuthFieldSpec.getHeaderKey(),
-                clientAuthFieldSpec.getAuthField()));
         for (EnrichedObjectProperty header : generatedWrappedRequest.headerParams()) {
             if (typeNameIsOptional(header.poetTypeName())) {
                 requestInitializerBuilder
-                        .beginControlFlow("if ($L.$N.isPresent())", requestParameterName, header.getterProperty())
+                        .beginControlFlow("if ($L.$N().isPresent())", requestParameterName, header.getterProperty())
                         .addStatement(
                                 "$L.addHeader($S, $L.$N().get())",
-                                AbstractEndpointWriter.HTTP_URL_BUILDER_NAME,
-                                header.wireKey(),
+                                AbstractEndpointWriter.REQUEST_BUILDER_NAME,
+                                header.wireKey().get(),
                                 "request",
                                 header.getterProperty())
                         .endControlFlow();
             } else {
                 requestInitializerBuilder.addStatement(
-                        "$L.addHeader($S, $L)",
-                        AbstractEndpointWriter.HTTP_URL_BUILDER_NAME,
-                        header.wireKey(),
-                        "$L.$N()",
-                        sdkRequest.getRequestParameterName().getSafeName().getCamelCase(),
+                        "$L.addHeader($S, $L.$N())",
+                        AbstractEndpointWriter.REQUEST_BUILDER_NAME,
+                        header.wireKey().get(),
+                        sdkRequest.getRequestParameterName().getCamelCase().getSafeName(),
                         header.getterProperty());
             }
         }
