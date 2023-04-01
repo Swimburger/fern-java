@@ -121,6 +121,9 @@ public final class ClientGeneratorUtils {
 
         for (SubpackageId subpackageId : fernPackage.getSubpackages()) {
             Subpackage subpackage = generatorContext.getIr().getSubpackages().get(subpackageId);
+            if (!subpackage.getHasEndpointsInTree()) {
+                continue;
+            }
             ClassName subpackageClientInterface =
                     generatorContext.getPoetClassNameFactory().getClientInterfaceClassName(subpackage);
             ClassName subpackageClientImpl =

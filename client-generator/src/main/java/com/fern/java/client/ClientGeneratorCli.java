@@ -111,6 +111,9 @@ public final class ClientGeneratorCli extends AbstractGeneratorCli<CustomConfig,
 
         // subpackage clients
         ir.getSubpackages().values().forEach(subpackage -> {
+            if (!subpackage.getHasEndpointsInTree()) {
+                return;
+            }
             SubpackageClientGenerator httpServiceClientGenerator = new SubpackageClientGenerator(
                     subpackage,
                     context,
