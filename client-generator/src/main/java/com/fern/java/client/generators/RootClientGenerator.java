@@ -294,7 +294,9 @@ public final class RootClientGenerator extends AbstractFileGenerator {
                             builderImplName,
                             Base64.class)
                     .addStatement(
-                            "this.$L.addHeader($S, $S + $L)", CLIENT_OPTIONS_BUILDER_NAME, "Authorization",
+                            "this.$L.addHeader($S, $S + $L)",
+                            CLIENT_OPTIONS_BUILDER_NAME,
+                            "Authorization",
                             "Basic ",
                             "unencodedToken")
                     .addStatement("return this")
