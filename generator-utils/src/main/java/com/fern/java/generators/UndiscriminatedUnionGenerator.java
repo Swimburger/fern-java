@@ -137,7 +137,7 @@ public final class UndiscriminatedUnionGenerator extends AbstractFileGenerator {
                 visitMethod.nextControlFlow("else if(this.$L == $L)", TYPE_FIELD_NAME, i);
             }
             visitMethod.addStatement(
-                    "$L.$L(($T) this.$L)",
+                    "return $L.$L(($T) this.$L)",
                     "visitor",
                     VISIT_METHOD_NAME,
                     memberTypeNames.get(member),

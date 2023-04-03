@@ -635,13 +635,13 @@ public final class PropertyValue {
 
   public <T> T visit(Visitor<T> visitor) {
     if (this.type == 0) {
-      visitor.visit((List<String>) this.value);
+      return visitor.visit((List<String>) this.value);
     } else if (this.type == 1) {
-      visitor.visit((String) this.value);
+      return visitor.visit((String) this.value);
     } else if (this.type == 2) {
-      visitor.visit((Author) this.value);
+      return visitor.visit((Author) this.value);
     } else if (this.type == 3) {
-      visitor.visit((double) this.value);
+      return visitor.visit((double) this.value);
     }
     throw new IllegalStateException("Failed to visit value. This should never happen.");
   }
