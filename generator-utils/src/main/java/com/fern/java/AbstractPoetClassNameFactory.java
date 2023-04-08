@@ -69,17 +69,6 @@ public abstract class AbstractPoetClassNameFactory {
         return packagePrefixTokens;
     }
 
-    protected final String getPackage(Optional<FernFilepath> fernFilepath, Optional<String> suffix) {
-        List<String> tokens = new ArrayList<>(getPackagePrefixTokens());
-        fernFilepath.ifPresent(filepath -> tokens.addAll(filepath.getAllParts().stream()
-                .map(Name::getSnakeCase)
-                .map(SafeAndUnsafeString::getSafeName)
-                .flatMap(snakeCase -> splitOnNonAlphaNumericChar(snakeCase).stream())
-                .collect(Collectors.toList())));
-        suffix.ifPresent(tokens::add);
-        return String.join(".", tokens);
-    }
-
     public static List<String> splitOnNonAlphaNumericChar(String value) {
         return Arrays.asList(value.split("[^a-zA-Z0-9]"));
     }
