@@ -16,17 +16,12 @@
 
 package com.fern.java;
 
-import com.fern.ir.v12.model.commons.FernFilepath;
-import com.fern.ir.v12.model.commons.Name;
-import com.fern.ir.v12.model.commons.SafeAndUnsafeString;
 import com.fern.ir.v12.model.ir.IntermediateRepresentation;
 import com.fern.ir.v12.model.types.DeclaredTypeName;
 import com.squareup.javapoet.ClassName;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public abstract class AbstractPoetClassNameFactory {
 

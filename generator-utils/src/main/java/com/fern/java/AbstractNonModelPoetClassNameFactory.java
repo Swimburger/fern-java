@@ -29,7 +29,8 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractNonModelPoetClassNameFactory extends AbstractPoetClassNameFactory {
 
-    private static final Pattern STARTS_WITH_NUMBER = Pattern.compile("^\\d");;
+    private static final Pattern STARTS_WITH_NUMBER = Pattern.compile("^\\d");
+    ;
 
     public AbstractNonModelPoetClassNameFactory(List<String> packagePrefixTokens) {
         super(packagePrefixTokens);
@@ -56,6 +57,7 @@ public abstract class AbstractNonModelPoetClassNameFactory extends AbstractPoetC
     protected final String getErrorsPackageName(FernFilepath fernFilepath) {
         return getResourcesPackage(Optional.of(fernFilepath), Optional.of("errors"));
     }
+
     protected final String getResourcesPackage(Optional<FernFilepath> fernFilepath, Optional<String> suffix) {
         List<String> tokens = new ArrayList<>(getPackagePrefixTokens());
         tokens.add("resources");
