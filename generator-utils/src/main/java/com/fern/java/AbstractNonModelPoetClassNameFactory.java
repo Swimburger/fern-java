@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 public abstract class AbstractNonModelPoetClassNameFactory extends AbstractPoetClassNameFactory {
 
     private static final Pattern STARTS_WITH_NUMBER = Pattern.compile("^\\d");
-    ;
 
     public AbstractNonModelPoetClassNameFactory(List<String> packagePrefixTokens) {
         super(packagePrefixTokens);
@@ -75,7 +74,7 @@ public abstract class AbstractNonModelPoetClassNameFactory extends AbstractPoetC
                 sanitizedTokens.add(token);
             }
         }
-        return String.join(".", tokens);
+        return String.join(".", sanitizedTokens);
     }
 
     private static boolean startsWithNumber(String str) {
