@@ -86,10 +86,8 @@ public final class NoRequestEndpointWriter extends AbstractEndpointWriter {
                 .indent()
                 .add(".url($L)\n", AbstractEndpointWriter.HTTP_URL_NAME)
                 .add(
-                        ".method($S, $T.create($S, null))\n",
-                        httpEndpoint.getMethod().toString(),
-                        RequestBody.class,
-                        "")
+                        ".method($S, null)\n",
+                        httpEndpoint.getMethod().toString())
                 .add(".headers($T.of($L.$N()))\n", Headers.class, clientOptionsMember.name, clientOptions.headers())
                 .add(".build();\n")
                 .unindent()
