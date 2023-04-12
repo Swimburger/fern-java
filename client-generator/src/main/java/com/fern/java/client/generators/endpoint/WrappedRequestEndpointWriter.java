@@ -184,9 +184,7 @@ public final class WrappedRequestEndpointWriter extends AbstractEndpointWriter {
                     .endControlFlow();
         } else {
             requestInitializerBuilder.addStatement(
-                    "$T $L = null",
-                    RequestBody.class,
-                    AbstractEndpointWriter.REQUEST_BODY_NAME);
+                    "$T $L = null", RequestBody.class, AbstractEndpointWriter.REQUEST_BODY_NAME);
         }
         requestInitializerBuilder
                 .add(
