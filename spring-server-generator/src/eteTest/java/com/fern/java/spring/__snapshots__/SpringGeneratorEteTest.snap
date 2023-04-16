@@ -126,12 +126,12 @@ public final class GeneratorsDoNotExistError extends APIException {
 
   private final List<GeneratorIdAndVersion> body;
 
-  GeneratorsDoNotExistError(List<GeneratorIdAndVersion> body) {
+  public GeneratorsDoNotExistError(List<GeneratorIdAndVersion> body) {
     this.body = body;
   }
 
   @JsonValue
-  List<GeneratorIdAndVersion> getBody() {
+  public List<GeneratorIdAndVersion> getBody() {
     return this.body;
   }
 }
@@ -151,12 +151,12 @@ public final class PostNotFoundError extends APIException {
 
   private final PostNotFoundErrorBody body;
 
-  PostNotFoundError(PostNotFoundErrorBody body) {
+  public PostNotFoundError(PostNotFoundErrorBody body) {
     this.body = body;
   }
 
   @JsonValue
-  PostNotFoundErrorBody getBody() {
+  public PostNotFoundErrorBody getBody() {
     return this.body;
   }
 }
@@ -176,12 +176,12 @@ public final class UnauthorizedError extends APIException {
 
   private final UnauthorizedErrorBody body;
 
-  UnauthorizedError(UnauthorizedErrorBody body) {
+  public UnauthorizedError(UnauthorizedErrorBody body) {
     this.body = body;
   }
 
   @JsonValue
-  UnauthorizedErrorBody getBody() {
+  public UnauthorizedErrorBody getBody() {
     return this.body;
   }
 }
