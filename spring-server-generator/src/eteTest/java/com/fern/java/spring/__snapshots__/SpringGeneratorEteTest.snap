@@ -1,3 +1,14 @@
+basic[core/APIException.java]=[
+package com.fern.core;
+
+import java.lang.Exception;
+
+public class APIException extends Exception {
+}
+
+]
+
+
 basic[core/BearerAuth.java]=[
 package com.fern.core;
 
@@ -76,6 +87,7 @@ public interface AuthService {
 basic[resources/blog/BlogService.java]=[
 package com.fern.resources.blog;
 
+import com.fern.resources.blog.exceptions.PostNotFoundError;
 import com.fern.resources.blog.requests.CreatePostRequest;
 import com.fern.resources.blog.types.BlogPost;
 import com.fern.resources.blog.types.PostId;
@@ -95,7 +107,64 @@ public interface BlogService {
   void createPost(@RequestBody CreatePostRequest body);
 
   @GetMapping("/{postId}")
-  BlogPost getPost(@PathVariable("postId") PostId postId);
+  BlogPost getPost(@PathVariable("postId") PostId postId) throws PostNotFoundError;
+}
+
+]
+
+
+basic[resources/blog/exceptions/GeneratorsDoNotExistError.java]=[
+package com.fern.resources.blog.exceptions;
+
+import java.lang.Object;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public final class GeneratorsDoNotExistError {
+  @ExceptionHandler(GeneratorsDoNotExistError.class)
+  ResponseEntity<Object> handle(GeneratorsDoNotExistError generatorsDoNotExistError) {
+    return new ResponseEntity<>(generatorsDoNotExistError.getBody(), null, GeneratorsDoNotExistError.STATUS_CODE);
+  }
+}
+
+]
+
+
+basic[resources/blog/exceptions/PostNotFoundError.java]=[
+package com.fern.resources.blog.exceptions;
+
+import java.lang.Object;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public final class PostNotFoundError {
+  @ExceptionHandler(PostNotFoundError.class)
+  ResponseEntity<Object> handle(PostNotFoundError postNotFoundError) {
+    return new ResponseEntity<>(postNotFoundError.getBody(), null, PostNotFoundError.STATUS_CODE);
+  }
+}
+
+]
+
+
+basic[resources/blog/exceptions/UnauthorizedError.java]=[
+package com.fern.resources.blog.exceptions;
+
+import java.lang.Object;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public final class UnauthorizedError {
+  @ExceptionHandler(UnauthorizedError.class)
+  ResponseEntity<Object> handle(UnauthorizedError unauthorizedError) {
+    return new ResponseEntity<>(unauthorizedError.getBody(), null, UnauthorizedError.STATUS_CODE);
+  }
 }
 
 ]

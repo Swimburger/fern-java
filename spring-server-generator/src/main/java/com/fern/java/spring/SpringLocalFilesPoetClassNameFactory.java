@@ -17,8 +17,10 @@
 package com.fern.java.spring;
 
 import com.fern.ir.v12.model.commons.FernFilepath;
+import com.fern.ir.v12.model.errors.DeclaredErrorName;
 import com.fern.ir.v12.model.http.HttpService;
 import com.fern.ir.v12.model.http.InlinedRequestBody;
+import com.fern.ir.v12.model.types.DeclaredTypeName;
 import com.fern.java.AbstractNonModelPoetClassNameFactory;
 import com.squareup.javapoet.ClassName;
 import java.util.Collections;
@@ -30,6 +32,20 @@ public final class SpringLocalFilesPoetClassNameFactory extends AbstractNonModel
     public SpringLocalFilesPoetClassNameFactory(Optional<String> directoryNamePrefix) {
         super(directoryNamePrefix.map(List::of).orElseGet(() -> Collections.emptyList()));
     }
+
+    public ClassName getErrorHandlerName(DeclaredErrorName declaredTypeName) {
+        String packageName =
+                getResourcesPackage(Optional.of(declaredTypeName.getFernFilepath()), Optional.of("handlers"));
+        return ClassName.get(packageName, declaredTypeName.getName().getPascalCase().getUnsafeName() +
+                "ExceptionHandler");
+    }
+
+    public ClassName getErrorClassName(DeclaredErrorName declaredTypeName) {
+        String packageName =
+                getResourcesPackage(Optional.of(declaredTypeName.getFernFilepath()), Optional.of("exceptions"));
+        return ClassName.get(packageName, declaredTypeName.getName().getPascalCase().getSafeName());
+    }
+
 
     public ClassName getServiceInterfaceClassName(HttpService httpService) {
         String packageName =
