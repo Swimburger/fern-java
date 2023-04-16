@@ -1,3 +1,18 @@
+/*
+ * (c) Copyright 2023 Birch Solutions Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.fern.java.spring.generators;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,7 +27,6 @@ import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
-import java.lang.reflect.Method;
 import java.util.UUID;
 import javax.lang.model.element.Modifier;
 
@@ -30,15 +44,26 @@ public class ErrorBodyGenerator extends AbstractFileGenerator {
     public ErrorBodyGenerator(
             ErrorDiscriminationByPropertyStrategy errorDiscriminationByPropertyStrategy,
             AbstractGeneratorContext<?> generatorContext) {
-        super(generatorContext.getPoetClassNameFactory().getCoreClassName(ERROR_BODY_CLASS_NAME),
-                generatorContext);
+        super(generatorContext.getPoetClassNameFactory().getCoreClassName(ERROR_BODY_CLASS_NAME), generatorContext);
         this.errorDiscriminationByPropertyStrategy = errorDiscriminationByPropertyStrategy;
-        this.errorNameField = FieldSpec.builder(String.class,
-                        errorDiscriminationByPropertyStrategy.getDiscriminant().getName().getCamelCase().getSafeName())
+        this.errorNameField = FieldSpec.builder(
+                        String.class,
+                        errorDiscriminationByPropertyStrategy
+                                .getDiscriminant()
+                                .getName()
+                                .getCamelCase()
+                                .getSafeName())
                 .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
                 .build();
-        this.errorInstanceIdField = FieldSpec.builder(UUID.class,
-                        generatorContext.getIr().getConstants().getErrorInstanceIdKey().getName().getCamelCase().getSafeName())
+        this.errorInstanceIdField = FieldSpec.builder(
+                        UUID.class,
+                        generatorContext
+                                .getIr()
+                                .getConstants()
+                                .getErrorInstanceIdKey()
+                                .getName()
+                                .getCamelCase()
+                                .getSafeName())
                 .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
                 .initializer("$T.randomUUID()", UUID.class)
                 .build();
@@ -46,7 +71,8 @@ public class ErrorBodyGenerator extends AbstractFileGenerator {
 
     @Override
     public GeneratedJavaFile generateFile() {
-        NameAndWireValue errorInstanceId = generatorContext.getIr().getConstants().getErrorInstanceIdKey();
+        NameAndWireValue errorInstanceId =
+                generatorContext.getIr().getConstants().getErrorInstanceIdKey();
         NameAndWireValue errorName = errorDiscriminationByPropertyStrategy.getDiscriminant();
         NameAndWireValue contentProperty = errorDiscriminationByPropertyStrategy.getContentProperty();
         TypeSpec errorBodyTypeSpec = TypeSpec.classBuilder(className)
@@ -78,7 +104,8 @@ public class ErrorBodyGenerator extends AbstractFileGenerator {
     }
 
     private MethodSpec createGetter(FieldSpec fieldSpec, NameAndWireValue property) {
-        return MethodSpec.methodBuilder("get" + property.getName().getPascalCase().getUnsafeName())
+        return MethodSpec.methodBuilder(
+                        "get" + property.getName().getPascalCase().getUnsafeName())
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
                         .addMember("value", property.getWireValue())

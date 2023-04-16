@@ -1,3 +1,18 @@
+/*
+ * (c) Copyright 2023 Birch Solutions Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.fern.java.spring.generators;
 
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -41,7 +56,9 @@ public class ExceptionGenerator extends AbstractFileGenerator {
             GeneratedJavaFile apiExceptionClass,
             Optional<GeneratedJavaFile> errorBodyClass,
             ErrorDeclaration errorDeclaration) {
-        super(generatorContext.getPoetClassNameFactory().getErrorClassName(errorDeclaration.getName()), generatorContext);
+        super(
+                generatorContext.getPoetClassNameFactory().getErrorClassName(errorDeclaration.getName()),
+                generatorContext);
         this.springGeneratorContext = generatorContext;
         this.apiExceptionClass = apiExceptionClass;
         this.errorDeclaration = errorDeclaration;
@@ -50,7 +67,8 @@ public class ExceptionGenerator extends AbstractFileGenerator {
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .initializer("$L", errorDeclaration.getStatusCode())
                 .build();
-        this.controllerAdviceParameter = ParameterSpec.builder(className,
+        this.controllerAdviceParameter = ParameterSpec.builder(
+                        className,
                         errorDeclaration.getName().getName().getCamelCase().getSafeName())
                 .build();
     }
@@ -62,9 +80,13 @@ public class ExceptionGenerator extends AbstractFileGenerator {
                 .superclass(apiExceptionClass.getClassName())
                 .addField(statusCodeFieldSpec);
         if (generatorContext.getIr().getErrorDiscriminationStrategy().isProperty()) {
-            ErrorDiscriminationByPropertyStrategy errorDiscriminationByPropertyStrategy =
-                    generatorContext.getIr().getErrorDiscriminationStrategy().getProperty().get();
-            errorTypeSpecBuilder.addField(FieldSpec.builder(String.class, getErrorNameFieldName(errorDiscriminationByPropertyStrategy))
+            ErrorDiscriminationByPropertyStrategy errorDiscriminationByPropertyStrategy = generatorContext
+                    .getIr()
+                    .getErrorDiscriminationStrategy()
+                    .getProperty()
+                    .get();
+            errorTypeSpecBuilder.addField(FieldSpec.builder(
+                            String.class, getErrorNameFieldName(errorDiscriminationByPropertyStrategy))
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                     .initializer("$S", errorDeclaration.getDiscriminantValue().getWireValue())
                     .build());
@@ -73,8 +95,7 @@ public class ExceptionGenerator extends AbstractFileGenerator {
         Optional<TypeName> bodyTypeName = Optional.empty();
         if (errorDeclaration.getType().isPresent()) {
             TypeReference typeReference = errorDeclaration.getType().get();
-            bodyTypeName =
-                    Optional.of(generatorContext.getPoetTypeNameMapper().convertToTypeName(true, typeReference));
+            bodyTypeName = Optional.of(generatorContext.getPoetTypeNameMapper().convertToTypeName(true, typeReference));
         }
 
         bodyTypeName.ifPresent(typeName -> errorTypeSpecBuilder
@@ -101,8 +122,9 @@ public class ExceptionGenerator extends AbstractFileGenerator {
     }
 
     private GeneratedJavaFile getControllerAdvice() {
-        ClassName controllerAdviceClassName =
-                springGeneratorContext.getPoetClassNameFactory().getErrorClassName(errorDeclaration.getName());
+        ClassName controllerAdviceClassName = springGeneratorContext
+                .getPoetClassNameFactory()
+                .getErrorControllerAdviceName(errorDeclaration.getName());
 
         MethodSpec.Builder handlerMethod = MethodSpec.methodBuilder("handle")
                 .addAnnotation(AnnotationSpec.builder(ExceptionHandler.class)
@@ -111,17 +133,18 @@ public class ExceptionGenerator extends AbstractFileGenerator {
                 .addParameter(controllerAdviceParameter)
                 .returns(EXCEPTION_HANDLER_RETURN_TYPE);
 
-        springGeneratorContext.getIr().getErrorDiscriminationStrategy()
+        springGeneratorContext
+                .getIr()
+                .getErrorDiscriminationStrategy()
                 .visit(new ControllerAdviceImplementer(handlerMethod));
 
         TypeSpec controllerAdviceType = TypeSpec.classBuilder(controllerAdviceClassName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addAnnotation(RestControllerAdvice.class)
-                .addMethod(handlerMethod
-                        .build())
+                .addMethod(handlerMethod.build())
                 .build();
-        JavaFile javaFile =
-                JavaFile.builder(controllerAdviceClassName.packageName(), controllerAdviceType).build();
+        JavaFile javaFile = JavaFile.builder(controllerAdviceClassName.packageName(), controllerAdviceType)
+                .build();
         return GeneratedJavaFile.builder()
                 .className(controllerAdviceClassName)
                 .javaFile(javaFile)
@@ -139,13 +162,15 @@ public class ExceptionGenerator extends AbstractFileGenerator {
         @Override
         public Void visitStatusCode() {
             if (errorDeclaration.getType().isPresent()) {
-                handleMethod.addStatement("return new $T<>($L.getBody(), null, $T.$L)",
+                handleMethod.addStatement(
+                        "return new $T<>($L.getBody(), null, $T.$L)",
                         ResponseEntity.class,
                         controllerAdviceParameter.name,
                         className,
                         statusCodeFieldSpec.name);
             } else {
-                handleMethod.addStatement("return new $T<>(null, null, $T.$L)",
+                handleMethod.addStatement(
+                        "return new $T<>(null, null, $T.$L)",
                         ResponseEntity.class,
                         className,
                         statusCodeFieldSpec.name);
@@ -155,9 +180,8 @@ public class ExceptionGenerator extends AbstractFileGenerator {
 
         @Override
         public Void visitProperty(ErrorDiscriminationByPropertyStrategy property) {
-            GeneratedJavaFile errorBodyFile = errorBodyClass.orElseThrow(
-                    () -> new RuntimeException("Expected a core error body file in property-based error "
-                            + "discrimination"));
+            GeneratedJavaFile errorBodyFile = errorBodyClass.orElseThrow(() -> new RuntimeException(
+                    "Expected a core error body file in property-based error " + "discrimination"));
             String errorNameField = getErrorNameFieldName(property);
             if (errorDeclaration.getType().isPresent()) {
                 handleMethod.addStatement(
@@ -167,7 +191,8 @@ public class ExceptionGenerator extends AbstractFileGenerator {
                         className,
                         errorNameField,
                         controllerAdviceParameter.name);
-                handleMethod.addStatement("return new $T<>(body, null, $T.$L)",
+                handleMethod.addStatement(
+                        "return new $T<>(body, null, $T.$L)",
                         ResponseEntity.class,
                         className,
                         statusCodeFieldSpec.name);
@@ -178,7 +203,8 @@ public class ExceptionGenerator extends AbstractFileGenerator {
                         errorBodyFile.getClassName(),
                         className,
                         errorNameField);
-                handleMethod.addStatement("return new $T<>(body, null, $T.$L)",
+                handleMethod.addStatement(
+                        "return new $T<>(body, null, $T.$L)",
                         ResponseEntity.class,
                         className,
                         statusCodeFieldSpec.name);
@@ -194,6 +220,10 @@ public class ExceptionGenerator extends AbstractFileGenerator {
 
     private static String getErrorNameFieldName(
             ErrorDiscriminationByPropertyStrategy errorDiscriminationByPropertyStrategy) {
-        return errorDiscriminationByPropertyStrategy.getDiscriminant().getName().getScreamingSnakeCase().getSafeName();
+        return errorDiscriminationByPropertyStrategy
+                .getDiscriminant()
+                .getName()
+                .getScreamingSnakeCase()
+                .getSafeName();
     }
 }

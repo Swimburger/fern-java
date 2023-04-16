@@ -117,8 +117,9 @@ public final class SpringGeneratorCli
         generatedTypes.getInterfaces().values().forEach(this::addGeneratedFile);
 
         // errors
-        Map<ErrorId, GeneratedSpringException> generatedErrors = KeyedStream.stream(context.getIr().getErrors())
-                .map(errorDeclaration ->  {
+        Map<ErrorId, GeneratedSpringException> generatedErrors = KeyedStream.stream(
+                        context.getIr().getErrors())
+                .map(errorDeclaration -> {
                     ExceptionGenerator exceptionGenerator =
                             new ExceptionGenerator(context, apiException, errorBodyFile, errorDeclaration);
                     GeneratedSpringException springException = exceptionGenerator.generateFile();
@@ -174,8 +175,10 @@ public final class SpringGeneratorCli
 
     private Optional<GeneratedJavaFile> getErrorBody(SpringGeneratorContext context) {
         if (context.getIr().getErrorDiscriminationStrategy().isProperty()) {
-            ErrorDiscriminationByPropertyStrategy errorDiscriminationByPropertyStrategy =
-                    context.getIr().getErrorDiscriminationStrategy().getProperty().get();
+            ErrorDiscriminationByPropertyStrategy errorDiscriminationByPropertyStrategy = context.getIr()
+                    .getErrorDiscriminationStrategy()
+                    .getProperty()
+                    .get();
             ErrorBodyGenerator errorBodyGenerator =
                     new ErrorBodyGenerator(errorDiscriminationByPropertyStrategy, context);
             return Optional.of(errorBodyGenerator.generateFile());
