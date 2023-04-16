@@ -39,7 +39,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-public class ExceptionGenerator extends AbstractFileGenerator {
+public final class ExceptionGenerator extends AbstractFileGenerator {
     private static final String BODY_FIELD_NAME = "body";
     private static final ParameterizedTypeName EXCEPTION_HANDLER_RETURN_TYPE =
             ParameterizedTypeName.get(ResponseEntity.class, Object.class);
@@ -157,7 +157,7 @@ public class ExceptionGenerator extends AbstractFileGenerator {
 
         private MethodSpec.Builder handleMethod;
 
-        public ControllerAdviceImplementer(MethodSpec.Builder handleMethod) {
+        ControllerAdviceImplementer(MethodSpec.Builder handleMethod) {
             this.handleMethod = handleMethod;
         }
 

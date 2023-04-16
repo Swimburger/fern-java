@@ -30,7 +30,7 @@ import com.squareup.javapoet.TypeVariableName;
 import java.util.UUID;
 import javax.lang.model.element.Modifier;
 
-public class ErrorBodyGenerator extends AbstractFileGenerator {
+public final class ErrorBodyGenerator extends AbstractFileGenerator {
 
     public static final String ERROR_BODY_CLASS_NAME = "ErrorBody";
     private static final TypeVariableName GENERIC_BODY = TypeVariableName.get("T");

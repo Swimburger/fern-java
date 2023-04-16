@@ -22,7 +22,7 @@ import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
 import javax.lang.model.element.Modifier;
 
-public class ApiExceptionGenerator extends AbstractFileGenerator {
+public final class ApiExceptionGenerator extends AbstractFileGenerator {
 
     public static final String API_EXCEPTION_CLASSNAME = "APIException";
 
