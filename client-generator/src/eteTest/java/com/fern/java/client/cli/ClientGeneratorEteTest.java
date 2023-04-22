@@ -24,12 +24,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ExtendWith(SnapshotExtension.class)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class ClientGeneratorEteTest {
 
     private static final Logger log = LoggerFactory.getLogger(ClientGeneratorEteTest.class);
