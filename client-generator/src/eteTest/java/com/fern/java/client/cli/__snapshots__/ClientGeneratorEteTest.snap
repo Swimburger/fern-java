@@ -817,7 +817,6 @@ public final class BlogClientImpl implements BlogClient {
         HttpUrl.parse(this.clientOptions.environment().getUrl())
             .newBuilder()
             .addPathSegments("posts")
-            .addPathSegment("/")
             .addPathSegment(postId);
     _httpUrlBuilder.addQueryParameter("dummy", request.getDummy());
     HttpUrl _httpUrl = _httpUrlBuilder.build();
@@ -2169,7 +2168,6 @@ public final class DeviceClientImpl implements DeviceClient {
         HttpUrl.parse(this.clientOptions.environment().getUrl())
             .newBuilder()
             .addPathSegments("v1/apps")
-            .addPathSegment("/")
             .addPathSegment(appId)
             .addPathSegments("users/")
             .addPathSegment(userId)
@@ -2208,7 +2206,6 @@ public final class DeviceClientImpl implements DeviceClient {
         HttpUrl.parse(this.clientOptions.environment().getUrl())
             .newBuilder()
             .addPathSegments("v1/apps")
-            .addPathSegment("/")
             .addPathSegment(appId)
             .addPathSegments("users/")
             .addPathSegment(userId)
@@ -2248,7 +2245,6 @@ public final class DeviceClientImpl implements DeviceClient {
         HttpUrl.parse(this.clientOptions.environment().getUrl())
             .newBuilder()
             .addPathSegments("v1/apps")
-            .addPathSegment("/")
             .addPathSegment(appId)
             .addPathSegments("users/")
             .addPathSegment(userId)
@@ -2278,7 +2274,6 @@ public final class DeviceClientImpl implements DeviceClient {
         HttpUrl.parse(this.clientOptions.environment().getUrl())
             .newBuilder()
             .addPathSegments("v1/apps")
-            .addPathSegment("/")
             .addPathSegment(appId)
             .addPathSegments("users/")
             .addPathSegment(userId)
@@ -2814,7 +2809,6 @@ public final class EventClientImpl implements EventClient {
         HttpUrl.parse(this.clientOptions.environment().getUrl())
             .newBuilder()
             .addPathSegments("v1/apps")
-            .addPathSegment("/")
             .addPathSegment(appId)
             .addPathSegments("events/send");
     HttpUrl _httpUrl = _httpUrlBuilder.build();
@@ -2861,7 +2855,6 @@ public final class EventClientImpl implements EventClient {
         HttpUrl.parse(this.clientOptions.environment().getUrl())
             .newBuilder()
             .addPathSegments("v1/apps")
-            .addPathSegment("/")
             .addPathSegment(appId)
             .addPathSegments("events/bulk_send");
     HttpUrl _httpUrl = _httpUrlBuilder.build();
@@ -6651,7 +6644,6 @@ public final class UserClientImpl implements UserClient {
         HttpUrl.parse(this.clientOptions.environment().getUrl())
             .newBuilder()
             .addPathSegments("v1/apps")
-            .addPathSegment("/")
             .addPathSegment(appId)
             .addPathSegments("users");
     HttpUrl _httpUrl = _httpUrlBuilder.build();
@@ -6693,7 +6685,6 @@ public final class UserClientImpl implements UserClient {
         HttpUrl.parse(this.clientOptions.environment().getUrl())
             .newBuilder()
             .addPathSegments("v1/apps")
-            .addPathSegment("/")
             .addPathSegment(appId)
             .addPathSegments("users/")
             .addPathSegment(userId)
