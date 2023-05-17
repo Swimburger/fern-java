@@ -203,7 +203,6 @@ public final class PoetTypeNameMapper {
 
         @Override
         public TypeName visitLiteral(Literal literal) {
-            System.out.println(literal);
             return literal.visit(new Literal.Visitor<>() {
                 @Override
                 public TypeName visitString(String string) {
