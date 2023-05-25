@@ -214,10 +214,10 @@ public abstract class AbstractEndpointWriter {
     private static String stripLeadingAndTrailingSlash(String value) {
         String result = value;
         if (value.startsWith("/")) {
-            result = value.substring(1);
+            result = result.substring(1);
         }
         if (value.endsWith("/")) {
-            result = value.substring(0, value.length() - 1);
+            result = result.substring(0, value.length() - 1);
         }
         return result;
     }

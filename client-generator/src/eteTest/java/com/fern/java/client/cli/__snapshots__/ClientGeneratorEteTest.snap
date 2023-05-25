@@ -2204,7 +2204,7 @@ public final class DeviceClientImpl implements DeviceClient {
             .newBuilder()
             .addPathSegments("v1/apps")
             .addPathSegment(appId)
-            .addPathSegments("/users")
+            .addPathSegments("users/")
             .addPathSegment(userId)
             .addPathSegments("devices")
             .build();
@@ -2242,9 +2242,9 @@ public final class DeviceClientImpl implements DeviceClient {
             .newBuilder()
             .addPathSegments("v1/apps")
             .addPathSegment(appId)
-            .addPathSegments("/users")
+            .addPathSegments("users/")
             .addPathSegment(userId)
-            .addPathSegments("/devices")
+            .addPathSegments("devices/")
             .addPathSegment(deviceId)
             .build();
     RequestBody _requestBody;
@@ -2281,9 +2281,9 @@ public final class DeviceClientImpl implements DeviceClient {
             .newBuilder()
             .addPathSegments("v1/apps")
             .addPathSegment(appId)
-            .addPathSegments("/users")
+            .addPathSegments("users/")
             .addPathSegment(userId)
-            .addPathSegments("/devices")
+            .addPathSegments("devices/")
             .addPathSegment(deviceId)
             .build();
     Request _request =
@@ -2310,9 +2310,9 @@ public final class DeviceClientImpl implements DeviceClient {
             .newBuilder()
             .addPathSegments("v1/apps")
             .addPathSegment(appId)
-            .addPathSegments("/users")
+            .addPathSegments("users/")
             .addPathSegment(userId)
-            .addPathSegments("/devices")
+            .addPathSegments("devices/")
             .addPathSegment(deviceId)
             .build();
     Request _request =
@@ -6711,7 +6711,7 @@ public final class UserClientImpl implements UserClient {
             .newBuilder()
             .addPathSegments("v1/apps")
             .addPathSegment(appId)
-            .addPathSegments("/users")
+            .addPathSegments("users/")
             .addPathSegment(userId)
             .build();
     Request _request =
