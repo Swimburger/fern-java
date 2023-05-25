@@ -142,11 +142,11 @@ public final class HttpUrlBuilder {
 
     private static String stripLeadingAndTrailingSlash(String value) {
         String result = value;
-        if (value.startsWith("/")) {
+        if (result.startsWith("/")) {
             result = result.substring(1);
         }
-        if (value.endsWith("/")) {
-            result = result.substring(0, value.length() - 1);
+        if (result.endsWith("/")) {
+            result = result.substring(0, result.length() - 1);
         }
         return result;
     }
