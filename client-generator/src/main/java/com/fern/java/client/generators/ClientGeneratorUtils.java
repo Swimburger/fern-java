@@ -118,7 +118,7 @@ public final class ClientGeneratorUtils {
             FieldSpec clientSupplierField = FieldSpec.builder(
                             ParameterizedTypeName.get(ClassName.get(Supplier.class), subpackageClientImpl),
                             subpackage.getName().getCamelCase().getUnsafeName() + "Client")
-                    .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
+                    .addModifiers(Modifier.PROTECTED, Modifier.FINAL)
                     .build();
             implBuilder.addField(clientSupplierField);
             clientImplConstructor.addStatement(

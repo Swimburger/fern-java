@@ -294,13 +294,13 @@ import java.util.function.Supplier;
 public class FernFernClient {
     protected final ClientOptions clientOptions;
 
-    private final Supplier<AuthClient> authClient;
+    protected final Supplier<AuthClient> authClient;
 
-    private final Supplier<BlogClient> blogClient;
+    protected final Supplier<BlogClient> blogClient;
 
-    private final Supplier<DummyServiceClient> dummyServiceClient;
+    protected final Supplier<DummyServiceClient> dummyServiceClient;
 
-    private final Supplier<RavenClient> ravenClient;
+    protected final Supplier<RavenClient> ravenClient;
 
     public FernFernClient(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
@@ -1974,11 +1974,11 @@ import java.util.function.Supplier;
 public class RavenClient {
     protected final ClientOptions clientOptions;
 
-    private final Supplier<DeviceClient> deviceClient;
+    protected final Supplier<DeviceClient> deviceClient;
 
-    private final Supplier<EventClient> eventClient;
+    protected final Supplier<EventClient> eventClient;
 
-    private final Supplier<UserClient> userClient;
+    protected final Supplier<UserClient> userClient;
 
     public RavenClient(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
