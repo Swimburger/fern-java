@@ -22,6 +22,7 @@ import com.fern.irV12.model.types.DeclaredTypeName;
 import com.fern.irV12.model.types.EnumTypeDeclaration;
 import com.fern.irV12.model.types.ObjectTypeDeclaration;
 import com.fern.irV12.model.types.Type;
+import com.fern.irV12.model.types.TypeDeclaration;
 import com.fern.irV12.model.types.UndiscriminatedUnionTypeDeclaration;
 import com.fern.irV12.model.types.UnionTypeDeclaration;
 import com.fern.java.AbstractGeneratorContext;
@@ -37,21 +38,21 @@ import java.util.stream.Collectors;
 public final class SingleTypeGenerator implements Type.Visitor<Optional<GeneratedJavaFile>> {
 
     private final AbstractGeneratorContext<?> generatorContext;
-    private final DeclaredTypeName declaredTypeName;
+    private final TypeDeclaration typeDeclaration;
     private final ClassName className;
     private final Map<TypeId, GeneratedJavaInterface> allGeneratedInterfaces;
     private final boolean fromErrorDeclaration;
 
     public SingleTypeGenerator(
             AbstractGeneratorContext<?> generatorContext,
-            DeclaredTypeName declaredTypeName,
+            TypeDeclaration typeDeclaration,
             ClassName className,
             Map<TypeId, GeneratedJavaInterface> allGeneratedInterfaces,
             boolean fromErrorDeclaration) {
         this.generatorContext = generatorContext;
         this.className = className;
         this.allGeneratedInterfaces = allGeneratedInterfaces;
-        this.declaredTypeName = declaredTypeName;
+        this.typeDeclaration = typeDeclaration;
         this.fromErrorDeclaration = fromErrorDeclaration;
     }
 
@@ -66,7 +67,8 @@ public final class SingleTypeGenerator implements Type.Visitor<Optional<Generate
 
     @Override
     public Optional<GeneratedJavaFile> visitEnum(EnumTypeDeclaration value) {
-        EnumGenerator forwardCompatibleEnumGenerator = new EnumGenerator(className, generatorContext, value);
+        EnumGenerator forwardCompatibleEnumGenerator =
+                new EnumGenerator(className, generatorContext, typeDeclaration, value);
         return Optional.of(forwardCompatibleEnumGenerator.generateFile());
     }
 
@@ -78,7 +80,8 @@ public final class SingleTypeGenerator implements Type.Visitor<Optional<Generate
                 .collect(Collectors.toList());
         ObjectGenerator objectGenerator = new ObjectGenerator(
                 value,
-                Optional.ofNullable(allGeneratedInterfaces.get(declaredTypeName.getTypeId())),
+                Optional.ofNullable(
+                        allGeneratedInterfaces.get(typeDeclaration.getName().getTypeId())),
                 extendedInterfaces,
                 generatorContext,
                 allGeneratedInterfaces,

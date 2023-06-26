@@ -18,8 +18,10 @@ package com.fern.java.generators;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fern.irV12.model.types.EnumTypeDeclaration;
+import com.fern.irV12.model.types.TypeDeclaration;
 import com.fern.java.AbstractGeneratorContext;
 import com.fern.java.output.GeneratedJavaFile;
+import com.fern.java.utils.JavaDocUtils;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
@@ -34,12 +36,16 @@ public final class EnumGenerator extends AbstractFileGenerator {
 
     private final EnumTypeDeclaration enumTypeDeclaration;
 
+    private final TypeDeclaration typeDeclaration;
+
     public EnumGenerator(
             ClassName className,
             AbstractGeneratorContext<?> generatorContext,
+            TypeDeclaration typeDeclaration,
             EnumTypeDeclaration enumTypeDeclaration) {
         super(className, generatorContext);
         this.enumTypeDeclaration = enumTypeDeclaration;
+        this.typeDeclaration = typeDeclaration;
     }
 
     @Override
@@ -71,6 +77,10 @@ public final class EnumGenerator extends AbstractFileGenerator {
                             .addStatement("return this.$L", VALUE_FIELD.name)
                             .build())
                     .build();
+
+            typeDeclaration
+                    .getDocs()
+                    .ifPresent(docs -> enumTypeSpecBuilder.addJavadoc("$L<p>\n", JavaDocUtils.render(docs)));
 
             JavaFile enumFile = JavaFile.builder(className.packageName(), enumTypeSpecBuilder.build())
                     .build();

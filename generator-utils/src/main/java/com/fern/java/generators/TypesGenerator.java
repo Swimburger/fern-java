@@ -54,11 +54,7 @@ public final class TypesGenerator {
                     Optional<GeneratedJavaFile> maybeGeneratedJavaFile = typeDeclaration
                             .getShape()
                             .visit(new SingleTypeGenerator(
-                                    generatorContext,
-                                    typeDeclaration.getName(),
-                                    className,
-                                    generatedInterfaces,
-                                    false));
+                                    generatorContext, typeDeclaration, className, generatedInterfaces, false));
                     return maybeGeneratedJavaFile;
                 })
                 .filter(Optional::isPresent)
