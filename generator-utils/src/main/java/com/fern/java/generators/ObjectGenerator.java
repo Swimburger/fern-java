@@ -50,7 +50,7 @@ public final class ObjectGenerator extends AbstractFileGenerator {
             ObjectTypeDeclaration objectTypeDeclaration,
             Optional<GeneratedJavaInterface> selfInterface,
             List<GeneratedJavaInterface> extendedInterfaces,
-            AbstractGeneratorContext<?> generatorContext,
+            AbstractGeneratorContext<?, ?> generatorContext,
             Map<TypeId, GeneratedJavaInterface> allGeneratedInterfaces,
             ClassName className) {
         super(className, generatorContext);

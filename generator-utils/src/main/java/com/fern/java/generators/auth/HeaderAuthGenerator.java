@@ -28,7 +28,7 @@ import com.fern.java.output.GeneratedJavaFile;
 public final class HeaderAuthGenerator extends AbstractFileGenerator {
     private final HeaderAuthScheme headerAuthScheme;
 
-    public HeaderAuthGenerator(AbstractGeneratorContext<?> generatorContext, HeaderAuthScheme headerAuthScheme) {
+    public HeaderAuthGenerator(AbstractGeneratorContext<?, ?> generatorContext, HeaderAuthScheme headerAuthScheme) {
         super(
                 generatorContext
                         .getPoetClassNameFactory()

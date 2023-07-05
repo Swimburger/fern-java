@@ -24,7 +24,7 @@ import com.fern.irV12.model.ir.IntermediateRepresentation;
 import com.fern.irV12.model.types.TypeDeclaration;
 import java.util.Map;
 
-public abstract class AbstractGeneratorContext<T extends AbstractPoetClassNameFactory, U extends CustomConfig> {
+public abstract class AbstractGeneratorContext<T extends AbstractPoetClassNameFactory, U extends ICustomConfig> {
 
     private final IntermediateRepresentation ir;
     private final GeneratorConfig generatorConfig;
@@ -55,7 +55,7 @@ public abstract class AbstractGeneratorContext<T extends AbstractPoetClassNameFa
         return generatorConfig;
     }
 
-    public final CustomConfig getCustomConfig() {
+    public final ICustomConfig getCustomConfig() {
         return customConfig;
     }
 

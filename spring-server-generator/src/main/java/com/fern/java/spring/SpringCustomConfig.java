@@ -18,14 +18,14 @@ package com.fern.java.spring;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fern.java.CustomConfig;
+import com.fern.java.ICustomConfig;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @StagedBuilderImmutablesStyle
 @JsonDeserialize(as = ImmutableSpringCustomConfig.class)
-public interface SpringCustomConfig extends CustomConfig {
+public interface SpringCustomConfig extends ICustomConfig {
 
     @Value.Default
     @JsonProperty("wrapped-aliases")

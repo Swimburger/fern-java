@@ -36,14 +36,14 @@ import java.util.stream.Collectors;
 
 public final class SingleTypeGenerator implements Type.Visitor<Optional<GeneratedJavaFile>> {
 
-    private final AbstractGeneratorContext<?> generatorContext;
+    private final AbstractGeneratorContext<?, ?> generatorContext;
     private final DeclaredTypeName declaredTypeName;
     private final ClassName className;
     private final Map<TypeId, GeneratedJavaInterface> allGeneratedInterfaces;
     private final boolean fromErrorDeclaration;
 
     public SingleTypeGenerator(
-            AbstractGeneratorContext<?> generatorContext,
+            AbstractGeneratorContext<?, ?> generatorContext,
             DeclaredTypeName declaredTypeName,
             ClassName className,
             Map<TypeId, GeneratedJavaInterface> allGeneratedInterfaces,

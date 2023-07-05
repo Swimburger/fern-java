@@ -42,7 +42,7 @@ public final class AliasGenerator extends AbstractFileGenerator {
 
     public AliasGenerator(
             ClassName className,
-            AbstractGeneratorContext<?> generatorContext,
+            AbstractGeneratorContext<?, ?> generatorContext,
             AliasTypeDeclaration aliasTypeDeclaration) {
         super(className, generatorContext);
         this.aliasTypeDeclaration = aliasTypeDeclaration;
