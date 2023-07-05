@@ -45,6 +45,7 @@ public final class ObjectGenerator extends AbstractFileGenerator {
     private final Optional<GeneratedJavaInterface> selfInterface;
     private final Map<TypeId, GeneratedJavaInterface> allGeneratedInterfaces;
     private final List<GeneratedJavaInterface> extendedInterfaces = new ArrayList<>();
+    private final boolean publicConstructorsEnabled;
 
     public ObjectGenerator(
             ObjectTypeDeclaration objectTypeDeclaration,
@@ -52,13 +53,15 @@ public final class ObjectGenerator extends AbstractFileGenerator {
             List<GeneratedJavaInterface> extendedInterfaces,
             AbstractGeneratorContext<?, ?> generatorContext,
             Map<TypeId, GeneratedJavaInterface> allGeneratedInterfaces,
-            ClassName className) {
+            ClassName className,
+            boolean publicConstructorsEnabled) {
         super(className, generatorContext);
         this.objectTypeDeclaration = objectTypeDeclaration;
         this.selfInterface = selfInterface;
         selfInterface.ifPresent(this.extendedInterfaces::add);
         this.extendedInterfaces.addAll(extendedInterfaces);
         this.allGeneratedInterfaces = allGeneratedInterfaces;
+        this.publicConstructorsEnabled = publicConstructorsEnabled;
     }
 
     @Override
@@ -104,8 +107,8 @@ public final class ObjectGenerator extends AbstractFileGenerator {
                             .build();
                 })
                 .forEach(implementsInterfaces::add);
-        ObjectTypeSpecGenerator genericObjectGenerator =
-                new ObjectTypeSpecGenerator(className, enrichedObjectProperties, implementsInterfaces, true);
+        ObjectTypeSpecGenerator genericObjectGenerator = new ObjectTypeSpecGenerator(
+                className, enrichedObjectProperties, implementsInterfaces, true, publicConstructorsEnabled);
         TypeSpec objectTypeSpec = genericObjectGenerator.generate();
         JavaFile javaFile =
                 JavaFile.builder(className.packageName(), objectTypeSpec).build();

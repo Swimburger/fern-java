@@ -36,12 +36,14 @@ public final class ObjectTypeSpecGenerator {
     private final List<EnrichedObjectProperty> allEnrichedProperties = new ArrayList<>();
     private final List<ImplementsInterface> interfaces;
     private final boolean isSerialized;
+    private final boolean publicConstructorsEnabled;
 
     public ObjectTypeSpecGenerator(
             ClassName objectClassName,
             List<EnrichedObjectProperty> enrichedObjectProperties,
             List<ImplementsInterface> interfaces,
-            boolean isSerialized) {
+            boolean isSerialized,
+            boolean publicConstructorsEnabled) {
         this.objectClassName = objectClassName;
         this.interfaces = interfaces;
         for (ImplementsInterface implementsInterface : interfaces) {
@@ -49,6 +51,7 @@ public final class ObjectTypeSpecGenerator {
         }
         allEnrichedProperties.addAll(enrichedObjectProperties);
         this.isSerialized = isSerialized;
+        this.publicConstructorsEnabled = publicConstructorsEnabled;
     }
 
     public TypeSpec generate() {
@@ -62,7 +65,7 @@ public final class ObjectTypeSpecGenerator {
                 .addSuperinterfaces(interfaces.stream()
                         .map(ImplementsInterface::interfaceClassName)
                         .collect(Collectors.toList()))
-                .addMethod(generatePrivateConstructor())
+                .addMethod(generateConstructor())
                 .addMethods(allEnrichedProperties.stream()
                         .map(EnrichedObjectProperty::getterProperty)
                         .collect(Collectors.toList()))
@@ -88,8 +91,9 @@ public final class ObjectTypeSpecGenerator {
         return typeSpecBuilder.build();
     }
 
-    private MethodSpec generatePrivateConstructor() {
-        MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder();
+    private MethodSpec generateConstructor() {
+        MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder()
+                .addModifiers(publicConstructorsEnabled ? Modifier.PUBLIC : Modifier.PRIVATE);
         allEnrichedProperties.stream().map(EnrichedObjectProperty::fieldSpec).forEach(fieldSpec -> {
             ParameterSpec parameterSpec =
                     ParameterSpec.builder(fieldSpec.type, fieldSpec.name).build();
