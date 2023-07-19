@@ -32,8 +32,11 @@ public final class HeaderAuthGenerator extends AbstractFileGenerator {
         super(
                 generatorContext
                         .getPoetClassNameFactory()
-                        .getCoreClassName(
-                                headerAuthScheme.getName().getPascalCase().getSafeName()),
+                        .getCoreClassName(headerAuthScheme
+                                .getName()
+                                .getName()
+                                .getPascalCase()
+                                .getSafeName()),
                 generatorContext);
         this.headerAuthScheme = headerAuthScheme;
     }

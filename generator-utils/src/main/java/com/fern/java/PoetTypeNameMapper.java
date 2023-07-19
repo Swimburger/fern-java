@@ -157,8 +157,18 @@ public final class PoetTypeNameMapper {
         }
 
         @Override
+        public TypeName visitDate() {
+            return ClassName.get(String.class);
+        }
+
+        @Override
         public TypeName visitUuid() {
             return ClassName.get(UUID.class);
+        }
+
+        @Override
+        public TypeName visitBase64() {
+            return ClassName.get(String.class);
         }
 
         @Override

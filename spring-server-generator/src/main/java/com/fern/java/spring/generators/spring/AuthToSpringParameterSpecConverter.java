@@ -94,7 +94,7 @@ public final class AuthToSpringParameterSpecConverter {
         public ParameterSpec visitHeader(HeaderAuthScheme value) {
             return ParameterSpec.builder(getTypeName(), parameterName)
                     .addAnnotation(AnnotationSpec.builder(RequestHeader.class)
-                            .addMember("value", "$S", value.getHeader())
+                            .addMember("value", "$S", value.getName().getWireValue())
                             .build())
                     .build();
         }
