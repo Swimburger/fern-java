@@ -32,14 +32,11 @@ import com.fern.java.output.GeneratedJavaFile;
 import com.fern.java.output.GeneratedJavaInterface;
 import com.fern.java.output.GeneratedObjectMapper;
 import com.fern.java.utils.CasingUtils;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.FieldSpec;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
+
+import javax.lang.model.element.Modifier;
 import java.util.Base64;
 import java.util.Map;
-import javax.lang.model.element.Modifier;
 
 public final class RootClientGenerator extends AbstractFileGenerator {
 
@@ -172,6 +169,28 @@ public final class RootClientGenerator extends AbstractFileGenerator {
                     .addStatement("return this")
                     .build());
         }
+
+        generatorContext.getIr().getVariables().stream()
+                .map(variableDeclaration -> {
+                    String variableName =
+                            variableDeclaration.getName().getCamelCase().getSafeName();
+                    return MethodSpec.methodBuilder(variableName)
+                            .addModifiers(Modifier.PUBLIC)
+                            .returns(builderName)
+                            .addParameter(
+                                    generatorContext
+                                            .getPoetTypeNameMapper()
+                                            .convertToTypeName(true, variableDeclaration.getType()),
+                                    variableName)
+                            .addStatement(
+                                    "$L.$N($L)",
+                                    CLIENT_OPTIONS_BUILDER_NAME,
+                                    generatedClientOptions.variableGetters().get(variableDeclaration.getId()),
+                                    variableName)
+                            .addStatement("return this")
+                            .build();
+                })
+                .forEach(typeSpecBuilder::addMethod);
 
         MethodSpec buildMethod = MethodSpec.methodBuilder("build")
                 .addModifiers(Modifier.PUBLIC)
