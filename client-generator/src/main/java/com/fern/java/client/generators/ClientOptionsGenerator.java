@@ -23,14 +23,13 @@ import com.fern.java.client.GeneratedClientOptions;
 import com.fern.java.client.GeneratedEnvironmentsClass;
 import com.fern.java.generators.AbstractFileGenerator;
 import com.squareup.javapoet.*;
-import okhttp3.OkHttpClient;
-
-import javax.lang.model.element.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.lang.model.element.Modifier;
+import okhttp3.OkHttpClient;
 
 public final class ClientOptionsGenerator extends AbstractFileGenerator {
 
