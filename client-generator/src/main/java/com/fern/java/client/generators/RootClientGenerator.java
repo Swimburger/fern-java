@@ -33,10 +33,9 @@ import com.fern.java.output.GeneratedJavaInterface;
 import com.fern.java.output.GeneratedObjectMapper;
 import com.fern.java.utils.CasingUtils;
 import com.squareup.javapoet.*;
-
-import javax.lang.model.element.Modifier;
 import java.util.Base64;
 import java.util.Map;
+import javax.lang.model.element.Modifier;
 
 public final class RootClientGenerator extends AbstractFileGenerator {
 

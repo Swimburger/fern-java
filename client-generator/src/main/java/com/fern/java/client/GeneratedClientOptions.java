@@ -21,9 +21,8 @@ import com.fern.java.immutables.StagedBuilderImmutablesStyle;
 import com.fern.java.output.AbstractGeneratedJavaFile;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
-import org.immutables.value.Value;
-
 import java.util.Map;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @StagedBuilderImmutablesStyle

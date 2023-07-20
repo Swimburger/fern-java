@@ -31,14 +31,13 @@ import com.fern.java.client.generators.endpoint.HttpUrlBuilder.PathParamInfo;
 import com.fern.java.generators.object.EnrichedObjectProperty;
 import com.fern.java.output.GeneratedObjectMapper;
 import com.squareup.javapoet.*;
-import okhttp3.Response;
-
-import javax.lang.model.element.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.lang.model.element.Modifier;
+import okhttp3.Response;
 
 public abstract class AbstractEndpointWriter {
 

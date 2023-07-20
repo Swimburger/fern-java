@@ -22,12 +22,11 @@ import com.fern.java.client.GeneratedClientOptions;
 import com.fern.java.generators.object.EnrichedObjectProperty;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
 import com.squareup.javapoet.*;
-import okhttp3.HttpUrl;
-import org.immutables.value.Value;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import okhttp3.HttpUrl;
+import org.immutables.value.Value;
 
 @SuppressWarnings({"checkstyle:JavadocStyle", "checkstyle:SummaryJavadoc"})
 public final class HttpUrlBuilder {
