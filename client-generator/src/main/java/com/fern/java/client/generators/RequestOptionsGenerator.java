@@ -20,6 +20,7 @@ import com.fern.irV20.model.auth.AuthScheme;
 import com.fern.irV20.model.auth.BasicAuthScheme;
 import com.fern.irV20.model.auth.BearerAuthScheme;
 import com.fern.irV20.model.auth.HeaderAuthScheme;
+import com.fern.irV20.model.http.HttpHeader;
 import com.fern.java.AbstractGeneratorContext;
 import com.fern.java.generators.AbstractFileGenerator;
 import com.fern.java.output.GeneratedJavaFile;
@@ -75,6 +76,13 @@ public final class RequestOptionsGenerator extends AbstractFileGenerator {
                 new AuthSchemeHandler(requestOptionsTypeSpec, builderTypeSpec, getHeadersCodeBlock);
         List<AuthSchemeFieldAndMethods> fields = new ArrayList<>();
         for (AuthScheme authScheme : generatorContext.getIr().getAuth().getSchemes()) {
+            fields.add(authScheme.visit(authSchemeHandler));
+        }
+        for (HttpHeader httpHeader : generatorContext.getIr().getHeaders()) {
+            AuthScheme authScheme = AuthScheme.header(HeaderAuthScheme.builder()
+                    .name(httpHeader.getName())
+                    .valueType(httpHeader.getValueType())
+                    .build());
             fields.add(authScheme.visit(authSchemeHandler));
         }
 
