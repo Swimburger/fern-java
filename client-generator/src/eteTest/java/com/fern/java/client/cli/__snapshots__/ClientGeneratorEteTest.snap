@@ -629,7 +629,7 @@ public class AuthClient {
         this.clientOptions = clientOptions;
     }
 
-    void getAuth() {
+    public void getAuth() {
         getAuth();
     }
 
@@ -807,7 +807,7 @@ public class BlogClient {
         this.clientOptions = clientOptions;
     }
 
-    void createPost(CreatePostRequest request) {
+    public void createPost(CreatePostRequest request) {
         createPost(request);
     }
 
@@ -850,7 +850,7 @@ public class BlogClient {
         }
     }
 
-    BlogPost getPost(String postId, GetPostRequest request) {
+    public BlogPost getPost(String postId, GetPostRequest request) {
         return getPost(postId, request);
     }
 
@@ -879,7 +879,7 @@ public class BlogClient {
         }
     }
 
-    List<BlogPost> getAll() {
+    public List<BlogPost> getAll() {
         return getAll();
     }
 
@@ -906,7 +906,7 @@ public class BlogClient {
         }
     }
 
-    String useVariable() {
+    public String useVariable() {
         return useVariable();
     }
 
@@ -2005,7 +2005,7 @@ public class DummyServiceClient {
         this.clientOptions = clientOptions;
     }
 
-    void getDummy(String request) {
+    public void getDummy(String request) {
         getDummy(request);
     }
 
@@ -2038,7 +2038,7 @@ public class DummyServiceClient {
         }
     }
 
-    void health() {
+    public void health() {
         health();
     }
 
@@ -2089,7 +2089,7 @@ public class FileDownloadClient {
         this.clientOptions = clientOptions;
     }
 
-    InputStream getFileDownload(String request) {
+    public InputStream getFileDownload(String request) {
         return getFileDownload(request);
     }
 
@@ -2189,7 +2189,7 @@ public class DeviceClient {
         this.clientOptions = clientOptions;
     }
 
-    Device add(String appId, String userId, Device request) {
+    public Device add(String appId, String userId, Device request) {
         return add(appId, userId, request);
     }
 
@@ -2226,7 +2226,7 @@ public class DeviceClient {
         }
     }
 
-    Device update(String appId, String userId, String deviceId, Device request) {
+    public Device update(String appId, String userId, String deviceId, Device request) {
         return update(appId, userId, deviceId, request);
     }
 
@@ -2264,7 +2264,7 @@ public class DeviceClient {
         }
     }
 
-    void delete(String appId, String userId, String deviceId) {
+    public void delete(String appId, String userId, String deviceId) {
         delete(appId, userId, deviceId);
     }
 
@@ -2294,7 +2294,7 @@ public class DeviceClient {
         }
     }
 
-    Device getDevice(String appId, String userId, String deviceId) {
+    public Device getDevice(String appId, String userId, String deviceId) {
         return getDevice(appId, userId, deviceId);
     }
 
@@ -2788,7 +2788,7 @@ public class EventClient {
         this.clientOptions = clientOptions;
     }
 
-    SendEventResponse send(String appId, SendEventRequest request) {
+    public SendEventResponse send(String appId, SendEventRequest request) {
         return send(appId, request);
     }
 
@@ -2840,7 +2840,7 @@ public class EventClient {
         }
     }
 
-    SendEventResponse sendBulk(String appId, BulkSendEventRequest request) {
+    public SendEventResponse sendBulk(String appId, BulkSendEventRequest request) {
         return sendBulk(appId, request);
     }
 
@@ -6403,7 +6403,7 @@ public class UserClient {
         this.clientOptions = clientOptions;
     }
 
-    RavenUser createOrUpdate(String appId, CreateUserRequest request) {
+    public RavenUser createOrUpdate(String appId, CreateUserRequest request) {
         return createOrUpdate(appId, request);
     }
 
@@ -6450,7 +6450,7 @@ public class UserClient {
         }
     }
 
-    RavenUser get(String appId, String userId) {
+    public RavenUser get(String appId, String userId) {
         return get(appId, userId);
     }
 
