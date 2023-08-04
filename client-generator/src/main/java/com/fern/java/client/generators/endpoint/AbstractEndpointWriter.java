@@ -146,15 +146,17 @@ public abstract class AbstractEndpointWriter {
 
         MethodSpec endpointWithRequestOptions = endpointMethodBuilder.build();
 
-        String params =
-                pathParameters.stream().map(parameterSpec -> parameterSpec.name).collect(Collectors.joining(", "));
+        List<String> paramNames =
+                pathParameters.stream().map(parameterSpec -> parameterSpec.name).collect(Collectors.toList());
+        paramNames.add("null");
         MethodSpec endpointWithoutRequestOptions = MethodSpec.methodBuilder(endpointWithRequestOptions.name)
                 .addModifiers(Modifier.PUBLIC)
                 .addParameters(pathParameters)
                 .addStatement(
                         endpointWithRequestOptions.returnType.equals(TypeName.VOID)
-                                ? endpointWithRequestOptions.name + "(" + params + ")"
-                                : "return " + endpointWithRequestOptions.name + "(" + params + ")",
+                                ? endpointWithRequestOptions.name + "(" + String.join(",", paramNames) + ")"
+                                : "return " + endpointWithRequestOptions.name + "(" + String.join(",", paramNames)
+                                        + ")",
                         endpointWithRequestOptions.name)
                 .returns(endpointWithRequestOptions.returnType)
                 .build();
