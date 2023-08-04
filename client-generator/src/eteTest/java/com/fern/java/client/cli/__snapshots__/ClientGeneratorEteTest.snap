@@ -423,11 +423,14 @@ public final class ClientOptions {
         return this.environment;
     }
 
-    public Map<String, String> headers() {
+    public Map<String, String> headers(RequestOptions requestOptions) {
         Map<String, String> values = new HashMap<>(this.headers);
         headerSuppliers.forEach((key, supplier) -> {
             values.put(key, supplier.get());
         });
+        if (requestOptions != null) {
+            values.putAll(requestOptions.getHeaders());
+        }
         return values;
     }
 
@@ -613,6 +616,7 @@ basic[src/main/java/com/fern/basic/resources/auth/AuthClient.java]=[
 package com.fern.basic.resources.auth;
 
 import com.fern.basic.core.ClientOptions;
+import com.fern.basic.core.RequestOptions;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
@@ -625,7 +629,11 @@ public class AuthClient {
         this.clientOptions = clientOptions;
     }
 
-    public void getAuth() {
+    void getAuth() {
+        getAuth();
+    }
+
+    public void getAuth(RequestOptions requestOptions) {
         HttpUrl _httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("auth")
@@ -633,7 +641,7 @@ public class AuthClient {
         Request _request = new Request.Builder()
                 .url(_httpUrl)
                 .method("GET", null)
-                .headers(Headers.of(clientOptions.headers()))
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .build();
         try {
             Response _response = clientOptions.httpClient().newCall(_request).execute();
@@ -778,6 +786,7 @@ package com.fern.basic.resources.blog;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fern.basic.core.ClientOptions;
 import com.fern.basic.core.ObjectMappers;
+import com.fern.basic.core.RequestOptions;
 import com.fern.basic.resources.blog.requests.CreatePostRequest;
 import com.fern.basic.resources.blog.requests.GetPostRequest;
 import com.fern.basic.resources.blog.types.BlogPost;
@@ -798,7 +807,11 @@ public class BlogClient {
         this.clientOptions = clientOptions;
     }
 
-    public void createPost(CreatePostRequest request) {
+    void createPost(CreatePostRequest request) {
+        createPost(request);
+    }
+
+    public void createPost(CreatePostRequest request, RequestOptions requestOptions) {
         HttpUrl _httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("posts")
@@ -823,7 +836,7 @@ public class BlogClient {
         Request.Builder _requestBuilder = new Request.Builder()
                 .url(_httpUrl)
                 .method("POST", _requestBody)
-                .headers(Headers.of(clientOptions.headers()))
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .addHeader("Content-Type", "application/json");
         Request _request = _requestBuilder.build();
         try {
@@ -837,7 +850,11 @@ public class BlogClient {
         }
     }
 
-    public BlogPost getPost(String postId, GetPostRequest request) {
+    BlogPost getPost(String postId, GetPostRequest request) {
+        return getPost(postId, request);
+    }
+
+    public BlogPost getPost(String postId, GetPostRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder _httpUrl = HttpUrl.parse(
                         this.clientOptions.environment().getUrl())
                 .newBuilder()
@@ -848,7 +865,7 @@ public class BlogClient {
         Request.Builder _requestBuilder = new Request.Builder()
                 .url(_httpUrl.build())
                 .method("GET", _requestBody)
-                .headers(Headers.of(clientOptions.headers()))
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .addHeader("Content-Type", "application/json");
         Request _request = _requestBuilder.build();
         try {
@@ -862,7 +879,11 @@ public class BlogClient {
         }
     }
 
-    public List<BlogPost> getAll() {
+    List<BlogPost> getAll() {
+        return getAll();
+    }
+
+    public List<BlogPost> getAll(RequestOptions requestOptions) {
         HttpUrl _httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("posts")
@@ -870,7 +891,7 @@ public class BlogClient {
         Request _request = new Request.Builder()
                 .url(_httpUrl)
                 .method("GET", null)
-                .headers(Headers.of(clientOptions.headers()))
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .addHeader("Content-Type", "application/json")
                 .build();
         try {
@@ -885,7 +906,11 @@ public class BlogClient {
         }
     }
 
-    public String useVariable() {
+    String useVariable() {
+        return useVariable();
+    }
+
+    public String useVariable(RequestOptions requestOptions) {
         HttpUrl _httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("posts")
@@ -895,7 +920,7 @@ public class BlogClient {
         Request _request = new Request.Builder()
                 .url(_httpUrl)
                 .method("POST", null)
-                .headers(Headers.of(clientOptions.headers()))
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .addHeader("Content-Type", "application/json")
                 .build();
         try {
@@ -1965,6 +1990,7 @@ package com.fern.basic.resources.dummyservice;
 
 import com.fern.basic.core.ClientOptions;
 import com.fern.basic.core.ObjectMappers;
+import com.fern.basic.core.RequestOptions;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -1979,7 +2005,11 @@ public class DummyServiceClient {
         this.clientOptions = clientOptions;
     }
 
-    public void getDummy(String request) {
+    void getDummy(String request) {
+        getDummy(request);
+    }
+
+    public void getDummy(String request, RequestOptions requestOptions) {
         HttpUrl _httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("dummy")
@@ -1994,7 +2024,7 @@ public class DummyServiceClient {
         Request _request = new Request.Builder()
                 .url(_httpUrl)
                 .method("POST", _requestBody)
-                .headers(Headers.of(clientOptions.headers()))
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .addHeader("Content-Type", "application/json")
                 .build();
         try {
@@ -2008,7 +2038,11 @@ public class DummyServiceClient {
         }
     }
 
-    public void health() {
+    void health() {
+        health();
+    }
+
+    public void health(RequestOptions requestOptions) {
         HttpUrl _httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("dummy")
@@ -2017,7 +2051,7 @@ public class DummyServiceClient {
         Request _request = new Request.Builder()
                 .url(_httpUrl)
                 .method("GET", null)
-                .headers(Headers.of(clientOptions.headers()))
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .build();
         try {
             Response _response = clientOptions.httpClient().newCall(_request).execute();
@@ -2039,6 +2073,7 @@ package com.fern.basic.resources.filedownload;
 
 import com.fern.basic.core.ClientOptions;
 import com.fern.basic.core.ObjectMappers;
+import com.fern.basic.core.RequestOptions;
 import java.io.InputStream;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
@@ -2054,7 +2089,11 @@ public class FileDownloadClient {
         this.clientOptions = clientOptions;
     }
 
-    public InputStream getFileDownload(String request) {
+    InputStream getFileDownload(String request) {
+        return getFileDownload(request);
+    }
+
+    public InputStream getFileDownload(String request, RequestOptions requestOptions) {
         HttpUrl _httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("file-dowonload")
@@ -2069,7 +2108,7 @@ public class FileDownloadClient {
         Request _request = new Request.Builder()
                 .url(_httpUrl)
                 .method("POST", _requestBody)
-                .headers(Headers.of(clientOptions.headers()))
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .addHeader("Content-Type", "application/json")
                 .build();
         try {
@@ -2134,6 +2173,7 @@ package com.fern.basic.resources.raven.device;
 
 import com.fern.basic.core.ClientOptions;
 import com.fern.basic.core.ObjectMappers;
+import com.fern.basic.core.RequestOptions;
 import com.fern.basic.resources.raven.device.types.Device;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
@@ -2149,7 +2189,11 @@ public class DeviceClient {
         this.clientOptions = clientOptions;
     }
 
-    public Device add(String appId, String userId, Device request) {
+    Device add(String appId, String userId, Device request) {
+        return add(appId, userId, request);
+    }
+
+    public Device add(String appId, String userId, Device request, RequestOptions requestOptions) {
         HttpUrl _httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("v1/apps")
@@ -2168,7 +2212,7 @@ public class DeviceClient {
         Request _request = new Request.Builder()
                 .url(_httpUrl)
                 .method("POST", _requestBody)
-                .headers(Headers.of(clientOptions.headers()))
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .addHeader("Content-Type", "application/json")
                 .build();
         try {
@@ -2182,7 +2226,11 @@ public class DeviceClient {
         }
     }
 
-    public Device update(String appId, String userId, String deviceId, Device request) {
+    Device update(String appId, String userId, String deviceId, Device request) {
+        return update(appId, userId, deviceId, request);
+    }
+
+    public Device update(String appId, String userId, String deviceId, Device request, RequestOptions requestOptions) {
         HttpUrl _httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("v1/apps")
@@ -2202,7 +2250,7 @@ public class DeviceClient {
         Request _request = new Request.Builder()
                 .url(_httpUrl)
                 .method("PUT", _requestBody)
-                .headers(Headers.of(clientOptions.headers()))
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .addHeader("Content-Type", "application/json")
                 .build();
         try {
@@ -2216,7 +2264,11 @@ public class DeviceClient {
         }
     }
 
-    public void delete(String appId, String userId, String deviceId) {
+    void delete(String appId, String userId, String deviceId) {
+        delete(appId, userId, deviceId);
+    }
+
+    public void delete(String appId, String userId, String deviceId, RequestOptions requestOptions) {
         HttpUrl _httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("v1/apps")
@@ -2229,7 +2281,7 @@ public class DeviceClient {
         Request _request = new Request.Builder()
                 .url(_httpUrl)
                 .method("DELETE", null)
-                .headers(Headers.of(clientOptions.headers()))
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .build();
         try {
             Response _response = clientOptions.httpClient().newCall(_request).execute();
@@ -2242,7 +2294,11 @@ public class DeviceClient {
         }
     }
 
-    public Device getDevice(String appId, String userId, String deviceId) {
+    Device getDevice(String appId, String userId, String deviceId) {
+        return getDevice(appId, userId, deviceId);
+    }
+
+    public Device getDevice(String appId, String userId, String deviceId, RequestOptions requestOptions) {
         HttpUrl _httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("v1/apps")
@@ -2255,7 +2311,7 @@ public class DeviceClient {
         Request _request = new Request.Builder()
                 .url(_httpUrl)
                 .method("GET", null)
-                .headers(Headers.of(clientOptions.headers()))
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .addHeader("Content-Type", "application/json")
                 .build();
         try {
@@ -2712,6 +2768,7 @@ package com.fern.basic.resources.raven.event;
 
 import com.fern.basic.core.ClientOptions;
 import com.fern.basic.core.ObjectMappers;
+import com.fern.basic.core.RequestOptions;
 import com.fern.basic.resources.raven.event.requests.BulkSendEventRequest;
 import com.fern.basic.resources.raven.event.requests.SendEventRequest;
 import com.fern.basic.resources.raven.event.types.SendEventResponse;
@@ -2731,7 +2788,11 @@ public class EventClient {
         this.clientOptions = clientOptions;
     }
 
-    public SendEventResponse send(String appId, SendEventRequest request) {
+    SendEventResponse send(String appId, SendEventRequest request) {
+        return send(appId, request);
+    }
+
+    public SendEventResponse send(String appId, SendEventRequest request, RequestOptions requestOptions) {
         HttpUrl _httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("v1/apps")
@@ -2761,7 +2822,7 @@ public class EventClient {
         Request.Builder _requestBuilder = new Request.Builder()
                 .url(_httpUrl)
                 .method("POST", _requestBody)
-                .headers(Headers.of(clientOptions.headers()))
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .addHeader("Content-Type", "application/json");
         if (request.getIdempotencyKey().isPresent()) {
             _requestBuilder.addHeader(
@@ -2779,7 +2840,11 @@ public class EventClient {
         }
     }
 
-    public SendEventResponse sendBulk(String appId, BulkSendEventRequest request) {
+    SendEventResponse sendBulk(String appId, BulkSendEventRequest request) {
+        return sendBulk(appId, request);
+    }
+
+    public SendEventResponse sendBulk(String appId, BulkSendEventRequest request, RequestOptions requestOptions) {
         HttpUrl _httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("v1/apps")
@@ -2800,7 +2865,7 @@ public class EventClient {
         Request.Builder _requestBuilder = new Request.Builder()
                 .url(_httpUrl)
                 .method("POST", _requestBody)
-                .headers(Headers.of(clientOptions.headers()))
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .addHeader("Content-Type", "application/json");
         if (request.getIdempotencyKey().isPresent()) {
             _requestBuilder.addHeader(
@@ -6319,6 +6384,7 @@ package com.fern.basic.resources.raven.user;
 
 import com.fern.basic.core.ClientOptions;
 import com.fern.basic.core.ObjectMappers;
+import com.fern.basic.core.RequestOptions;
 import com.fern.basic.resources.raven.user.requests.CreateUserRequest;
 import com.fern.basic.resources.raven.user.types.RavenUser;
 import java.util.HashMap;
@@ -6337,7 +6403,11 @@ public class UserClient {
         this.clientOptions = clientOptions;
     }
 
-    public RavenUser createOrUpdate(String appId, CreateUserRequest request) {
+    RavenUser createOrUpdate(String appId, CreateUserRequest request) {
+        return createOrUpdate(appId, request);
+    }
+
+    public RavenUser createOrUpdate(String appId, CreateUserRequest request, RequestOptions requestOptions) {
         HttpUrl _httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("v1/apps")
@@ -6366,7 +6436,7 @@ public class UserClient {
         Request.Builder _requestBuilder = new Request.Builder()
                 .url(_httpUrl)
                 .method("POST", _requestBody)
-                .headers(Headers.of(clientOptions.headers()))
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .addHeader("Content-Type", "application/json");
         Request _request = _requestBuilder.build();
         try {
@@ -6380,7 +6450,11 @@ public class UserClient {
         }
     }
 
-    public RavenUser get(String appId, String userId) {
+    RavenUser get(String appId, String userId) {
+        return get(appId, userId);
+    }
+
+    public RavenUser get(String appId, String userId, RequestOptions requestOptions) {
         HttpUrl _httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("v1/apps")
@@ -6391,7 +6465,7 @@ public class UserClient {
         Request _request = new Request.Builder()
                 .url(_httpUrl)
                 .method("GET", null)
-                .headers(Headers.of(clientOptions.headers()))
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .addHeader("Content-Type", "application/json")
                 .build();
         try {
