@@ -61,4 +61,15 @@ public abstract class GeneratedWrappedRequest extends AbstractGeneratedJavaFile 
             return ImmutableReferencedRequestBodyGetter.builder();
         }
     }
+
+    @Value.Immutable
+    @StagedBuilderImmutablesStyle
+    public interface FileUploadRequestBodyGetters extends RequestBodyGetter {
+
+        List<EnrichedObjectProperty> properties();
+
+        static ImmutableInlinedRequestBodyGetters.Builder builder() {
+            return ImmutableInlinedRequestBodyGetters.builder();
+        }
+    }
 }
