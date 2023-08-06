@@ -326,6 +326,7 @@ public final class WrappedRequestEndpointWriter extends AbstractEndpointWriter {
                 }
             }
         }
+        requestBodyCodeBlock.addStatement("$T $L = $L.build()", Request.class, REQUEST_NAME, REQUEST_BUILDER_NAME);
     }
 
     private static boolean typeNameIsOptional(TypeName typeName) {
