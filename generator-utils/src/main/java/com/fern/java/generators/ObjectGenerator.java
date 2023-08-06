@@ -93,10 +93,22 @@ public final class ObjectGenerator extends AbstractFileGenerator {
                         if (visited.contains(generatedJavaInterface)) {
                             continue;
                         }
-                        interfaceQueue.addAll(generatedJavaInterface.extendedInterfaces().stream()
-                                .map(DeclaredTypeName::getTypeId)
-                                .map(allGeneratedInterfaces::get)
-                                .collect(Collectors.toList()));
+                        try {
+                            interfaceQueue.addAll(generatedJavaInterface.extendedInterfaces().stream()
+                                    .map(DeclaredTypeName::getTypeId)
+                                    .map(allGeneratedInterfaces::get)
+                                    .collect(Collectors.toList()));
+                        } catch (Exception e) {
+                            String typeIds = generatedJavaInterface.extendedInterfaces().stream()
+                                    .map(DeclaredTypeName::getTypeId)
+                                    .map(TypeId::get)
+                                    .collect(Collectors.joining(", "));
+                            String interfaceTypeIds = allGeneratedInterfaces.keySet().stream()
+                                    .map(TypeId::get)
+                                    .collect(Collectors.joining(", "));
+                            throw new RuntimeException(
+                                    "TypeIds: " + typeIds + ", " + "InterfaceTypeIds: " + interfaceTypeIds);
+                        }
                         enrichedProperties.addAll(
                                 getEnrichedObjectProperties(generatedJavaInterface, objectPropertyGetters));
                         visited.add(generatedJavaInterface);
