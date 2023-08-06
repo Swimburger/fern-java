@@ -22,6 +22,7 @@ import com.fern.irV20.model.commons.Name;
 import com.fern.irV20.model.commons.NameAndWireValue;
 import com.fern.irV20.model.commons.TypeId;
 import com.fern.irV20.model.http.FileUploadRequest;
+import com.fern.irV20.model.http.FileUploadRequestProperty;
 import com.fern.irV20.model.http.HttpEndpoint;
 import com.fern.irV20.model.http.HttpRequestBody;
 import com.fern.irV20.model.http.HttpRequestBodyReference;
@@ -34,7 +35,11 @@ import com.fern.irV20.model.types.ObjectTypeDeclaration;
 import com.fern.java.RequestBodyUtils;
 import com.fern.java.client.ClientGeneratorContext;
 import com.fern.java.client.GeneratedWrappedRequest;
+import com.fern.java.client.GeneratedWrappedRequest.FilePropertyContainer;
+import com.fern.java.client.GeneratedWrappedRequest.FileUploadProperty;
+import com.fern.java.client.GeneratedWrappedRequest.FileUploadRequestBodyGetters;
 import com.fern.java.client.GeneratedWrappedRequest.InlinedRequestBodyGetters;
+import com.fern.java.client.GeneratedWrappedRequest.JsonFileUploadProperty;
 import com.fern.java.client.GeneratedWrappedRequest.ReferencedRequestBodyGetter;
 import com.fern.java.client.GeneratedWrappedRequest.RequestBodyGetter;
 import com.fern.java.generators.AbstractFileGenerator;
@@ -180,12 +185,34 @@ public final class WrappedRequestGenerator extends AbstractFileGenerator {
 
         @Override
         public RequestBodyGetter visitFileUpload(FileUploadRequest fileUpload) {
-            return null;
+            List<FileUploadProperty> fileUploadProperties = new ArrayList<>();
+            int jsonPropertyIndex = 0;
+            for (FileUploadRequestProperty irFileUploadProperty : fileUpload.getProperties()) {
+                if (irFileUploadProperty.isFile()) {
+                    fileUploadProperties.add(FilePropertyContainer.builder()
+                            .fileProperty(irFileUploadProperty.getFile().get())
+                            .build());
+                } else if (irFileUploadProperty.isBodyProperty()) {
+                    fileUploadProperties.add(JsonFileUploadProperty.builder()
+                            .objectProperty(generatedObject
+                                    .objectPropertyGetters()
+                                    .get(requestBodyProperties.get(jsonPropertyIndex)))
+                            .build());
+                    ++jsonPropertyIndex;
+                }
+            }
+            return FileUploadRequestBodyGetters.builder()
+                    .addAllProperties(fileUploadProperties)
+                    .addAllFileProperties(fileUpload.getProperties().stream()
+                            .map(FileUploadRequestProperty::getFile)
+                            .flatMap(Optional::stream)
+                            .collect(Collectors.toList()))
+                    .build();
         }
 
         @Override
         public RequestBodyGetter _visitUnknown(Object unknownType) {
-            return null;
+            throw new RuntimeException("Encountered unknown http requeset body: " + unknownType);
         }
     }
 
@@ -236,7 +263,7 @@ public final class WrappedRequestGenerator extends AbstractFileGenerator {
 
         @Override
         public List<ObjectProperty> _visitUnknown(Object unknownType) {
-            return null;
+            throw new RuntimeException("Encountered unknown http requeset body: " + unknownType);
         }
     }
 }

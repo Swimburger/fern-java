@@ -16,6 +16,7 @@
 
 package com.fern.java.client;
 
+import com.fern.irV20.model.http.FileProperty;
 import com.fern.java.generators.object.EnrichedObjectProperty;
 import com.fern.java.immutables.StagedBuilderImmutablesStyle;
 import com.fern.java.output.AbstractGeneratedJavaFile;
@@ -66,10 +67,34 @@ public abstract class GeneratedWrappedRequest extends AbstractGeneratedJavaFile 
     @StagedBuilderImmutablesStyle
     public interface FileUploadRequestBodyGetters extends RequestBodyGetter {
 
-        List<EnrichedObjectProperty> properties();
+        List<FileUploadProperty> properties();
 
-        static ImmutableInlinedRequestBodyGetters.Builder builder() {
-            return ImmutableInlinedRequestBodyGetters.builder();
+        List<FileProperty> fileProperties();
+
+        static ImmutableFileUploadRequestBodyGetters.Builder builder() {
+            return ImmutableFileUploadRequestBodyGetters.builder();
+        }
+    }
+
+    public interface FileUploadProperty {}
+
+    @Value.Immutable
+    @StagedBuilderImmutablesStyle
+    public interface JsonFileUploadProperty extends FileUploadProperty {
+        EnrichedObjectProperty objectProperty();
+
+        static ImmutableJsonFileUploadProperty.ObjectPropertyBuildStage builder() {
+            return ImmutableJsonFileUploadProperty.builder();
+        }
+    }
+
+    @Value.Immutable
+    @StagedBuilderImmutablesStyle
+    public interface FilePropertyContainer extends FileUploadProperty {
+        FileProperty fileProperty();
+
+        static ImmutableFilePropertyContainer.FilePropertyBuildStage builder() {
+            return ImmutableFilePropertyContainer.builder();
         }
     }
 }
