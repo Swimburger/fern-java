@@ -33,6 +33,7 @@ import com.fern.java.client.generators.RootClientGenerator;
 import com.fern.java.client.generators.SampleAppGenerator;
 import com.fern.java.client.generators.SubpackageClientGenerator;
 import com.fern.java.client.generators.SuppliersGenerator;
+import com.fern.java.client.generators.TestGenerator;
 import com.fern.java.generators.ObjectMappersGenerator;
 import com.fern.java.generators.TypesGenerator;
 import com.fern.java.generators.TypesGenerator.Result;
@@ -126,6 +127,8 @@ public final class ClientGeneratorCli extends AbstractGeneratorCli<CustomConfig,
                 .artifact("junit-jupiter-engine")
                 .version(GradleDependency.JUNIT_DEPENDENCY)
                 .build());
+        TestGenerator testGenerator = new TestGenerator(context);
+        this.addGeneratedFile(testGenerator.generateFile());
     }
 
     @Override
