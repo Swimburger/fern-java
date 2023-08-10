@@ -52,6 +52,35 @@ public final class ClientGeneratorCli extends AbstractGeneratorCli<CustomConfig,
     private static final Logger log = LoggerFactory.getLogger(ClientGeneratorCli.class);
 
     private final List<String> subprojects = new ArrayList<>();
+    private final List<GradleDependency> dependencies = new ArrayList<>();
+
+    public ClientGeneratorCli() {
+        this.dependencies.addAll(List.of(
+                GradleDependency.builder()
+                        .type(DependencyType.API)
+                        .group("com.squareup.okhttp3")
+                        .artifact("okhttp")
+                        .version(GradleDependency.OKHTTP_VERSION)
+                        .build(),
+                GradleDependency.builder()
+                        .type(DependencyType.API)
+                        .group("com.fasterxml.jackson.core")
+                        .artifact("jackson-databind")
+                        .version(GradleDependency.JACKSON_DATABIND_VERSION)
+                        .build(),
+                GradleDependency.builder()
+                        .type(DependencyType.API)
+                        .group("com.fasterxml.jackson.datatype")
+                        .artifact("jackson-datatype-jdk8")
+                        .version(GradleDependency.JACKSON_JDK8_VERSION)
+                        .build(),
+                GradleDependency.builder()
+                        .type(DependencyType.API)
+                        .group("com.fasterxml.jackson.datatype")
+                        .artifact("jackson-datatype-jsr310")
+                        .version(GradleDependency.JACKSON_JDK8_VERSION)
+                        .build()));
+    }
 
     @Override
     public void runInDownloadFilesModeHook(
