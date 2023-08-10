@@ -90,7 +90,7 @@ jobs:
       - run:
           name: Install Seed
           command: |
-            npm install -g seed-cli@0.14.3-4-g9dd53050
+            npm install -g @fern-api/seed-cli@0.14.3-4-g9dd53050
             ./gradlew :client-generator:dockerTagLatest
             seed test --docker java-client:latest --irVersion v20 --language java --compile-command './gradlew compileJava' --fixture exhaustive
 
