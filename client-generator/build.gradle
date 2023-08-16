@@ -9,6 +9,7 @@ dependencies {
     implementation project(':generator-utils')
     implementation project(':runtime-utils:jersey-utils')
 
+    implementation 'com.fern.fern:generator-exec:0.0.251'
     implementation 'ch.qos.logback:logback-classic'
     implementation 'com.squareup.okhttp3:okhttp'
 

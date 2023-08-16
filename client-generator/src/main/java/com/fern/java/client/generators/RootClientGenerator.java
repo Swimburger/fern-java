@@ -216,7 +216,7 @@ public final class RootClientGenerator extends AbstractFileGenerator {
         return typeSpecBuilder.build();
     }
 
-    private static String getRootClientName(AbstractGeneratorContext<?, ?> generatorContext) {
+    public static String getRootClientName(AbstractGeneratorContext<?, ?> generatorContext) {
         return getRootClientPrefix(generatorContext) + "Client";
     }
 

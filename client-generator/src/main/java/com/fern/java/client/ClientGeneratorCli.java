@@ -30,6 +30,7 @@ import com.fern.java.DownloadFilesCustomConfig;
 import com.fern.java.client.generators.ApiErrorGenerator;
 import com.fern.java.client.generators.ClientOptionsGenerator;
 import com.fern.java.client.generators.EnvironmentGenerator;
+import com.fern.java.client.generators.ReadmeGenerator;
 import com.fern.java.client.generators.RequestOptionsGenerator;
 import com.fern.java.client.generators.RootClientGenerator;
 import com.fern.java.client.generators.SampleAppGenerator;
@@ -131,6 +132,8 @@ public final class ClientGeneratorCli extends AbstractGeneratorCli<CustomConfig,
                 .build());
         TestGenerator testGenerator = new TestGenerator(context);
         this.addGeneratedFile(testGenerator.generateFile());
+        ReadmeGenerator readmeGenerator = new ReadmeGenerator(context);
+        this.addGeneratedFile(readmeGenerator.generateFile());
     }
 
     @Override
