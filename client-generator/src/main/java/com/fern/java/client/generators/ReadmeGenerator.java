@@ -16,7 +16,7 @@
 
 package com.fern.java.client.generators;
 
-import com.fern.generator.exec.model.config.MavenRegistryConfigV2;
+import com.fern.generator.exec.model.config.MavenGithubPublishInfo;
 import com.fern.generatorExec.resources.readme.types.Readme;
 import com.fern.irV20.model.auth.ApiAuth;
 import com.fern.irV20.model.auth.AuthScheme;
@@ -27,39 +27,55 @@ import com.fern.java.client.ClientGeneratorContext;
 import com.fern.java.jackson.ClientObjectMappers;
 import com.fern.java.output.RawGeneratedFile;
 import java.util.Locale;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ReadmeGenerator {
+    private static final Logger log = LoggerFactory.getLogger(ReadmeGenerator.class);
 
     private ApiAuth auth;
     private String rootClientClassName;
     private String rootClientVariableName;
     private String organization;
-    private String registryUrl;
-    private String coordinate;
-    private String artifactId;
-    private String version;
+    private String registryUrl = null;
+    private String coordinate = null;
+    private String artifactId = null;
+    private String version = "0.x.x";
 
     public ReadmeGenerator(ClientGeneratorContext clientGeneratorContext) {
         String organizationName = clientGeneratorContext.getGeneratorConfig().getOrganization();
-        MavenRegistryConfigV2 maven = clientGeneratorContext
-                .getGeneratorConfig()
-                .getOutput()
-                .getMode()
-                .getPublish()
-                .get()
-                .getRegistriesV2()
-                .getMaven();
-        String[] coordinateSplit = maven.getCoordinate().split(":", 2);
 
         this.auth = clientGeneratorContext.getIr().getAuth();
         this.rootClientClassName = RootClientGenerator.getRootClientName(clientGeneratorContext);
         this.rootClientVariableName =
                 rootClientClassName.substring(0, 1).toLowerCase(Locale.ROOT) + rootClientClassName.substring(1);
         this.organization = organizationName.substring(0, 1).toUpperCase(Locale.ROOT) + organizationName.substring(1);
-        this.registryUrl = maven.getRegistryUrl();
-        this.coordinate = maven.getCoordinate();
-        this.artifactId = coordinateSplit[0];
-        this.version = coordinateSplit[1];
+
+        MavenGithubPublishInfo maven = null;
+        try {
+            maven = clientGeneratorContext
+                    .getGeneratorConfig()
+                    .getOutput()
+                    .getMode()
+                    .getGithub()
+                    .get()
+                    .getPublishInfo()
+                    .get()
+                    .getMaven()
+                    .get();
+        } catch (java.util.NoSuchElementException e) {
+            // We can still render a README.md without a Maven configuration.
+            log.debug("Generator context does not have a Maven configuration", e);
+        }
+        if (maven != null) {
+            String[] coordinateSplit = maven.getCoordinate().split(":", 2);
+            this.registryUrl = maven.getRegistryUrl();
+            this.coordinate = maven.getCoordinate();
+            this.artifactId = coordinateSplit[0];
+            if (coordinateSplit.length == 2) {
+                this.version = coordinateSplit[1];
+            }
+        }
     }
 
     public RawGeneratedFile generateFile() {
@@ -86,10 +102,13 @@ public final class ReadmeGenerator {
     }
 
     private String getTitle() {
-        return String.format("%s Java Library", organization);
+        return String.format("# %s Java Library", organization);
     }
 
     private String getBadges() {
+        if (registryUrl == null || artifactId == null) {
+            return "";
+        }
         String mavenCentralPath = String.format("%s/%s", registryUrl, artifactId);
         return String.format(
                 "[![Maven Central](https://img.shields.io/maven-central/v/%s)](https://central.sonatype"
@@ -103,6 +122,9 @@ public final class ReadmeGenerator {
     }
 
     private String getInstallation() {
+        if (registryUrl == null || artifactId == null) {
+            return "";
+        }
         return "# Gradle\n"
                 + "\n"
                 + "Add the dependency in your `build.gradle`:\n"
@@ -112,7 +134,8 @@ public final class ReadmeGenerator {
                 + "}\n"
                 + "```\n"
                 + "\n"
-                + "# Maven"
+                + "# Maven\n"
+                + "\n"
                 + "Add the dependency in your `pom.xml`"
                 + "```\n"
                 + "<dependency>\n"
