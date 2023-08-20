@@ -32,13 +32,14 @@ public class ServiceClient {
                 .newBuilder()
                 .build();
         MultipartBody.Builder _multipartBody = new MultipartBody.Builder().setType(MultipartBody.FORM);
+        try {
         if (request.getMaybeString().isPresent()) {
             _multipartBody.addFormDataPart("maybeString", request.getMaybeString());
         }
         _multipartBody.addFormDataPart("integer", request.getInteger());
         _multipartBody.addFormDataPart("file", null, RequestBody.create(null, file));
-        if (request.maybeFile().isPresent()) {
-            _multipartBody.addFormDataPart("maybeFile", null, RequestBody.create(null, maybeFile));
+        if (maybeFile.isPresent()) {
+            _multipartBody.addFormDataPart("maybeFile", null, RequestBody.create(null, maybeFile.get()));
         }
         if (request.getMaybeInteger().isPresent()) {
             _multipartBody.addFormDataPart("maybeInteger", request.getMaybeInteger());
@@ -64,10 +65,8 @@ public class ServiceClient {
         Request.Builder _requestBuilder = new Request.Builder()
                 .url(_httpUrl)
                 .method("POST", _requestBody)
-                .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Content-Type", "application/json");
+                .headers(Headers.of(clientOptions.headers(requestOptions)));
         Request _request = _requestBuilder.build();
-        try {
             Response _response = clientOptions.httpClient().newCall(_request).execute();
             if (_response.isSuccessful()) {
                 return;
@@ -95,8 +94,7 @@ public class ServiceClient {
         Request.Builder _requestBuilder = new Request.Builder()
                 .url(_httpUrl)
                 .method("POST", _requestBody)
-                .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Content-Type", "application/json");
+                .headers(Headers.of(clientOptions.headers(requestOptions)));
         Request _request = _requestBuilder.build();
         try {
             Response _response = clientOptions.httpClient().newCall(_request).execute();
