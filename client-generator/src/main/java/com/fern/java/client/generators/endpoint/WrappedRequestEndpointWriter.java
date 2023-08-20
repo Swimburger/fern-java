@@ -41,7 +41,6 @@ import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -123,6 +122,7 @@ public final class WrappedRequestEndpointWriter extends AbstractEndpointWriter {
         return parameterSpecs;
     }
 
+    @SuppressWarnings("checkstyle:CyclomaticComplexity")
     @Override
     public CodeBlock getInitializeRequestCodeBlock(
             FieldSpec clientOptionsMember,
@@ -326,7 +326,7 @@ public final class WrappedRequestEndpointWriter extends AbstractEndpointWriter {
                     requestBodyCodeBlock
                             .beginControlFlow("if ($N.isPresent())", getFilePropertyParameterName(fileProperty))
                             .addStatement(
-                                    "$L.addFormDataPart($S, null, $T.create(null, $L))",
+                                    "$L.addFormDataPart($S, null, $T.create(null, $L.get()))",
                                     MULTIPART_BODY_PROPERTIES_NAME,
                                     fileProperty.getKey().getWireValue(),
                                     RequestBody.class,
@@ -343,8 +343,10 @@ public final class WrappedRequestEndpointWriter extends AbstractEndpointWriter {
             }
         }
         requestBodyCodeBlock
-                .endControlFlow("catch ($T e)", IOException.class)
-                .addStatement("throw new $T(e)", RuntimeException.class);
+                .endControlFlow()
+                .beginControlFlow("catch($T e)", Exception.class)
+                .addStatement("throw new $T(e)", RuntimeException.class)
+                .endControlFlow();
     }
 
     private static boolean typeNameIsOptional(TypeName typeName) {
