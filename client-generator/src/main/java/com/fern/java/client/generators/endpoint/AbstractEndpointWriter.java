@@ -432,7 +432,6 @@ public abstract class AbstractEndpointWriter {
         public Boolean visitWrapper(SdkRequestWrapper wrapper) {
             boolean isOptional = true;
             if (httpEndpoint.getRequestBody().isPresent()) {
-                System.out.println(httpEndpoint.getRequestBody().get());
                 isOptional = httpEndpoint.getRequestBody().get().visit(new HttpRequestBodyIsOptional());
             }
             if (!httpEndpoint.getHeaders().isEmpty() && isOptional) {
