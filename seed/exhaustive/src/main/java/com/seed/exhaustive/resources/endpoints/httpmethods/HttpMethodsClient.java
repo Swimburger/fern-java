@@ -158,6 +158,13 @@ public class HttpMethodsClient {
         }
     }
 
+    public ObjectWithOptionalField testPatch(String id) {
+        return testPatch(
+                id,
+                com.seed.exhaustive.resources.types.object.types.ObjectWithOptionalField.builder()
+                        .build());
+    }
+
     public boolean testDelete(String id) {
         return testDelete(id, null);
     }
