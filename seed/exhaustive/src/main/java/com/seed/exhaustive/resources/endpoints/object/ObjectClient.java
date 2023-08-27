@@ -61,9 +61,7 @@ public class ObjectClient {
     }
 
     public ObjectWithOptionalField getAndReturnWithOptionalField() {
-        return getAndReturnWithOptionalField(
-                com.seed.exhaustive.resources.types.object.types.ObjectWithOptionalField.builder()
-                        .build());
+        return getAndReturnWithOptionalField(ObjectWithOptionalField.builder().build());
     }
 
     public ObjectWithRequiredField getAndReturnWithRequiredField(ObjectWithRequiredField request) {
@@ -143,8 +141,7 @@ public class ObjectClient {
 
     public NestedObjectWithOptionalField getAndReturnNestedWithOptionalField() {
         return getAndReturnNestedWithOptionalField(
-                com.seed.exhaustive.resources.types.object.types.NestedObjectWithOptionalField.builder()
-                        .build());
+                NestedObjectWithOptionalField.builder().build());
     }
 
     public NestedObjectWithRequiredField getAndReturnNestedWithRequiredField(NestedObjectWithRequiredField request) {

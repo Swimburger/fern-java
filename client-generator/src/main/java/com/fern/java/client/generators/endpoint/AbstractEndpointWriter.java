@@ -214,8 +214,7 @@ public abstract class AbstractEndpointWriter {
             if (typeNameIsOptional(bodyParameterSpec.type)) {
                 paramNamesWoBody.add("Optional.empty()");
             } else {
-                paramNamesWoBody.add(CodeBlock.of("$T.builder().build()", bodyParameterSpec.type)
-                        .toString());
+                paramNamesWoBody.add("$T.builder().build()");
             }
             endpointWithoutRequest = endpointWithoutRequestBldr
                     .addStatement(
@@ -223,7 +222,7 @@ public abstract class AbstractEndpointWriter {
                                     ? endpointWithRequestOptions.name + "(" + String.join(",", paramNamesWoBody) + ")"
                                     : "return " + endpointWithRequestOptions.name + "("
                                             + String.join(",", paramNamesWoBody) + ")",
-                            endpointWithRequestOptions.name)
+                            bodyParameterSpec.type)
                     .build();
         }
 
