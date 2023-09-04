@@ -17,34 +17,37 @@
 package com.fern.java.client.generators.endpoint;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fern.irV20.model.commons.TypeId;
-import com.fern.irV20.model.environment.EnvironmentBaseUrlId;
-import com.fern.irV20.model.http.FileDownloadResponse;
-import com.fern.irV20.model.http.FileProperty;
-import com.fern.irV20.model.http.FileUploadRequest;
-import com.fern.irV20.model.http.FileUploadRequestProperty;
-import com.fern.irV20.model.http.HttpEndpoint;
-import com.fern.irV20.model.http.HttpRequestBody;
-import com.fern.irV20.model.http.HttpRequestBodyReference;
-import com.fern.irV20.model.http.HttpResponse;
-import com.fern.irV20.model.http.HttpService;
-import com.fern.irV20.model.http.InlinedRequestBody;
-import com.fern.irV20.model.http.InlinedRequestBodyProperty;
-import com.fern.irV20.model.http.JsonResponse;
-import com.fern.irV20.model.http.PathParameter;
-import com.fern.irV20.model.http.SdkRequest;
-import com.fern.irV20.model.http.SdkRequestShape;
-import com.fern.irV20.model.http.SdkRequestWrapper;
-import com.fern.irV20.model.types.AliasTypeDeclaration;
-import com.fern.irV20.model.types.ContainerType;
-import com.fern.irV20.model.types.DeclaredTypeName;
-import com.fern.irV20.model.types.EnumTypeDeclaration;
-import com.fern.irV20.model.types.ObjectTypeDeclaration;
-import com.fern.irV20.model.types.PrimitiveType;
-import com.fern.irV20.model.types.Type;
-import com.fern.irV20.model.types.TypeDeclaration;
-import com.fern.irV20.model.types.UndiscriminatedUnionTypeDeclaration;
-import com.fern.irV20.model.types.UnionTypeDeclaration;
+import com.fern.ir.model.commons.TypeId;
+import com.fern.ir.model.environment.EnvironmentBaseUrlId;
+import com.fern.ir.model.http.BytesRequest;
+import com.fern.ir.model.http.FileDownloadResponse;
+import com.fern.ir.model.http.FileProperty;
+import com.fern.ir.model.http.FileUploadRequest;
+import com.fern.ir.model.http.FileUploadRequestProperty;
+import com.fern.ir.model.http.HttpEndpoint;
+import com.fern.ir.model.http.HttpRequestBody;
+import com.fern.ir.model.http.HttpRequestBodyReference;
+import com.fern.ir.model.http.HttpResponse;
+import com.fern.ir.model.http.HttpService;
+import com.fern.ir.model.http.InlinedRequestBody;
+import com.fern.ir.model.http.InlinedRequestBodyProperty;
+import com.fern.ir.model.http.JsonResponse;
+import com.fern.ir.model.http.PathParameter;
+import com.fern.ir.model.http.SdkRequest;
+import com.fern.ir.model.http.SdkRequestShape;
+import com.fern.ir.model.http.SdkRequestWrapper;
+import com.fern.ir.model.http.StreamingResponse;
+import com.fern.ir.model.http.TextResponse;
+import com.fern.ir.model.types.AliasTypeDeclaration;
+import com.fern.ir.model.types.ContainerType;
+import com.fern.ir.model.types.DeclaredTypeName;
+import com.fern.ir.model.types.EnumTypeDeclaration;
+import com.fern.ir.model.types.ObjectTypeDeclaration;
+import com.fern.ir.model.types.PrimitiveType;
+import com.fern.ir.model.types.Type;
+import com.fern.ir.model.types.TypeDeclaration;
+import com.fern.ir.model.types.UndiscriminatedUnionTypeDeclaration;
+import com.fern.ir.model.types.UnionTypeDeclaration;
 import com.fern.java.client.ClientGeneratorContext;
 import com.fern.java.client.GeneratedClientOptions;
 import com.fern.java.client.GeneratedEnvironmentsClass;
@@ -400,11 +403,23 @@ public abstract class AbstractEndpointWriter {
         }
 
         @Override
+        public Void visitText(TextResponse text) {
+            endpointMethodBuilder.returns(String.class);
+            httpResponseBuilder.addStatement("return $L.body().string()", RESPONSE_NAME);
+            return null;
+        }
+
+        @Override
+        public Void visitStreaming(StreamingResponse streaming) {
+            throw new RuntimeException("Streaming endpoint responses are not supported in java");
+        }
+
+        @Override
         public Void _visitUnknown(Object unknownType) {
             return null;
         }
 
-        private boolean isAliasContainer(com.fern.irV20.model.types.TypeReference responseBodyType) {
+        private boolean isAliasContainer(com.fern.ir.model.types.TypeReference responseBodyType) {
             if (responseBodyType.getNamed().isPresent()) {
                 TypeId typeId = responseBodyType.getNamed().get().getTypeId();
                 TypeDeclaration typeDeclaration =
@@ -452,7 +467,7 @@ public abstract class AbstractEndpointWriter {
         }
     }
 
-    private class TypeReferenceIsOptional implements com.fern.irV20.model.types.TypeReference.Visitor<Boolean> {
+    private class TypeReferenceIsOptional implements com.fern.ir.model.types.TypeReference.Visitor<Boolean> {
 
         @Override
         public Boolean visitContainer(ContainerType container) {
@@ -547,6 +562,11 @@ public abstract class AbstractEndpointWriter {
             return fileUpload.getProperties().stream()
                     .allMatch(fileUploadRequestProperty ->
                             fileUploadRequestProperty.visit(new FileUploadRequestPropertyIsOptional()));
+        }
+
+        @Override
+        public Boolean visitBytes(BytesRequest bytes) {
+            return bytes.getIsOptional();
         }
 
         @Override
