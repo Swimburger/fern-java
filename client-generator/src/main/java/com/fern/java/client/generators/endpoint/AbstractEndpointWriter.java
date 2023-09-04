@@ -34,6 +34,7 @@ import com.fern.ir.model.http.InlinedRequestBodyProperty;
 import com.fern.ir.model.http.JsonResponse;
 import com.fern.ir.model.http.PathParameter;
 import com.fern.ir.model.http.SdkRequest;
+import com.fern.ir.model.http.SdkRequestBodyType;
 import com.fern.ir.model.http.SdkRequestShape;
 import com.fern.ir.model.http.SdkRequestWrapper;
 import com.fern.ir.model.http.StreamingResponse;
@@ -79,6 +80,7 @@ public abstract class AbstractEndpointWriter {
 
     public static final String CONTENT_TYPE_HEADER = "Content-Type";
     public static final String APPLICATION_JSON_HEADER = "application/json";
+    public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
     public static final String HTTP_URL_NAME = "_httpUrl";
     public static final String REQUEST_NAME = "_request";
     public static final String REQUEST_BUILDER_NAME = "_requestBuilder";
@@ -439,8 +441,23 @@ public abstract class AbstractEndpointWriter {
     private class SdkRequestIsOptional implements SdkRequestShape.Visitor<Boolean> {
 
         @Override
-        public Boolean visitJustRequestBody(HttpRequestBodyReference justRequestBody) {
-            return justRequestBody.getRequestBodyType().visit(new TypeReferenceIsOptional());
+        public Boolean visitJustRequestBody(SdkRequestBodyType justRequestBody) {
+            return justRequestBody.visit(new SdkRequestBodyType.Visitor<Boolean>() {
+                @Override
+                public Boolean visitTypeReference(HttpRequestBodyReference typeReference) {
+                    return typeReference.getRequestBodyType().visit(new TypeReferenceIsOptional());
+                }
+
+                @Override
+                public Boolean visitBytes(BytesRequest bytes) {
+                    return bytes.getIsOptional();
+                }
+
+                @Override
+                public Boolean _visitUnknown(Object unknownType) {
+                    throw new RuntimeException("Encountered unknown type " + unknownType);
+                }
+            });
         }
 
         @Override
