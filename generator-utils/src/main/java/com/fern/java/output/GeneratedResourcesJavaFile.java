@@ -45,6 +45,7 @@ public abstract class GeneratedResourcesJavaFile extends GeneratedFile {
     @Override
     public final void writeToFile(Path directory, boolean isLocal, Optional<String> packagePrefix) throws IOException {
         String packageName = getClassName().packageName();
+        String contentsWithPackageName = "package " + getClassName().packageName() + ";\n\n" + contents();
         if (isLocal) {
             if (packagePrefix.isPresent()) {
                 String replacedPackageName = packageName.replace(packagePrefix.get(), "");
@@ -57,13 +58,20 @@ public abstract class GeneratedResourcesJavaFile extends GeneratedFile {
                 Path filepath = Paths.get(fileName.replace('.', '/') + ".java");
                 Path resolvedFilePath = directory.resolve(filepath);
                 Files.createDirectories(resolvedFilePath.getParent());
-                Files.writeString(resolvedFilePath, contents());
+                Files.writeString(resolvedFilePath, contentsWithPackageName);
             } else {
-                Files.writeString(directory.resolve(getClassName().simpleName() + ".java"), contents());
+                Path filepath = Paths.get(packageName.replace('.', '/'));
+                Files.writeString(
+                        directory.resolve(filepath).resolve(getClassName().simpleName() + ".java"),
+                        contentsWithPackageName);
             }
         } else {
+            Path filepath = Paths.get(packageName.replace('.', '/'));
             Files.writeString(
-                    directory.resolve(Path.of("src/main/java/" + getClassName().simpleName() + ".java")), contents());
+                    directory.resolve(Path.of("src/main/java/")
+                            .resolve(filepath)
+                            .resolve(getClassName().simpleName() + ".java")),
+                    contentsWithPackageName);
         }
     }
 
