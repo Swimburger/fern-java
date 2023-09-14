@@ -1,3 +1,5 @@
+package com.seed.customAuth.core;
+
 import java.io.IOException;
 import java.util.Random;
 import okhttp3.Interceptor;
