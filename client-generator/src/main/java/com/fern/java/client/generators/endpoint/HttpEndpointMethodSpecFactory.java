@@ -102,6 +102,21 @@ public final class HttpEndpointMethodSpecFactory {
                             clientGeneratorContext);
                     GeneratedWrappedRequest generatedWrappedRequest = wrappedRequestGenerator.generateFile();
                     generatedWrappedRequests.add(generatedWrappedRequest);
+                    if (httpEndpoint.getHeaders().isEmpty()
+                            && httpEndpoint.getQueryParameters().isEmpty()) {
+                        OnlyRequestEndpointWriter onlyRequestEndpointWriter = new OnlyRequestEndpointWriter(
+                                httpService,
+                                httpEndpoint,
+                                generatedObjectMapper,
+                                clientGeneratorContext,
+                                clientOptionsField,
+                                generatedClientOptions,
+                                generatedEnvironmentsClass,
+                                generatedWrappedRequest,
+                                httpEndpoint.getSdkRequest().get(),
+                                requestOptionsFile);
+                        return onlyRequestEndpointWriter.generate();
+                    }
                     WrappedRequestEndpointWriter wrappedRequestEndpointWriter = new WrappedRequestEndpointWriter(
                             httpService,
                             httpEndpoint,
