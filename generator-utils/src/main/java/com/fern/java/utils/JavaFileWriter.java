@@ -25,7 +25,6 @@ public final class JavaFileWriter {
     private JavaFileWriter() {}
 
     public static void write(Path path, String contents) throws IOException {
-        System.out.println("Generating " + path.toString());
         Files.createDirectories(path.getParent());
         Files.writeString(path, addGeneratedByFernComment(contents));
     }
